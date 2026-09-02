@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the marketing_calendar auto-cancel job every morning
+
+[Timer]
+# 02:00 Asia/Jakarta. The job is idempotent, so a missed run catches up on the
+# next one rather than skipping a day's cancellations (BR-4.6).
+OnCalendar=*-*-* 02:00:00 Asia/Jakarta
+Persistent=true
+
+[Install]
+WantedBy=timers.target

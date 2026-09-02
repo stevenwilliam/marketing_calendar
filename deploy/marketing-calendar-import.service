@@ -1,0 +1,10 @@
+[Unit]
+Description=marketing_calendar — nightly transaction import (BR-6.1)
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=dev
+WorkingDirectory=/home/dev/projects/marketing_calendar
+EnvironmentFile=/etc/marketing_calendar/marketing_calendar.env
+ExecStart=/home/dev/projects/marketing_calendar/bin/mc job import

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the marketing_calendar transaction import every night
+
+[Timer]
+# 01:00 Asia/Jakarta, before the auto-cancel job so the calendar reflects the
+# night's sales. Import is idempotent by checksum, so a re-run is free.
+OnCalendar=*-*-* 01:00:00 Asia/Jakarta
+Persistent=true
+
+[Install]
+WantedBy=timers.target

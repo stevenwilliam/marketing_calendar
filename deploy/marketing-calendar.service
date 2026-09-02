@@ -1,0 +1,43 @@
+[Unit]
+Description=marketing_calendar — internal superapp (phase 1: marketing calendar)
+Documentation=file:///home/dev/projects/marketing_calendar/docs/09-deployment.md
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=dev
+Group=dev
+WorkingDirectory=/home/dev/projects/marketing_calendar
+EnvironmentFile=/etc/marketing_calendar/marketing_calendar.env
+ExecStart=/home/dev/projects/marketing_calendar/bin/mc serve
+Restart=on-failure
+RestartSec=5s
+
+# The service binds loopback only; nginx is the only way in (D17, N1).
+# These are the hardening options that cost nothing and remove whole classes
+# of post-exploitation.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/srv/marketing_calendar
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=marketing-calendar
+
+[Install]
+WantedBy=multi-user.target

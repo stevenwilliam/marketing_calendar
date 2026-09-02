@@ -1,0 +1,2 @@
+DROP FUNCTION IF EXISTS refuse_mutation();
+DROP EXTENSION IF EXISTS pgcrypto;

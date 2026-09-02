@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS user_site_scope;
+DROP TABLE IF EXISTS user_role;
+DROP TABLE IF EXISTS holiday;
+DROP TABLE IF EXISTS site_group_member;
+DROP TABLE IF EXISTS site_group;
+DROP TABLE IF EXISTS site;
+DROP TABLE IF EXISTS company;
