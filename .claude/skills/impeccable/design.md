@@ -13,105 +13,120 @@ palette is not.
 
 ## 1. Type
 
+**Archivo**, self-hosted, from Steven's design guideline (D39). Headings and
+buttons are weight **800**; body is 400; nav and labels 600.
+
 | Role | Family | Notes |
 | --- | --- | --- |
-| UI / body | **Inter** (variable), self-hosted | everything |
-| Numeric | Inter with `font-variant-numeric: tabular-nums` | every money and count column |
+| Heading / button / nav | **Archivo 800**, self-hosted | the whole personality of the system |
+| UI / body | **Archivo 400** | 15px base, 1.55 line height |
+| Numeric | Archivo with `font-variant-numeric: tabular-nums` | every money and count column |
 | Mono | ui-monospace stack | codes, ids, CSV previews |
 
-No display face. This is an internal tool used for hours a day; a personality
-typeface earns nothing and costs legibility at 13px in a dense table.
-
 Never a font CDN — it hands a third party every visitor's IP and the page they
-are on, and this application is deliberately not public.
+are on, and this application is deliberately not public. The `.woff2` files are
+served from `web/public/fonts/`.
 
 | Token | Size | | Token | Weight |
 | --- | --- | --- | --- | --- |
-| `--text-xs` | 12px | | `--w-body` | 400 |
-| `--text-sm` | 13px | | `--w-medium` | 500 |
-| `--text-base` | 15px | | `--w-strong` | 600 |
-| `--text-lg` | 18px | | `--w-heading` | 650 |
-| `--text-xl` | 22px | | | |
-| `--text-2xl` | 28px | | | |
+| `--text-xs` | 11px | | `--w-body` | 400 |
+| `--text-sm` | 13px | | `--w-medium` | 600 |
+| `--text-base` | 15px | | `--w-heading` | 800 |
+| `--text-lg` | 20px | | | |
+| `--text-xl` | 25px | | | |
+| `--text-2xl` | 32px | | | |
 
-15px base rather than 16: this is a dense data application and the extra row
-per screen matters more than it does on a marketing page. 13px is the floor,
-and only for secondary text that already clears AA.
+Headings: h1 42 · h2 32 · h3 25 · h4 20 · h5 16 · h6 13 uppercase with
+`0.08em` tracking. Line height 1.12, letter-spacing `-0.015em`.
+
+**Radius is 0 everywhere.** `--radius-sm/md/lg` are all `0px`. That is the
+system's signature and is not a value to soften.
 
 ---
 
 ## 2. Palette
 
-Anchored on **`#778AAB`** — Steven's colour (D34). It is a 218° slate blue, and
-at **3.50 on white** it is a *boundary*, not an *ink*: it is the control border
-and the chrome fill, and `--primary` is the same hue darkened until it can
-carry text. Every other value is chosen around that anchor and measured.
+Steven's design guideline (artifact `f896dbfe`) is the identity and is kept:
+Archivo, a vivid red accent on warm neutrals, a near-black sidebar, square
+corners. **Six of its values fail WCAG AA**, and CLAUDE.md §7 makes AA a hard
+rule, so each is retuned to the nearest passing value **from Steven's own
+ramp** — the identity survives and the numbers are honest. The rejected
+originals are in `scripts/contrast.py` so they cannot drift back in.
 
-| Token | Hex | Role |
+| Token | Hex / value | Role |
 | --- | --- | --- |
-| `--canvas` | `#F2F5F9` | the page — a cool tint of the accent hue |
-| `--surface` | `#FFFFFF` | cards, tables, panels |
-| `--ink` | `#151B24` | primary text |
-| `--ink-muted` | `#475466` | secondary text |
-| `--primary` | `#2E4C7E` | primary action, focus ring — `#778AAB` at hue 218, darkened |
-| `--accent` | `#778AAB` | **Steven's colour** — control boundary, chrome fill, chip |
-| `--success` | `#146B3C` | approved, loaded |
-| `--warn` | `#845000` | pending, near a deadline |
-| `--danger` | `#9E1C28` | rejected, cancelled |
-| `--info` | `#0F5F73` | informational, force-released |
-| `--border` | `#778AAB` | **control boundary** — the accent, and it must clear 3:1 |
-| `--hairline` | `#DDE3EC` | decorative separator — no 3:1 duty |
+| `--color-bg` | `#f3f2f2` | the page |
+| `--color-surface` | `#eae9e9` | cards, panels, inputs |
+| `--color-paper` | `#FFFFFF` | calendar cells and data tables |
+| `--color-text` | `#201e1d` | primary text — **and the sidebar ground** |
+| `--color-muted` | `rgba(32,30,29,0.65)` | secondary text |
+| `--color-accent` | `#ec3013` | **fills, 2px rules, focus rings — never text** |
+| `--color-accent-ink` | `#ae1800` | the accent when it must carry text |
+| `--color-accent-hover` | `#7c1405` | primary button hover |
+| `--color-divider` | `rgba(32,30,29,0.55)` | control boundary — must clear 3:1 |
+| `--color-success` | `#145F38` | approved, released, loaded |
+| `--color-warn` | `#6F4400` | pending, near a deadline |
+| `--color-danger` | `#9E1C28` | rejected, cancelled |
+| `--color-info` | `#0F5F73` | informational, force-released |
 | `--brand-maxx` | `#6B3B2A` | Maxx Coffee |
 | `--brand-ruuma` | `#7A2E63` | Ruuma |
 | `--brand-sunshine` | `#7C4A00` | Sunshine |
 
-Hue separation, so two meanings never arrive as the same colour: primary 218°,
-accent 218° (deliberately the same family), info 192°, success 148°, warn 36°,
-danger 355°, Maxx 16°, Ruuma 318°, Sunshine 36°.
+Steven's tonal ramps (`--color-neutral-*`, `--color-accent-*`,
+`--color-accent-2-*`) are carried over unchanged; `accent-700` is what
+`--color-accent-ink` points at.
 
-> **Sunshine and `--warn` share the 36° amber family.** They are never on the
-> same element — a brand accent is a 3px left border plus the brand name, a
-> status is a pill with a glyph and a word — and rule 1 below means neither is
-> carried by colour alone. It is a known adjacency, not an oversight.
+> **`--color-accent` `#ec3013` is a fill, not an ink.** It measures **3.76** on
+> the page: a pass as a rule, a boundary or a focus ring, and a **fail** as
+> text at any size the product actually uses. The primary button's label is
+> 14px, which is not large text, so 3:1 does not apply to it. Anything that has
+> to be *read* in the accent colour uses `--color-accent-ink`.
+
+> **`--color-danger` and the brand accent are both red.** Unavoidable in a
+> red-branded product. Mitigated the way rule 1 already requires: every status
+> carries a glyph and a word, never colour alone.
 
 ---
 
 ## 3. Measured contrast — check here before choosing a colour
 
-**Text on the two grounds:**
+**Text on the three grounds:**
 
-| Ink | on canvas | on surface | |
-| --- | ---: | ---: | --- |
-| `#151B24` ink | 15.82 | 17.30 | AAA |
-| `#475466` muted | 7.04 | 7.70 | AAA |
-| `#2E4C7E` primary | 7.83 | 8.57 | AAA |
+| Ink | on bg | on surface | on paper | |
+| --- | ---: | ---: | ---: | --- |
+| `#201e1d` text | 14.86 | 13.70 | 16.60 | AAA |
+| `rgba(32,30,29,.65)` muted | 4.96 | 4.78 | 5.16 | AA |
+| `#ae1800` accent ink | 6.41 | 5.91 | 7.17 | AA / AAA |
 
-**Status inks, on both grounds** — a pill sits on either:
+`#ae1800` on `--color-accent-100` `#fff2ef` is **6.55** — the accent tag.
 
-| Ink | on canvas | on surface | |
-| --- | ---: | ---: | --- |
-| `#9E1C28` danger | 7.25 | 7.92 | AAA |
-| `#0F5F73` info | 6.61 | 7.23 | AA / AAA |
-| `#845000` warn | 6.14 | 6.71 | AA |
-| `#146B3C` success | 6.00 | 6.57 | AA |
-
-**White on a filled button:**
+**The primary button** — `--color-bg` on a filled ground:
 
 | Fill | Ratio | |
 | --- | ---: | --- |
-| `#2E4C7E` primary | 8.57 | AAA |
-| `#9E1C28` danger | 7.92 | AAA |
-| `#146B3C` success | 6.57 | AA |
+| `#ae1800` accent-ink (rest) | 6.41 | AA |
+| `#7c1405` accent-800 (hover) | 9.59 | AAA |
+| `#145F38` success | 6.90 | AA |
+| `#9E1C28` danger | 7.09 | AAA |
 
-**Filling with the accent** — `#778AAB` takes **dark ink, never white**:
+**The sidebar**, `#201e1d` ground:
 
-| Pairing | Ratio | |
+| Ink | Ratio | |
 | --- | ---: | --- |
-| `#151B24` ink on `#778AAB` | 4.95 | AA — the sanctioned fill |
-| white on `#778AAB` | 3.50 | **FAIL** — see the rejection below |
+| `#f3f2f2` primary | 14.86 | AAA |
+| `rgba(243,242,242,.72)` dim | 8.29 | AAA |
+| `rgba(243,242,242,.62)` faint | 6.46 | AA |
 
-**Brand accents** — both as ink on white and as a fill with white ink, because
-the ratio is symmetric and both uses appear:
+**Status inks** — a pill sits on the page or on a white table row:
+
+| Ink | on bg | on paper | |
+| --- | ---: | ---: | --- |
+| `#6F4400` warn | 7.51 | 8.39 | AAA |
+| `#9E1C28` danger | 7.09 | 7.92 | AAA |
+| `#145F38` success | 6.90 | 7.71 | AA / AAA |
+| `#0F5F73` info | 6.47 | 7.23 | AA / AAA |
+
+**Brand accents**, on the white of a table row:
 
 | Brand | Ratio | |
 | --- | ---: | --- |
@@ -120,27 +135,31 @@ the ratio is symmetric and both uses appear:
 | `#7C4A00` Sunshine | 7.40 | AAA |
 
 **Non-text — WCAG 1.4.11, the 3:1 boundary.** A border that has to be *found*
-is a control boundary and must clear 3:1. A line that merely separates two
-filled surfaces need not. Confusing the two is how an input ends up with an
-edge nobody can see.
+is a control boundary and must clear 3:1.
 
-| Token | on canvas | on surface | |
-| --- | ---: | ---: | --- |
-| `--border` / `--accent` `#778AAB` | 3.20 | 3.50 | ✓ the real control boundary |
-| `--primary` as a focus ring | 7.83 | — | ✓ |
-| `--hairline` `#DDE3EC` | 1.18 | 1.29 | ✗ decorative only |
+| Token | on bg | on surface | on paper | |
+| --- | ---: | ---: | ---: | --- |
+| `--color-divider` `rgba(32,30,29,.55)` | 3.66 | 3.57 | 3.78 | ✓ |
+| `--color-accent` as a rule or focus ring | 3.76 | — | 4.20 | ✓ |
 
-> **`#8A97A3` is rejected as a border and should not be re-proposed.** It reads
-> as a perfectly reasonable grey and measures **2.98** on white — under the 3:1
-> floor by 0.02. It is recorded in `scripts/contrast.py` so the checker keeps
-> saying so.
+### The six values from the guideline that are rejected
 
-> **White text on `#778AAB` is rejected**, and this is the mistake the palette
-> invites: **3.50** is a *pass* as a control boundary and a *fail* as text, and
-> it is the same number doing both jobs. A filled accent chip takes `--ink`.
-> Also recorded in the checker.
+Each is in the checker by name, with its measured number, so it cannot be
+quietly restored by someone copying from the mockup.
 
----
+| Guideline value | Where it was used | Measured | Replaced by |
+| --- | --- | ---: | --- |
+| `#ec3013` fill + `--color-bg` label | **the primary button** | **3.76** | `#ae1800` fill → 6.41 |
+| `#ec3013` as text | links, `.btn-ghost`, `.card-kicker`, `.tag-outline` | **3.76** | `#ae1800` → 6.41 |
+| `--color-divider` at **40%** | input border, table rules, nav edge | **2.41** | 55% → 3.66 |
+| muted text at **55%** | `.text-muted`, `.mc-kick`, `figcaption` | **3.66** | 65% → 4.96 |
+| `.table th` at **60%** | every column header | **4.23** | 65% → 4.96 |
+| sidebar text at **45%** | the footer line under the user's name | **4.06** | 62% → 6.46 |
+
+> The divider is the one to understand. At 40% it is **2.41** — it fails the
+> same 3:1 control-boundary floor that `#8A97A3` failed by 0.02 before this
+> palette existed, and it fails it by six times as much. It is the border of
+> every input in the product.
 
 ## 4. Rules that are not taste
 
@@ -162,9 +181,11 @@ edge nobody can see.
    checker will silently measure the text against whatever is behind it.
 7. **Dark theme is a token swap, not a second stylesheet.** Every pairing above
    is re-measured for dark before dark ships; none of these numbers carries
-   over. `#778AAB` is reserved as the dark-theme `--primary`, where it has the
-   headroom it lacks on white — but that is a plan, not a measurement, and dark
-   is not claimed until the checker has the numbers.
-8. **`#778AAB` fills with `--ink`, never with white.** It is the accent, the
-   control boundary and the chrome, and it is 3.50 — which passes as an edge
-   and fails as text. One number, two verdicts; read rule 2 before using it.
+   over. The sidebar is already a dark surface and its three inks are measured
+   — that is a component, not a theme, and it is not a claim that dark ships.
+8. **`#ec3013` fills; `#ae1800` reads.** The brand accent is 3.76 — a pass as a
+   rule, a boundary and a focus ring, a fail as text at 14px. If a human has to
+   read it, it is `--color-accent-ink`. One colour, two verdicts; this is the
+   single easiest mistake to make in this palette.
+9. **Radius is 0.** Every `--radius-*` token is `0px`. It is the system's
+   signature, not an oversight to round off.

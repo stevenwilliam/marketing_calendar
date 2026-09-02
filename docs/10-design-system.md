@@ -21,57 +21,68 @@ scanning of numbers · everything else.
 There is no marketing surface here (D26), so no hero, no display typeface and
 no personality typography. Those cost legibility at 13px and buy nothing.
 
-## 2. Palette
+## 2. Palette — the Modernist system (D39)
 
-Every value measured, never estimated. Full table in `design.md` §2–§3.
+**Steven supplied a design guideline** (artifact `f896dbfe`, saved verbatim at
+`docs/design/mockup.html`). It is the identity and it is kept: **Archivo**,
+a vivid red accent on warm neutrals, a near-black sidebar, **square corners**,
+Indonesian copy. It supersedes the `#778AAB` palette of D34 entirely.
 
-**The palette is anchored on `#778AAB`, Steven's colour (D34).** It is a 218°
-slate blue that measures **3.50 on white**, which decides its job for it: at
-that ratio it is a *boundary*, not an *ink*. So it is the **control border** on
-every input, the chrome fill, and the accent chip — and `--primary`, the colour
-that has to carry text and fill buttons, is the same 218° hue darkened until it
-does. Steven's colour is on every screen; it is simply on the edges rather than
-in the words.
+**Six of its values fail WCAG AA.** CLAUDE.md §7 makes AA a hard rule and says
+contrast is calculated, so each failing value is retuned to the nearest passing
+value **taken from Steven's own tonal ramp**. The identity survives; the
+numbers are honest. Full table and the rejected originals: `design.md` §2–§3.
 
-| Token | Hex | Role |
+| Token | Value | Role |
 |---|---|---|
-| `--canvas` | `#F2F5F9` | the page — a cool tint of the accent hue |
-| `--surface` | `#FFFFFF` | cards, tables, panels |
-| `--ink` | `#151B24` | primary text — 15.82 on canvas, 17.30 on surface |
-| `--ink-muted` | `#475466` | secondary — 7.04 / 7.70 |
-| `--primary` | `#2E4C7E` | primary action and focus ring — 7.83 / 8.57 |
-| `--accent` | `#778AAB` | **Steven's colour** — border, chrome, chip; 3.20 / 3.50 |
-| `--success` | `#146B3C` | 6.00 / 6.57 |
-| `--warn` | `#845000` | 6.14 / 6.71 |
-| `--danger` | `#9E1C28` | 7.25 / 7.92 |
-| `--info` | `#0F5F73` | 6.61 / 7.23 |
-| `--border` | `#778AAB` | **control boundary** — the accent; clears 1.4.11 |
-| `--hairline` | `#DDE3EC` | decorative separator, 1.18 / 1.29 — no 3:1 duty |
+| `--color-bg` | `#f3f2f2` | the page |
+| `--color-surface` | `#eae9e9` | cards, panels, inputs |
+| `--color-paper` | `#FFFFFF` | calendar cells, data tables |
+| `--color-text` | `#201e1d` | primary text — 14.86 on bg — and the sidebar ground |
+| `--color-muted` | `rgba(32,30,29,.65)` | secondary — 4.96 |
+| `--color-accent` | `#ec3013` | **fills, rules, focus rings — never text** — 3.76 |
+| `--color-accent-ink` | `#ae1800` | the accent when it carries text — 6.41 |
+| `--color-divider` | `rgba(32,30,29,.55)` | control boundary — 3.66 |
+| `--color-success` | `#145F38` | 6.90 |
+| `--color-warn` | `#6F4400` | 7.51 |
+| `--color-danger` | `#9E1C28` | 7.09 |
+| `--color-info` | `#0F5F73` | 6.47 |
 | `--brand-maxx` | `#6B3B2A` | Maxx Coffee, 9.19 |
 | `--brand-ruuma` | `#7A2E63` | Ruuma, 8.76 |
 | `--brand-sunshine` | `#7C4A00` | Sunshine, 7.40 |
 
-Two rejections are recorded in `scripts/contrast.py` so they survive the next
-person's good idea:
+### What was changed, and why
 
-> `#8A97A3` was the obvious border grey and is **rejected**: 2.98 on white,
-> under the 3:1 floor by 0.02.
+| Guideline value | Used for | Measured | Now |
+|---|---|---:|---|
+| `#ec3013` fill, `#f3f2f2` label | **the primary button** | **3.76** | `#ae1800` fill → 6.41 |
+| `#ec3013` as text | links, ghost buttons, kickers | **3.76** | `#ae1800` → 6.41 |
+| divider at **40%** | every input border and table rule | **2.41** | 55% → 3.66 |
+| muted text at **55%** | captions, meta, kickers | **3.66** | 65% → 4.96 |
+| table `th` at **60%** | every column header | **4.23** | 65% → 4.96 |
+| sidebar text at **45%** | the line under the user's name | **4.06** | 62% → 6.46 |
 
-> **White text on `#778AAB` is rejected.** 3.50 is a *pass* as a control
-> boundary and a *fail* as text — the same number, two verdicts. A filled
-> accent chip takes `--ink` (4.95), never white.
+> **The divider is the one that matters.** At 40% it measures **2.41** against
+> a 3:1 floor — it is the visible edge of every input in the product, and it
+> fails by six times the margin that got `#8A97A3` rejected before this palette
+> existed. Nothing about it looks wrong; that is exactly why it is measured.
 
-Hues are separated so two meanings never arrive as the same colour: primary
-218°, accent 218° (the same family, deliberately), info 192°, success 148°,
-warn 36°, danger 355°, Maxx 16°, Ruuma 318°, Sunshine 36°. **Sunshine and
-`--warn` share the amber family** — a known adjacency, not an oversight: they
-never appear on the same element, and neither is ever carried by colour alone.
+> **`#ec3013` is a fill, not an ink.** 3.76 is a pass as a rule, a boundary or
+> a focus ring, and a fail as text at the 14px the buttons actually use. The
+> vivid red stays everywhere it does not have to be read: the 2px rules, the
+> active nav bar, focus rings, the chip's left border.
+
+> **Danger and the brand are both red.** Unavoidable in a red-branded product,
+> and mitigated as the rules already require — every status carries a glyph and
+> a word, never colour alone.
 
 ## 3. Typography
 
-Inter, self-hosted, variable. No display face. 15px base — this is a dense
-data application and the extra row per screen is worth more than the extra
-point of size. 13px is the floor and only for secondary text.
+**Archivo**, self-hosted from `web/public/fonts/`, never a CDN. Headings and
+buttons at weight **800**, nav and labels 600, body 400. 15px base, 1.55 line
+height. Headings h1 42 · h2 32 · h3 25 · h4 20 · h5 16 · h6 13 uppercase.
+
+**Radius is `0` everywhere** — the system's signature.
 
 **Every money and count column is `tabular-nums` and right-aligned.** A column
 of rupiah that does not line up cannot be scanned, which is the only reason
@@ -143,8 +154,9 @@ the approval inbox and the approve/reject action must work at that width.
 
 AA minimum, **calculated not eyeballed** (`scripts/contrast.py`).
 
-- Visible focus ring on everything focusable: 3px `--primary`, 2px offset.
-  Never `--hairline` — a ring nobody can see is not a ring.
+- Visible focus ring on everything focusable: **2px `--color-accent`, 2px
+  offset** — 3.76, which clears 1.4.11. This is the accent doing the job it is
+  good at.
 - Real `<label>` for every field. Errors announced, associated, and stating
   what to do.
 - Keyboard-operable date picker; the calendar is not mouse-only.
@@ -158,10 +170,9 @@ A token swap, not a second stylesheet. **None of the ratios above carries over**
 — every pairing is re-measured for dark before dark ships, and until it has
 been, dark is not claimed as supported.
 
-`#778AAB` is reserved as the dark-theme `--primary`: against a dark ground it
-has the headroom it lacks on white, so Steven's colour becomes the action
-colour there rather than the boundary. That is the plan and not a measurement —
-it enters `design.md` when `scripts/contrast.py` has the numbers.
+The **sidebar** is already a dark surface and its three inks are measured
+(14.86 / 8.29 / 6.46). That is a component on a dark ground, not a dark theme,
+and it is not a claim that dark ships.
 
 ## 8. Language
 

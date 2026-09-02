@@ -7,8 +7,8 @@ output; run this to re-earn those numbers rather than trusting them.
 
 Usage:
     scripts/contrast.py                 # check every documented pairing
-    scripts/contrast.py '#2E4C7E' '#FFFFFF'
-    scripts/contrast.py --alpha 'rgba(119,138,171,0.60)' '#FFFFFF'
+    scripts/contrast.py '#ae1800' '#f3f2f2'
+    scripts/contrast.py --alpha 'rgba(32,30,29,0.55)' '#f3f2f2'
 """
 
 from __future__ import annotations
@@ -102,90 +102,125 @@ def to_rgb(s: str, over: tuple[int, int, int] | None = None) -> tuple[int, int, 
 # the ones written in .claude/skills/impeccable/design.md, and the script
 # asserts the sheet actually contains them rather than claiming it does.
 
-CANVAS  = "#F2F5F9"   # the page — a cool tint of the accent hue
-SURFACE = "#FFFFFF"   # cards, tables, panels
-INK     = "#151B24"   # primary text
-MUTED   = "#475466"   # secondary text
-PRIMARY = "#2E4C7E"   # primary action — #778AAB darkened to the same hue (218)
-ACCENT  = "#778AAB"   # Steven's colour (D34): control boundary and chrome fill
-SUCCESS = "#146B3C"
-WARN    = "#845000"
+# --- the Modernist palette (D39) -------------------------------------------
+#
+# Steven's design guideline (artifact f896dbfe) is the identity: Archivo,
+# vivid red on warm neutrals, a near-black sidebar, zero radius. It is kept.
+#
+# What is NOT kept is any value that fails WCAG AA, because CLAUDE.md §7 makes
+# AA a hard rule and says contrast is calculated. Six of the guideline's values
+# fail. Each is retuned to the nearest passing value FROM STEVEN'S OWN RAMP, so
+# the identity survives and the numbers are honest. The failures are recorded
+# below as REJECTED entries so they are not quietly reintroduced.
+
+BG      = "#f3f2f2"   # --color-bg, the page
+SURFACE = "#eae9e9"   # --color-surface, cards and panels
+PAPER   = "#FFFFFF"   # calendar cells and data tables sit on white
+TEXT    = "#201e1d"   # --color-text, and the sidebar ground
+ACCENT  = "#ec3013"   # --color-accent — FILLS, RULES AND FOCUS RINGS ONLY
+ACCENT_INK = "#ae1800"  # accent-700 — the accent when it must carry TEXT
+ACCENT_HOVER = "#7c1405"  # accent-800 — primary button hover
+MUTED   = "rgba(32,30,29,0.65)"    # secondary text (guideline had .55/.60)
+DIVIDER = "rgba(32,30,29,0.55)"    # control boundary (guideline had .40)
+SIDE_DIM = "rgba(243,242,242,0.72)"  # sidebar secondary text
+SIDE_FAINT = "rgba(243,242,242,0.62)"  # sidebar tertiary (guideline had .45)
+
+SUCCESS = "#145F38"
+WARN    = "#6F4400"
 DANGER  = "#9E1C28"
 INFO    = "#0F5F73"
 MAXX    = "#6B3B2A"   # Maxx Coffee
 RUUMA   = "#7A2E63"   # Ruuma
 SUN     = "#7C4A00"   # Sunshine
-BORDER  = ACCENT      # the control boundary IS the accent — must clear 1.4.11's 3:1
-HAIRLINE = "#DDE3EC"  # decorative separator — carries no 3:1 duty
 
 CHECKS: list[tuple[str, str, str, dict]] = [
-    ("ink on canvas",             INK, CANVAS, {}),
-    ("ink on surface",            INK, SURFACE, {}),
-    ("muted on canvas",           MUTED, CANVAS, {}),
+    ("text on bg",                TEXT, BG, {}),
+    ("text on surface",           TEXT, SURFACE, {}),
+    ("text on paper",             TEXT, PAPER, {}),
+    ("muted on bg",               MUTED, BG, {}),
     ("muted on surface",          MUTED, SURFACE, {}),
-    ("primary text on canvas",    PRIMARY, CANVAS, {}),
-    ("primary text on surface",   PRIMARY, SURFACE, {}),
-    ("white on primary fill",     "#FFFFFF", PRIMARY, {}),
-    ("success on canvas",         SUCCESS, CANVAS, {}),
-    ("success on surface",        SUCCESS, SURFACE, {}),
-    ("warn on canvas",            WARN, CANVAS, {}),
-    ("warn on surface",           WARN, SURFACE, {}),
-    ("danger on canvas",          DANGER, CANVAS, {}),
-    ("danger on surface",         DANGER, SURFACE, {}),
-    ("info on canvas",            INFO, CANVAS, {}),
-    ("info on surface",           INFO, SURFACE, {}),
-    ("white on success fill",     "#FFFFFF", SUCCESS, {}),
-    ("white on danger fill",      "#FFFFFF", DANGER, {}),
-    ("Maxx Coffee on surface",    MAXX, SURFACE, {}),
-    ("Ruuma on surface",          RUUMA, SURFACE, {}),
-    ("Sunshine on surface",       SUN, SURFACE, {}),
-    ("white on Maxx fill",        "#FFFFFF", MAXX, {}),
-    ("white on Ruuma fill",       "#FFFFFF", RUUMA, {}),
-    ("white on Sunshine fill",    "#FFFFFF", SUN, {}),
-    ("control border on canvas",  BORDER, CANVAS, {"non_text": True}),
-    ("control border on surface", BORDER, SURFACE, {"non_text": True}),
-    ("focus ring on canvas",      PRIMARY, CANVAS, {"non_text": True}),
-    # The sanctioned way to FILL with Steven's colour: dark ink on it, never white.
-    ("ink on accent fill",        INK, ACCENT, {}),
-    # Recorded as REJECTED so they are not re-proposed.
-    # #8A97A3 reads as a perfectly reasonable grey and misses the 3:1
-    # control-boundary floor by 0.02.
-    ("#8A97A3 as a border (REJECTED)", "#8A97A3", SURFACE, {"non_text": True}),
-    # White on the accent is the mistake this palette invites: 3.50 passes as a
-    # BORDER and fails as TEXT, and the same number does both jobs.
-    ("white on accent fill (REJECTED as text)", "#FFFFFF", ACCENT, {}),
+    ("muted on paper",            MUTED, PAPER, {}),
+    ("accent ink on bg",          ACCENT_INK, BG, {}),
+    ("accent ink on surface",     ACCENT_INK, SURFACE, {}),
+    ("accent ink on paper",       ACCENT_INK, PAPER, {}),
+    ("accent ink on accent-100",  ACCENT_INK, "#fff2ef", {}),
+    ("bg on primary button",      BG, ACCENT_INK, {}),
+    ("bg on primary hover",       BG, ACCENT_HOVER, {}),
+    ("sidebar text on sidebar",   BG, TEXT, {}),
+    ("sidebar dim on sidebar",    SIDE_DIM, TEXT, {}),
+    ("sidebar faint on sidebar",  SIDE_FAINT, TEXT, {}),
+    ("success on bg",             SUCCESS, BG, {}),
+    ("success on paper",          SUCCESS, PAPER, {}),
+    ("warn on bg",                WARN, BG, {}),
+    ("warn on paper",             WARN, PAPER, {}),
+    ("danger on bg",              DANGER, BG, {}),
+    ("danger on paper",           DANGER, PAPER, {}),
+    ("info on bg",                INFO, BG, {}),
+    ("info on paper",             INFO, PAPER, {}),
+    ("bg on success fill",        BG, SUCCESS, {}),
+    ("bg on danger fill",         BG, DANGER, {}),
+    ("Maxx Coffee on paper",      MAXX, PAPER, {}),
+    ("Ruuma on paper",            RUUMA, PAPER, {}),
+    ("Sunshine on paper",         SUN, PAPER, {}),
+    # Non-text: WCAG 1.4.11's 3:1 boundary.
+    ("divider on bg",             DIVIDER, BG, {"non_text": True}),
+    ("divider on surface",        DIVIDER, SURFACE, {"non_text": True}),
+    ("divider on paper",          DIVIDER, PAPER, {"non_text": True}),
+    ("accent rule/ring on bg",    ACCENT, BG, {"non_text": True}),
+    ("accent rule/ring on paper", ACCENT, PAPER, {"non_text": True}),
+    # --- REJECTED: the guideline's own values, kept so they are not restored ---
+    # The primary button is the most-used control in the product and its label
+    # is 14px — too small to qualify as large text, so 3:1 does not apply.
+    ("guideline btn-primary #ec3013 (REJECTED as text)", BG, ACCENT, {}),
+    ("guideline accent as link text (REJECTED)", ACCENT, BG, {}),
+    # A 40% divider is the input border, the table rule and the nav edge. Same
+    # failure as the #8A97A3 border rejected before this palette existed.
+    ("guideline divider 40% (REJECTED)", "rgba(32,30,29,0.40)", BG, {"non_text": True}),
+    ("guideline muted 55% (REJECTED)", "rgba(32,30,29,0.55)", BG, {}),
+    ("guideline table th 60% (REJECTED)", "rgba(32,30,29,0.60)", BG, {}),
+    ("guideline sidebar 45% (REJECTED)", "rgba(243,242,242,0.45)", TEXT, {}),
 ]
 
 RECORDED = {
-    "ink on canvas": 15.82,
-    "ink on surface": 17.30,
-    "muted on canvas": 7.04,
-    "muted on surface": 7.70,
-    "primary text on canvas": 7.83,
-    "primary text on surface": 8.57,
-    "white on primary fill": 8.57,
-    "success on canvas": 6.00,
-    "success on surface": 6.57,
-    "warn on canvas": 6.14,
-    "warn on surface": 6.71,
-    "danger on canvas": 7.25,
-    "danger on surface": 7.92,
-    "info on canvas": 6.61,
-    "info on surface": 7.23,
-    "white on success fill": 6.57,
-    "white on danger fill": 7.92,
-    "Maxx Coffee on surface": 9.19,
-    "Ruuma on surface": 8.76,
-    "Sunshine on surface": 7.40,
-    "white on Maxx fill": 9.19,
-    "white on Ruuma fill": 8.76,
-    "white on Sunshine fill": 7.40,
-    "control border on canvas": 3.20,
-    "control border on surface": 3.50,
-    "focus ring on canvas": 7.83,
-    "ink on accent fill": 4.95,
-    "#8A97A3 as a border (REJECTED)": 2.98,
-    "white on accent fill (REJECTED as text)": 3.50,
+    "text on bg": 14.86,
+    "text on surface": 13.70,
+    "text on paper": 16.60,
+    "muted on bg": 4.96,
+    "muted on surface": 4.78,
+    "muted on paper": 5.16,
+    "accent ink on bg": 6.41,
+    "accent ink on surface": 5.91,
+    "accent ink on paper": 7.17,
+    "accent ink on accent-100": 6.55,
+    "bg on primary button": 6.41,
+    "bg on primary hover": 9.59,
+    "sidebar text on sidebar": 14.86,
+    "sidebar dim on sidebar": 8.29,
+    "sidebar faint on sidebar": 6.46,
+    "success on bg": 6.90,
+    "success on paper": 7.71,
+    "warn on bg": 7.51,
+    "warn on paper": 8.39,
+    "danger on bg": 7.09,
+    "danger on paper": 7.92,
+    "info on bg": 6.47,
+    "info on paper": 7.23,
+    "bg on success fill": 6.90,
+    "bg on danger fill": 7.09,
+    "Maxx Coffee on paper": 9.19,
+    "Ruuma on paper": 8.76,
+    "Sunshine on paper": 7.40,
+    "divider on bg": 3.66,
+    "divider on surface": 3.57,
+    "divider on paper": 3.78,
+    "accent rule/ring on bg": 3.76,
+    "accent rule/ring on paper": 4.20,
+    "guideline btn-primary #ec3013 (REJECTED as text)": 3.76,
+    "guideline accent as link text (REJECTED)": 3.76,
+    "guideline divider 40% (REJECTED)": 2.41,
+    "guideline muted 55% (REJECTED)": 3.66,
+    "guideline table th 60% (REJECTED)": 4.23,
+    "guideline sidebar 45% (REJECTED)": 4.06,
 }
 
 

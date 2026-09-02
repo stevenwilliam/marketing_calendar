@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="dff2203e-c327-4c39-95f7-44aae24925cb"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* Modernist — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
+/* vietnamese */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fd5a551b-b343-47c4-9524-94ff478e4bdb") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("97beaaef-5075-494c-9104-ad3bc5b573dc") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("bcc121d9-dc57-4c20-be37-f8ef42a98a7a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fd5a551b-b343-47c4-9524-94ff478e4bdb") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("97beaaef-5075-494c-9104-ad3bc5b573dc") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("bcc121d9-dc57-4c20-be37-f8ef42a98a7a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("fd5a551b-b343-47c4-9524-94ff478e4bdb") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("97beaaef-5075-494c-9104-ad3bc5b573dc") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("bcc121d9-dc57-4c20-be37-f8ef42a98a7a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-accent-2: #e15b47;
+  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+
+  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
+     same step of any role matches the others in visual value. */
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+
+  --color-accent-2-100: #fff2ef;
+  --color-accent-2-200: #ffe0da;
+  --color-accent-2-300: #ffc4b9;
+  --color-accent-2-400: #ff9784;
+  --color-accent-2-500: #ef6853;
+  --color-accent-2-600: #c94b39;
+  --color-accent-2-700: #9e3526;
+  --color-accent-2-800: #71261b;
+  --color-accent-2-900: #471d16;
+
+  --font-heading: "Archivo", system-ui, sans-serif;
+  --font-heading-weight: 800;
+  --font-body: "Archivo", system-ui, sans-serif;
+
+  --space-1: 4.0px;
+  --space-2: 8.0px;
+  --space-3: 12.0px;
+  --space-4: 16.0px;
+  --space-6: 24.0px;
+  --space-8: 32.0px;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  /* Elevation — derived from the ground: soft ink-tinted shadows on a
+     light theme, a hairline edge + ambient darkness on a dark one. */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+
+.grayscale{filter:grayscale(1) contrast(1.08)}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Components — built with the tokens above. Plain CSS
+   on plain HTML: no JavaScript, no build step. Each class is documented in
+   readme.md and demonstrated in foundations/ and components/.
+   ══════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 400; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; }
+h6 { letter-spacing: 0.08em; text-transform: uppercase; }
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+figure { margin: 0; }
+figcaption {
+  font-size: 11px; margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.text-muted { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — rules — */
+.hr {
+  height: 2px; border: 0; margin: var(--space-4) 0;
+  background: var(--color-divider);
+}
+
+/* — buttons — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text); /* matches the .input's 14px —
+     the pair sits side by side in sign-up rows */
+  background: transparent; border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--color-accent); color: var(--color-bg); }
+.btn-primary:hover { background: var(--color-accent-600); }
+.btn-primary:active { background: var(--color-accent-700); }
+.btn-secondary { border-color: var(--color-divider); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+.btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-block { width: 100%; margin-top: var(--space-2); justify-content: flex-start; text-align: left; }
+
+/* — forms — */
+.field > label {
+  display: block; font-size: 12px; margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+textarea.input { min-height: 90px; resize: vertical; }
+.radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.radio input, .seg-opt input {
+  position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+.radio .dot {
+  width: 16px; height: 16px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--color-divider);
+}
+.radio:hover .dot { border-color: var(--color-accent); }
+.radio input:checked + .dot {
+  border-color: var(--color-accent); background: var(--color-accent);
+  box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.seg {
+  display: inline-flex; overflow: hidden;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.seg-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; cursor: pointer;
+}
+.seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+.seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+.seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+/* — cards — */
+.card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface);
+}
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.card-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 17px; line-height: 1.2;
+}
+.card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.card-meta {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+.elev-sm { box-shadow: var(--shadow-sm); }
+.elev-md { box-shadow: var(--shadow-md); }
+.elev-lg { box-shadow: var(--shadow-lg); }
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; font-size: 11px;
+  letter-spacing: 0.02em; padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+.tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+.tag-accent-2 { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+.tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+/* — navigation — */
+.nav {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 2px solid var(--color-divider);
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 18px; margin-right: auto;
+}
+.nav a { color: inherit; text-decoration: none; font-size: 14px; }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* — tables — */
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2); border-bottom: 2px solid var(--color-divider);
+}
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+.table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+
+/* — dialog — */
+.dialog-backdrop {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.dialog {
+  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-surface); box-shadow: var(--shadow-lg);
+}
+.dialog-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 20px;
+}
+.dialog-body { font-size: 14px; opacity: 0.85; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+
+</style>
+<script src="148c6f5e-72fe-4a27-8969-a3b55706b39c"></script>
+<style>
+body{margin:0;background:var(--color-bg)}
+.mc-shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh;min-width:1360px}
+.mc-title{font:800 28px/1.1 "Archivo",sans-serif;letter-spacing:-.02em;white-space:nowrap}
+.mc-side{background:#201e1d;color:#f3f2f2;padding:20px 0;display:flex;flex-direction:column}
+.mc-navitem{display:flex;align-items:center;gap:10px;padding:9px 20px;font:600 13px/1.2 "Archivo",sans-serif;color:rgba(243,242,242,.72);cursor:pointer;border-left:3px solid transparent;background:none;border-top:0;border-right:0;border-bottom:0;width:100%;text-align:left}
+.mc-navitem:hover{color:#fff;background:rgba(255,255,255,.06)}
+.mc-navitem[data-on="1"]{color:#fff;border-left-color:var(--color-accent);background:rgba(236,48,19,.14)}
+.mc-num{font-variant-numeric:tabular-nums;text-align:right}
+.mc-kick{font:600 10px/1 "Archivo",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(32,30,29,.55)}
+.mc-cell{border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);min-height:118px;padding:6px 7px;background:#fff}
+.mc-chip{display:block;font:600 10.5px/1.35 "Archivo",sans-serif;padding:3px 6px;margin-bottom:3px;background:var(--color-neutral-200);border-left:3px solid #201e1d;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+</style>
+</helmet>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:grid;grid-template-columns:1fr 1fr;font-family:'Archivo',sans-serif">
+  <div style="background:#201e1d;color:#f3f2f2;padding:56px 48px;display:flex;flex-direction:column;justify-content:space-between">
+    <div style="font:800 20px/1 'Archivo',sans-serif;letter-spacing:-.01em">MARKETING<br>CALENDAR</div>
+    <div>
+      <div style="height:2px;background:var(--color-accent);width:72px;margin-bottom:24px"></div>
+      <div style="font:800 40px/1.05 'Archivo',sans-serif;letter-spacing:-.02em;max-width:12em">Satu tempat untuk merencanakan, menyetujui dan mengukur promo.</div>
+      <div style="display:flex;gap:28px;margin-top:32px;font-size:12px;color:rgba(243,242,242,.6)">
+        <span>Maxx Coffee</span><span>Ruuma</span><span>Sunshine</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(243,242,242,.45)">Jaringan internal · TLS · daftar izin IP</div>
+  </div>
+  <div style="padding:56px 64px;display:flex;flex-direction:column;justify-content:center;max-width:520px">
+    <div class="mc-kick">Langkah 2 dari 2</div>
+    <h3 style="margin:6px 0 4px">Kode autentikasi</h3>
+    <p style="font-size:13px;color:rgba(32,30,29,.65);margin-bottom:20px">Masukkan enam angka dari aplikasi autentikator Anda. TOTP wajib untuk semua akun staf.</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input class="input" value="4" style="width:52px;height:60px;text-align:center;font:800 24px/1 'Archivo',sans-serif;background:#fff">
+      <input class="input" value="1" style="width:52px;height:60px;text-align:center;font:800 24px/1 'Archivo',sans-serif;background:#fff">
+      <input class="input" value="9" style="width:52px;height:60px;text-align:center;font:800 24px/1 'Archivo',sans-serif;background:#fff">
+      <input class="input" value="0" style="width:52px;height:60px;text-align:center;font:800 24px/1 'Archivo',sans-serif;background:#fff">
+      <input class="input" value="" style="width:52px;height:60px;text-align:center;font:800 24px/1 'Archivo',sans-serif;background:#fff;border-color:var(--color-accent)">
+      <input class="input" value="" style="width:52px;height:60px;text-align:center;font:800 24px/1 'Archivo',sans-serif;background:#fff">
+    </div>
+    <div style="font-size:12px;color:rgba(32,30,29,.6);margin-bottom:24px">Masuk sebagai <strong>rina.hartono@maxx.co.id</strong> · Marketing Staff · Maxx Coffee</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" sc-camel-on-click="{{ goCal }}" style="padding:11px 20px">Verifikasi dan masuk</button>
+      <button class="btn btn-secondary" style="padding:11px 20px">Gunakan kode pemulihan</button>
+    </div>
+    <hr class="hr">
+    <div style="font-size:12px;color:rgba(32,30,29,.55)">Kode berlaku 30 detik. Tiga kali gagal mengunci akun selama 15 menit dan menulis baris audit.</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ inApp }}" hint-placeholder-val="{{ true }}">
+<div class="mc-shell" style="min-width:1360px">
+  <div class="mc-side">
+    <div style="padding:0 20px 18px;font:800 15px/1.15 'Archivo',sans-serif;letter-spacing:-.01em">MARKETING<br>CALENDAR</div>
+    <div style="height:2px;background:rgba(255,255,255,.14);margin-bottom:14px"></div>
+    <sc-for list="{{ nav }}" as="item" hint-placeholder-count="9">
+      <button class="mc-navitem" data-on="{{ item.on }}" sc-camel-on-click="{{ item.go }}">{{ item.label }}</button>
+    </sc-for>
+    <div style="margin-top:auto;padding:16px 20px 0;border-top:2px solid rgba(255,255,255,.14)">
+      <div style="font:600 12px/1.3 'Archivo',sans-serif">Rina Hartono</div>
+      <div style="font-size:11px;color:rgba(243,242,242,.55)">Marketing Staff · Maxx Coffee</div>
+      <button class="mc-navitem" sc-camel-on-click="{{ goLogin }}" style="padding-left:0;margin-top:8px">Keluar</button>
+    </div>
+  </div>
+
+  <div style="min-width:0;font-family:'Archivo',sans-serif">
+    <div style="display:flex;align-items:flex-end;gap:20px;padding:22px 28px 14px;border-bottom:2px solid var(--color-divider);background:var(--color-bg)">
+      <div style="margin-right:auto">
+        <div class="mc-kick" style="white-space:nowrap">{{ crumb }}</div>
+        <div class="mc-title">{{ title }}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="input" placeholder="Cari…" style="width:220px;background:#fff">
+        <button class="btn btn-secondary">Ekspor CSV</button>
+        <button class="btn btn-primary" sc-camel-on-click="{{ goCreate }}">Buat promo</button>
+      </div>
+    </div>
+
+    <div style="padding:24px 28px 56px">
+
+      <sc-if value="{{ isCal }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="btn btn-secondary btn-icon">‹</button>
+            <div style="font:800 18px/1 'Archivo',sans-serif;min-width:170px">September 2026</div>
+            <button class="btn btn-secondary btn-icon">›</button>
+          </div>
+          <div class="seg">
+            <label class="seg-opt"><input type="radio" name="brand" checked="">Semua brand</label>
+            <label class="seg-opt"><input type="radio" name="brand">Maxx</label>
+            <label class="seg-opt"><input type="radio" name="brand">Ruuma</label>
+            <label class="seg-opt"><input type="radio" name="brand">Sunshine</label>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:16px;font-size:12px;color:rgba(32,30,29,.65)">
+            <span>Dirilis <strong>3</strong></span><span>Menunggu <strong>1</strong></span><span>Draf <strong>1</strong></span>
+            <span style="color:var(--color-accent-700)">Tumpang tindih <strong>8 hari</strong></span>
+          </div>
+        </div>
+        <div style="border-top:2px solid var(--color-divider);border-left:1px solid var(--color-divider);background:#fff">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr)">
+            <sc-for list="{{ dows }}" as="d" hint-placeholder-count="7">
+              <div style="padding:7px 8px;font:600 10px/1 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:rgba(32,30,29,.55);border-right:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider)">{{ d }}</div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr)">
+            <sc-for list="{{ days }}" as="day" hint-placeholder-count="35">
+              <div class="mc-cell" style="{{ day.cellStyle }}">
+                <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:5px">
+                  <span style="font:800 13px/1 'Archivo',sans-serif;font-variant-numeric:tabular-nums">{{ day.num }}</span>
+                  <span style="font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-accent-700)">{{ day.note }}</span>
+                </div>
+                <sc-for list="{{ day.chips }}" as="c" hint-placeholder-count="1">
+                  <span class="mc-chip" style="{{ c.style }}" sc-camel-on-click="{{ goDetail }}">{{ c.text }}</span>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;gap:22px;margin-top:14px;font-size:11.5px;color:rgba(32,30,29,.65);flex-wrap:wrap">
+          <span><span style="display:inline-block;width:12px;height:3px;background:#201e1d;vertical-align:middle;margin-right:6px"></span>MX Maxx Coffee</span>
+          <span><span style="display:inline-block;width:12px;height:3px;background:var(--color-neutral-600);vertical-align:middle;margin-right:6px"></span>RM Ruuma</span>
+          <span><span style="display:inline-block;width:12px;height:3px;background:var(--color-accent);vertical-align:middle;margin-right:6px"></span>SS Sunshine</span>
+          <span>Sel kuning = hari libur nasional · label ⚠ = dua promo aktif pada grup gerai yang sama</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:28px;align-items:start">
+          <div style="background:#fff;padding:22px 24px">
+            <div class="mc-kick">Rencana promo · draf baru</div>
+            <h4 style="margin:6px 0 18px">Detail promo</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div class="field" style="grid-column:1/-1"><label>Nama promo</label><input class="input" value="BOGO Latte Hari Kerja" style="background:#fff"></div>
+              <div class="field"><label>Brand</label><input class="input" value="Maxx Coffee" style="background:#fff"></div>
+              <div class="field"><label>Grup gerai (satu brand saja)</label><input class="input" value="Maxx Jakarta Selatan — 18 gerai" style="background:#fff"></div>
+              <div class="field"><label>Target penjualan (Rp)</label><input class="input mc-num" value="1.850.000.000" style="background:#fff"></div>
+              <div class="field"><label>Target struk</label><input class="input mc-num" value="42.000" style="background:#fff"></div>
+              <div class="field" style="grid-column:1/-1">
+                <label>Mode pesanan</label>
+                <div class="seg"><label class="seg-opt"><input type="radio" name="om" checked="">Semua</label><label class="seg-opt"><input type="radio" name="om">Dine-in</label><label class="seg-opt"><input type="radio" name="om">Take away</label><label class="seg-opt"><input type="radio" name="om">Pengantaran</label></div>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Aturan promo (teks bebas)</label><textarea class="input" style="background:#fff">Beli satu Latte ukuran reguler, gratis satu Latte reguler. Senin–Jumat, 14.00–17.00 WIB. Tidak dapat digabung dengan voucher lain.</textarea></div>
+            </div>
+            <hr class="hr">
+            <h4 style="margin:0 0 4px">Periode</h4>
+            <p style="font-size:12.5px;color:rgba(32,30,29,.65)">Mulai paling cepat <strong>{{ earliest }}</strong> — {{ leadDays }} hari kerja dari hari ini, dihitung terhadap kalender libur nasional.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:12px">
+              <sc-for list="{{ pickerMonths }}" as="m" hint-placeholder-count="2">
+                <div>
+                  <div style="font:600 12px/1 'Archivo',sans-serif;margin-bottom:8px">{{ m.label }}</div>
+                  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">
+                    <sc-for list="{{ m.cells }}" as="c" hint-placeholder-count="35">
+                      <div style="{{ c.style }}">{{ c.n }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:18px;margin-top:14px;font-size:11.5px;color:rgba(32,30,29,.6);flex-wrap:wrap">
+              <span>Abu pucat = di dalam masa tenggang, tidak dapat dipilih</span><span>Garis merah = hari libur nasional</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#fff;border-left:3px solid var(--color-accent);padding:16px 18px">
+              <div style="font:800 13px/1.2 'Archivo',sans-serif;color:var(--color-accent-700);margin-bottom:6px">⚠ Tumpang tindih terdeteksi</div>
+              <div style="font-size:12.5px;line-height:1.5">Grup <strong>Maxx Jakarta Selatan</strong> sudah menjalankan <strong>Kopi Susu Rp18.000</strong> pada 1–14 Sep. Delapan hari bertumpang tindih. Promo ini tetap dapat dikirim; kalender akan menandainya.</div>
+            </div>
+            <div style="background:#fff;padding:16px 18px">
+              <div class="mc-kick">Rantai persetujuan v4</div>
+              <div style="margin-top:10px;display:flex;flex-direction:column;gap:0">
+                <sc-for list="{{ chainPreview }}" as="s" hint-placeholder-count="5">
+                  <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--color-divider);font-size:12.5px">
+                    <span style="font-variant-numeric:tabular-nums;font-weight:600;width:14px">{{ s.n }}</span>
+                    <span style="flex:1">{{ s.role }}</span>
+                    <span style="color:rgba(32,30,29,.55)">{{ s.who }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11.5px;color:rgba(32,30,29,.6);margin-top:10px">Lima langkah terhadap masa tenggang {{ leadDays }} hari kerja. Persetujuan yang belum lengkap pada H-{{ cancelDays }} dibatalkan otomatis.</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-primary btn-block" style="justify-content:flex-start;padding:12px 16px">Kirim untuk persetujuan</button>
+              <button class="btn btn-secondary btn-block" style="justify-content:flex-start;padding:12px 16px">Simpan sebagai draf</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:0;background:#fff">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:2px solid var(--color-divider)">
+            <div class="seg"><label class="seg-opt"><input type="radio" name="q" checked="">Menunggu saya (4)</label><label class="seg-opt"><input type="radio" name="q">Semua yang berjalan (11)</label><label class="seg-opt"><input type="radio" name="q">Sudah saya putuskan</label></div>
+            <div style="margin-left:auto;font-size:12px;color:rgba(32,30,29,.6)">Diurutkan menurut hari tersisa sebelum pembatalan otomatis</div>
+          </div>
+          <sc-for list="{{ inbox }}" as="p" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:44px minmax(0,1fr) 190px 150px 160px;gap:16px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--color-divider)">
+              <div style="font:800 11px/1.1 'Archivo',sans-serif;text-align:center;padding:6px 0;background:var(--color-neutral-200);border-left:3px solid #201e1d">{{ p.code }}</div>
+              <div style="min-width:0">
+                <div style="font:800 16px/1.2 'Archivo',sans-serif" sc-camel-on-click="{{ goDetail }}">{{ p.name }}</div>
+                <div style="font-size:12px;color:rgba(32,30,29,.6);margin-top:3px">{{ p.meta }}</div>
+              </div>
+              <div>
+                <div class="mc-kick">Target</div>
+                <div class="mc-num" style="font:600 14px/1.3 'Archivo',sans-serif;text-align:left">{{ p.target }}</div>
+                <div style="font-size:11.5px;color:rgba(32,30,29,.6);font-variant-numeric:tabular-nums">{{ p.receipts }} struk</div>
+              </div>
+              <div>
+                <div class="mc-kick">Langkah</div>
+                <div style="font-size:13px">{{ p.step }}</div>
+                <div style="font-size:11.5px;color:{{ p.urgencyColor }}">{{ p.left }}</div>
+              </div>
+              <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn btn-primary" sc-camel-on-click="{{ goDetail }}">Setujui</button>
+                <button class="btn btn-secondary">Tolak</button>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:14px 18px;font-size:12px;color:rgba(32,30,29,.6)">Menolak meminta alasan wajib dan mengembalikan rencana ke pembuatnya dengan riwayat utuh.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start">
+          <div>
+            <div style="background:#fff;padding:22px 24px;border-left:3px solid #201e1d">
+              <div style="display:flex;align-items:flex-start;gap:16px">
+                <div style="flex:1">
+                  <div class="mc-kick">P-2026-0147 · Ruuma · versi 2</div>
+                  <div style="font:800 26px/1.1 'Archivo',sans-serif;letter-spacing:-.02em;margin:4px 0 8px">Paket Berdua Akhir Pekan</div>
+                  <div style="font-size:13px;color:rgba(32,30,29,.7)">12 – 27 Sep 2026 · Ruuma Mall Group, 7 gerai · Dine-in</div>
+                </div>
+                <span class="tag tag-accent" style="font-weight:600">◷ Menunggu persetujuan</span>
+              </div>
+              <hr class="hr">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+                <div><div class="mc-kick">Target penjualan</div><div class="mc-num" style="font:800 19px/1.2 'Archivo',sans-serif;text-align:left">Rp 940.000.000</div></div>
+                <div><div class="mc-kick">Target struk</div><div class="mc-num" style="font:800 19px/1.2 'Archivo',sans-serif;text-align:left">18.500</div></div>
+                <div><div class="mc-kick">Mode pesanan</div><div style="font:800 19px/1.2 'Archivo',sans-serif">Dine-in</div></div>
+                <div><div class="mc-kick">Masa tenggang</div><div style="font:800 19px/1.2 'Archivo',sans-serif">Terpenuhi</div></div>
+              </div>
+              <hr class="hr">
+              <div class="mc-kick">Aturan promo</div>
+              <p style="font-size:13.5px;margin-top:6px">Dua menu utama pilihan ditambah dua minuman seharga Rp 189.000. Berlaku Jumat sampai Minggu, seluruh jam operasional. Maksimal dua paket per meja.</p>
+              <div style="background:var(--color-neutral-100);padding:12px 14px;font-size:12.5px;border-left:3px solid var(--color-accent)">Versi 1 disetujui pada 28 Agu lalu disunting. Penyuntingan membuat versi baru dan mengulang rantai dari langkah pertama. Versi 1 tetap tersimpan.</div>
+            </div>
+            <div style="background:#fff;padding:22px 24px;margin-top:16px">
+              <h4 style="margin:0 0 4px">Perbandingan promo serupa</h4>
+              <p style="font-size:12.5px;color:rgba(32,30,29,.6)">Ruuma Mall Group, dua promo paket terakhir.</p>
+              <sc-raw-table class="table">
+                <sc-raw-thead><sc-raw-tr><sc-raw-th>Promo</sc-raw-th><sc-raw-th>Periode</sc-raw-th><sc-raw-th style="text-align:right">Target</sc-raw-th><sc-raw-th style="text-align:right">Aktual</sc-raw-th><sc-raw-th style="text-align:right">Selisih</sc-raw-th></sc-raw-tr></sc-raw-thead>
+                <sc-raw-tbody>
+                  <sc-for list="{{ comparables }}" as="r" hint-placeholder-count="2">
+                    <sc-raw-tr><sc-raw-td>{{ r.name }}</sc-raw-td><sc-raw-td style="color:rgba(32,30,29,.6)">{{ r.period }}</sc-raw-td><sc-raw-td class="mc-num">{{ r.target }}</sc-raw-td><sc-raw-td class="mc-num">{{ r.actual }}</sc-raw-td><sc-raw-td class="mc-num" style="color:{{ r.vColor }};font-weight:600">{{ r.variance }}</sc-raw-td></sc-raw-tr>
+                  </sc-for>
+                </sc-raw-tbody>
+              </sc-raw-table>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#fff;padding:18px 20px">
+              <div class="mc-kick">Riwayat persetujuan</div>
+              <div style="margin-top:12px">
+                <sc-for list="{{ timeline }}" as="s" hint-placeholder-count="5">
+                  <div style="display:grid;grid-template-columns:22px 1fr;gap:12px;padding-bottom:16px">
+                    <div style="display:flex;flex-direction:column;align-items:center">
+                      <div style="width:20px;height:20px;display:grid;place-items:center;font:800 11px/1 'Archivo',sans-serif;background:{{ s.dotBg }};color:{{ s.dotFg }};border:1.5px solid {{ s.dotBorder }}">{{ s.glyph }}</div>
+                      <div style="flex:1;width:2px;background:var(--color-divider);margin-top:4px;min-height:14px"></div>
+                    </div>
+                    <div>
+                      <div style="font:800 13.5px/1.25 'Archivo',sans-serif">{{ s.step }}</div>
+                      <div style="font-size:12px;color:rgba(32,30,29,.6);margin-top:2px">{{ s.who }}</div>
+                      <div style="font-size:12.5px;margin-top:4px">{{ s.note }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background:#fff;padding:18px 20px">
+              <div class="mc-kick">Keputusan Anda · Business Analyst</div>
+              <div class="field" style="margin-top:12px"><label>Catatan (wajib bila menolak)</label><textarea class="input" placeholder="Alasan keputusan…" style="background:#fff;min-height:76px"></textarea></div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+                <button class="btn btn-primary btn-block" style="padding:12px 16px">Setujui langkah 2</button>
+                <button class="btn btn-secondary btn-block" style="padding:12px 16px">Tolak dan kembalikan ke pembuat</button>
+              </div>
+              <div style="font-size:11.5px;color:rgba(32,30,29,.6);margin-top:10px">Batal otomatis pada 7 Sep 2026 bila rantai belum lengkap. Superadmin dapat merilis paksa dengan alasan tertulis; keduanya tercatat di audit.</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTarget }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:14px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+          <div class="seg"><label class="seg-opt"><input type="radio" name="ty" checked="">2026</label><label class="seg-opt"><input type="radio" name="ty">2027</label></div>
+          <input class="input" value="Maxx Coffee — Maxx Jakarta Selatan" style="width:300px;background:#fff">
+          <div class="seg"><label class="seg-opt"><input type="radio" name="st" checked="">Semua tipe</label><label class="seg-opt"><input type="radio" name="st">Dine-in</label><label class="seg-opt"><input type="radio" name="st">Take away</label></div>
+        </div>
+        <div style="display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start">
+          <div style="background:#fff;padding:20px;border-left:3px solid #201e1d">
+            <div class="mc-kick">Target tahun 2026</div>
+            <div class="mc-num" style="font:800 30px/1.1 'Archivo',sans-serif;text-align:left;margin:6px 0 2px">Rp 24.000.000.000</div>
+            <div style="font-size:12px;color:rgba(32,30,29,.6)">Ditetapkan Finance Head · 14 Jan 2026</div>
+            <hr class="hr">
+            <div class="mc-kick">Jumlah dua belas bulan</div>
+            <div class="mc-num" style="font:800 22px/1.1 'Archivo',sans-serif;text-align:left;margin:4px 0 2px">Rp 23.410.000.000</div>
+            <div style="margin-top:10px;padding:10px 12px;background:var(--color-accent-100);border-left:3px solid var(--color-accent);font-size:12.5px;line-height:1.5">
+              <strong style="color:var(--color-accent-700)">Selisih −Rp 590.000.000 (−2,5%)</strong><br>Ini informasi, bukan kesalahan. Dua belas bulan tidak harus menjumlah ke target tahun.
+            </div>
+            <button class="btn btn-primary btn-block" style="padding:11px 16px;margin-top:14px">Simpan target</button>
+          </div>
+          <div style="background:#fff;overflow-x:auto">
+            <sc-raw-table class="table" style="min-width:760px">
+              <sc-raw-thead><sc-raw-tr><sc-raw-th>Bulan</sc-raw-th><sc-raw-th style="text-align:right">Target</sc-raw-th><sc-raw-th style="text-align:right">Aktual</sc-raw-th><sc-raw-th style="text-align:right">Selisih</sc-raw-th><sc-raw-th style="text-align:right">%</sc-raw-th><sc-raw-th>Status</sc-raw-th></sc-raw-tr></sc-raw-thead>
+              <sc-raw-tbody>
+                <sc-for list="{{ months }}" as="m" hint-placeholder-count="12">
+                  <sc-raw-tr>
+                    <sc-raw-td style="font-weight:600">{{ m.name }}</sc-raw-td>
+                    <sc-raw-td class="mc-num"><input class="input mc-num" value="{{ m.target }}" style="background:#fff;width:150px;height:30px;font-size:13px"></sc-raw-td>
+                    <sc-raw-td class="mc-num">{{ m.actual }}</sc-raw-td>
+                    <sc-raw-td class="mc-num" style="color:{{ m.vColor }};font-weight:600">{{ m.delta }}</sc-raw-td>
+                    <sc-raw-td class="mc-num" style="color:{{ m.vColor }}">{{ m.pct }}</sc-raw-td>
+                    <sc-raw-td><span style="font-size:11.5px;color:rgba(32,30,29,.65)">{{ m.note }}</span></sc-raw-td>
+                  </sc-raw-tr>
+                </sc-for>
+              </sc-raw-tbody>
+            </sc-raw-table>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+          <input class="input" value="Sep 2026" style="width:130px;background:#fff">
+          <input class="input" value="Semua brand" style="width:170px;background:#fff">
+          <input class="input" value="Semua mode pesanan" style="width:200px;background:#fff">
+          <div style="margin-left:auto;font-size:12px;color:rgba(32,30,29,.6)">Setiap ekspor menulis baris audit dengan jumlah baris dan filter.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:20px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:#fff;padding:16px 18px;border-top:2px solid #201e1d">
+              <div class="mc-kick">{{ k.label }}</div>
+              <div class="mc-num" style="font:800 24px/1.15 'Archivo',sans-serif;text-align:left;margin-top:4px">{{ k.value }}</div>
+              <div style="font-size:12px;color:{{ k.color }};margin-top:2px">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:#fff;overflow-x:auto">
+          <sc-raw-table class="table" style="min-width:1000px">
+            <sc-raw-thead><sc-raw-tr><sc-raw-th>Promo</sc-raw-th><sc-raw-th>Brand · grup gerai</sc-raw-th><sc-raw-th>Periode</sc-raw-th><sc-raw-th style="text-align:right">Target</sc-raw-th><sc-raw-th style="text-align:right">Aktual</sc-raw-th><sc-raw-th style="text-align:right">Capaian</sc-raw-th><sc-raw-th style="text-align:right">Struk</sc-raw-th><sc-raw-th>Status</sc-raw-th></sc-raw-tr></sc-raw-thead>
+            <sc-raw-tbody>
+              <sc-for list="{{ report }}" as="r" hint-placeholder-count="6">
+                <sc-raw-tr>
+                  <sc-raw-td style="border-left:3px solid {{ r.brandColor }};font-weight:600">{{ r.name }}<div style="font-size:11px;color:rgba(32,30,29,.55);font-weight:400">{{ r.code }}</div></sc-raw-td>
+                  <sc-raw-td style="font-size:13px">{{ r.group }}</sc-raw-td>
+                  <sc-raw-td style="font-size:13px;color:rgba(32,30,29,.65)">{{ r.period }}</sc-raw-td>
+                  <sc-raw-td class="mc-num">{{ r.target }}</sc-raw-td>
+                  <sc-raw-td class="mc-num">{{ r.actual }}</sc-raw-td>
+                  <sc-raw-td class="mc-num" style="color:{{ r.vColor }};font-weight:600">{{ r.pct }}</sc-raw-td>
+                  <sc-raw-td class="mc-num">{{ r.receipts }}</sc-raw-td>
+                  <sc-raw-td><span class="tag {{ r.tagClass }}" style="font-weight:600">{{ r.status }}</span></sc-raw-td>
+                </sc-raw-tr>
+              </sc-for>
+            </sc-raw-tbody>
+          </sc-raw-table>
+          <div style="display:flex;gap:20px;padding:14px 16px;border-top:2px solid var(--color-divider);font-size:12px;color:rgba(32,30,29,.65)">
+            <span>Laporan menampilkan <strong>pendapatan, bukan marjin</strong> — tidak ada bidang anggaran pada fase 1 (D29).</span>
+            <span style="margin-left:auto">6 dari 6 baris · terakhir diimpor 2 Sep 2026 03:12 WIB</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isImport }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px;align-items:start">
+          <div style="background:#fff">
+            <div style="padding:16px 18px;border-bottom:2px solid var(--color-divider);display:flex;align-items:center;gap:12px">
+              <div style="font:800 16px/1.2 'Archivo',sans-serif">Riwayat impor</div>
+              <div style="margin-left:auto;display:flex;gap:8px"><button class="btn btn-secondary">Unggah berkas</button><button class="btn btn-secondary">Jalankan ulang</button></div>
+            </div>
+            <sc-raw-table class="table">
+              <sc-raw-thead><sc-raw-tr><sc-raw-th>Berkas</sc-raw-th><sc-raw-th>Dijalankan</sc-raw-th><sc-raw-th style="text-align:right">Baris</sc-raw-th><sc-raw-th style="text-align:right">Diterima</sc-raw-th><sc-raw-th style="text-align:right">Ditolak</sc-raw-th><sc-raw-th>Hasil</sc-raw-th></sc-raw-tr></sc-raw-thead>
+              <sc-raw-tbody>
+                <sc-for list="{{ imports }}" as="i" hint-placeholder-count="4">
+                  <sc-raw-tr>
+                    <sc-raw-td style="font-size:13px;font-weight:600">{{ i.file }}<div style="font-size:11px;color:rgba(32,30,29,.55);font-weight:400">checksum {{ i.sum }}</div></sc-raw-td>
+                    <sc-raw-td style="font-size:13px;color:rgba(32,30,29,.65)">{{ i.at }}</sc-raw-td>
+                    <sc-raw-td class="mc-num">{{ i.rows }}</sc-raw-td>
+                    <sc-raw-td class="mc-num">{{ i.ok }}</sc-raw-td>
+                    <sc-raw-td class="mc-num" style="color:{{ i.rejColor }};font-weight:600">{{ i.rej }}</sc-raw-td>
+                    <sc-raw-td><span class="tag {{ i.tagClass }}" style="font-weight:600">{{ i.result }}</span></sc-raw-td>
+                  </sc-raw-tr>
+                </sc-for>
+              </sc-raw-tbody>
+            </sc-raw-table>
+            <div style="padding:16px 18px;border-top:2px solid var(--color-divider)">
+              <div style="font:800 15px/1.2 'Archivo',sans-serif;margin-bottom:2px">Baris ditolak — 2026-09-01</div>
+              <p style="font-size:12.5px;color:rgba(32,30,29,.65)">Baris yang ditolak tidak pernah dibuang. Perbaiki sumbernya dan jalankan ulang berkas; struk yang sudah masuk tidak akan terhitung dua kali.</p>
+              <sc-raw-table class="table">
+                <sc-raw-thead><sc-raw-tr><sc-raw-th style="text-align:right">Baris</sc-raw-th><sc-raw-th>Gerai</sc-raw-th><sc-raw-th>Struk</sc-raw-th><sc-raw-th>Alasan</sc-raw-th></sc-raw-tr></sc-raw-thead>
+                <sc-raw-tbody>
+                  <sc-for list="{{ rejections }}" as="r" hint-placeholder-count="4">
+                    <sc-raw-tr><sc-raw-td class="mc-num">{{ r.line }}</sc-raw-td><sc-raw-td style="font-size:13px">{{ r.site }}</sc-raw-td><sc-raw-td style="font-size:13px;font-variant-numeric:tabular-nums">{{ r.receipt }}</sc-raw-td><sc-raw-td style="font-size:12.5px;color:var(--color-accent-700)">{{ r.reason }}</sc-raw-td></sc-raw-tr>
+                  </sc-for>
+                </sc-raw-tbody>
+              </sc-raw-table>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#fff;padding:18px 20px;border-top:2px solid #201e1d">
+              <div class="mc-kick">Rekonsiliasi 1 Sep 2026</div>
+              <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span>#TOTAL pada berkas</span><span class="mc-num" style="font-weight:600">Rp 1.482.910.000</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Jumlah baris diterima</span><span class="mc-num" style="font-weight:600">Rp 1.479.630.000</span></div>
+                <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:2px solid var(--color-divider);color:var(--color-accent-700)"><span style="font-weight:600">Selisih</span><span class="mc-num" style="font-weight:600">Rp 3.280.000</span></div>
+              </div>
+              <div style="font-size:12px;color:rgba(32,30,29,.65);margin-top:12px">Selisih sama dengan jumlah empat baris yang ditolak. Impor ditandai <strong>sebagian</strong> sampai selisihnya nol.</div>
+            </div>
+            <div style="background:#fff;padding:18px 20px">
+              <div class="mc-kick">Kontrak berkas</div>
+              <div style="font-size:12.5px;line-height:1.6;margin-top:8px">CSV dengan pemisah pipa · header dicocokkan menurut nama · trailer <strong>#TOTAL</strong> wajib · identitas berkas menurut checksum, jadi berkas yang sama tidak pernah masuk dua kali.</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+        <div class="seg" style="margin-bottom:18px"><label class="seg-opt"><input type="radio" name="ad" checked="">Pengguna dan peran</label><label class="seg-opt"><input type="radio" name="ad">Rantai persetujuan</label><label class="seg-opt"><input type="radio" name="ad">Parameter</label><label class="seg-opt"><input type="radio" name="ad">Kalender libur</label></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start">
+          <div style="background:#fff">
+            <div style="padding:14px 18px;border-bottom:2px solid var(--color-divider);display:flex;align-items:center">
+              <div style="font:800 16px/1.2 'Archivo',sans-serif">Pengguna</div>
+              <button class="btn btn-primary" style="margin-left:auto">Tambah pengguna</button>
+            </div>
+            <sc-raw-table class="table">
+              <sc-raw-thead><sc-raw-tr><sc-raw-th>Nama</sc-raw-th><sc-raw-th>Peran</sc-raw-th><sc-raw-th>Perusahaan</sc-raw-th><sc-raw-th>TOTP</sc-raw-th><sc-raw-th>Ekspor</sc-raw-th></sc-raw-tr></sc-raw-thead>
+              <sc-raw-tbody>
+                <sc-for list="{{ users }}" as="u" hint-placeholder-count="7">
+                  <sc-raw-tr>
+                    <sc-raw-td style="font-weight:600">{{ u.name }}<div style="font-size:11px;color:rgba(32,30,29,.55);font-weight:400">{{ u.email }}</div></sc-raw-td>
+                    <sc-raw-td style="font-size:13px">{{ u.role }}</sc-raw-td>
+                    <sc-raw-td style="font-size:12.5px;color:rgba(32,30,29,.7)">{{ u.companies }}</sc-raw-td>
+                    <sc-raw-td style="font-size:12.5px">{{ u.totp }}</sc-raw-td>
+                    <sc-raw-td style="font-size:12.5px;color:{{ u.exportColor }}">{{ u.export }}</sc-raw-td>
+                  </sc-raw-tr>
+                </sc-for>
+              </sc-raw-tbody>
+            </sc-raw-table>
+            <div style="padding:14px 18px;border-top:2px solid var(--color-divider);font-size:12px;color:rgba(32,30,29,.65)">Perusahaan dipilih secara eksplisit saat pembuatan akun — tidak ada tanda “semua perusahaan”. Menambah brand keempat tidak memberi siapa pun akses baru.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#fff;padding:18px 20px;border-top:2px solid #201e1d">
+              <div class="mc-kick">Rantai aktif · versi 4</div>
+              <div style="margin-top:10px">
+                <sc-for list="{{ chainAdmin }}" as="s" hint-placeholder-count="5">
+                  <div style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+                    <span style="font:800 12px/1 'Archivo',sans-serif;width:20px;height:20px;display:grid;place-items:center;background:#201e1d;color:#f3f2f2">{{ s.n }}</span>
+                    <div style="flex:1"><div style="font:600 13px/1.3 'Archivo',sans-serif">{{ s.role }}</div><div style="font-size:11.5px;color:rgba(32,30,29,.6)">{{ s.rule }}</div></div>
+                    <button class="btn btn-ghost">Ubah</button>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:11.5px;color:rgba(32,30,29,.6);margin-top:10px">Rantai diversikan: mengubahnya tidak mengusik rencana yang sedang berjalan.</div>
+            </div>
+            <div style="background:#fff;padding:18px 20px">
+              <div class="mc-kick">Parameter sistem</div>
+              <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
+                <div class="field"><label>promo.lead_time_working_days</label><input class="input mc-num" value="{{ leadDays }}" style="background:#fff;text-align:left"></div>
+                <div class="field"><label>promo.auto_cancel_days_before</label><input class="input mc-num" value="{{ cancelDays }}" style="background:#fff;text-align:left"></div>
+                <div class="field"><label>notify.release_recipients</label><input class="input" value="ops@group.co.id; store-comms@group.co.id" style="background:#fff"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <p style="font-size:13px;color:rgba(32,30,29,.7);max-width:60ch">CFO menyetujui dari ponsel, jadi kotak persetujuan dan aksi setujui/tolak dirancang lebih dahulu pada 360px. Tabel tetap dapat digulir di dalam pembungkusnya; halaman tidak pernah bergeser ke samping.</p>
+        <div style="display:flex;gap:32px;flex-wrap:wrap;margin-top:20px">
+          <div>
+            <div class="mc-kick" style="margin-bottom:8px">360 × 760 · Kotak persetujuan</div>
+            <div style="width:360px;background:#fff;border:2px solid #201e1d">
+              <div style="background:#201e1d;color:#f3f2f2;padding:10px 14px;display:flex;align-items:center;gap:10px">
+                <span style="font:800 13px/1 'Archivo',sans-serif">MC</span>
+                <span style="font-size:12px;margin-left:auto;white-space:nowrap">4 menunggu</span>
+                <span style="font-size:16px">≡</span>
+              </div>
+              <div style="padding:14px">
+                <div style="font:800 20px/1.1 'Archivo',sans-serif;letter-spacing:-.02em">Menunggu saya</div>
+                <div style="font-size:12px;color:rgba(32,30,29,.6);margin-top:2px">Diurutkan menurut hari tersisa</div>
+              </div>
+              <sc-for list="{{ inboxMobile }}" as="p" hint-placeholder-count="3">
+                <div style="padding:14px;border-top:1px solid var(--color-divider);border-left:3px solid #201e1d">
+                  <div style="display:flex;gap:8px;align-items:baseline"><span style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.1em;color:rgba(32,30,29,.55)">{{ p.code }}</span><span style="font-size:11px;color:{{ p.urgencyColor }};margin-left:auto;text-align:right;line-height:1.3">{{ p.left }}</span></div>
+                  <div style="font:800 16px/1.2 'Archivo',sans-serif;margin:5px 0 3px">{{ p.name }}</div>
+                  <div style="font-size:12px;color:rgba(32,30,29,.65)">{{ p.meta }}</div>
+                  <div style="display:flex;gap:14px;margin-top:8px;font-size:12.5px;white-space:nowrap"><span class="mc-num" style="font-weight:600">{{ p.target }}</span><span style="color:rgba(32,30,29,.6);font-variant-numeric:tabular-nums">{{ p.receipts }} struk</span></div>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="btn btn-primary" style="flex:1;min-height:44px;justify-content:flex-start">Setujui</button>
+                    <button class="btn btn-secondary" style="flex:1;min-height:44px;justify-content:flex-start">Tolak</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div class="mc-kick" style="margin-bottom:8px">360 × 760 · Detail dan keputusan</div>
+            <div style="width:360px;background:#fff;border:2px solid #201e1d">
+              <div style="background:#201e1d;color:#f3f2f2;padding:10px 14px;display:flex;align-items:center;gap:10px">
+                <span style="font-size:15px">‹</span><span style="font-size:12px">Kotak persetujuan</span>
+              </div>
+              <div style="padding:14px;border-bottom:2px solid var(--color-divider)">
+                <div style="font:600 10px/1 'Archivo',sans-serif;letter-spacing:.1em;color:rgba(32,30,29,.55)">P-2026-0147 · RUUMA · V2</div>
+                <div style="font:800 21px/1.12 'Archivo',sans-serif;letter-spacing:-.02em;margin:6px 0 6px">Paket Berdua Akhir Pekan</div>
+                <span class="tag tag-accent" style="font-weight:600">◷ Menunggu langkah 5 · CFO</span>
+                <div style="font-size:12.5px;color:rgba(32,30,29,.7);margin-top:10px">12 – 27 Sep 2026 · Ruuma Mall Group, 7 gerai · Dine-in</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr">
+                <div style="padding:12px 14px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div class="mc-kick">Target</div><div class="mc-num" style="font:800 16px/1.2 'Archivo',sans-serif;text-align:left">Rp 940 jt</div></div>
+                <div style="padding:12px 14px;border-bottom:1px solid var(--color-divider)"><div class="mc-kick">Struk</div><div class="mc-num" style="font:800 16px/1.2 'Archivo',sans-serif;text-align:left">18.500</div></div>
+                <div style="padding:12px 14px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div class="mc-kick">Promo serupa</div><div style="font:800 16px/1.2 'Archivo',sans-serif">+6,1%</div></div>
+                <div style="padding:12px 14px;border-bottom:1px solid var(--color-divider)"><div class="mc-kick">Batal otomatis</div><div style="font:800 16px/1.2 'Archivo',sans-serif;color:var(--color-accent-700)">H-3</div></div>
+              </div>
+              <div style="padding:14px">
+                <div class="mc-kick">Empat langkah sudah disetujui</div>
+                <div style="font-size:12.5px;line-height:1.6;margin-top:6px">Marketing Head · Business Analyst · Finance Head · Operation — semuanya menyetujui antara 29 Agu dan 1 Sep. Ketuk untuk melihat catatan tiap langkah.</div>
+              </div>
+              <div style="padding:14px;border-top:2px solid var(--color-divider);display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-primary" style="min-height:48px;justify-content:flex-start;padding-inline:16px">Setujui — rilis promo</button>
+                <button class="btn btn-secondary" style="min-height:48px;justify-content:flex-start;padding-inline:16px">Tolak dengan alasan</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;leadTimeDays&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:7,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:1,&quot;max&quot;:21,&quot;unit&quot;:&quot;hari kerja&quot;,&quot;section&quot;:&quot;Parameter&quot;},&quot;autoCancelDays&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;tsType&quot;:&quot;number&quot;,&quot;min&quot;:1,&quot;max&quot;:14,&quot;unit&quot;:&quot;hari&quot;,&quot;section&quot;:&quot;Parameter&quot;}}">
+const RED = 'var(--color-accent-700)';
+const OK = 'var(--color-neutral-800)';
+const MUTED = 'rgba(32,30,29,.6)';
+const BRAND = { MX: '#201e1d', RM: 'var(--color-neutral-600)', SS: 'var(--color-accent)' };
+
+const SCREENS = [
+  ['cal', 'Kalender promo', 'Perencanaan'],
+  ['create', 'Buat promo', 'Perencanaan'],
+  ['inbox', 'Kotak persetujuan', 'Persetujuan'],
+  ['detail', 'Detail promo', 'Persetujuan'],
+  ['target', 'Target penjualan', 'Angka'],
+  ['report', 'Laporan promo', 'Angka'],
+  ['import', 'Impor transaksi', 'Operasional'],
+  ['admin', 'Pengaturan', 'Operasional'],
+  ['mobile', 'Tampilan ponsel 360px', 'Persetujuan'],
+];
+
+const PROMOS = [
+  { code: 'MX', from: [2026, 8, 1], to: [2026, 8, 14], text: 'MX Kopi Susu Rp18.000', status: 'rilis' },
+  { code: 'MX', from: [2026, 8, 7], to: [2026, 8, 20], text: 'MX BOGO Latte Hari Kerja', status: 'rilis' },
+  { code: 'RM', from: [2026, 8, 12], to: [2026, 8, 27], text: 'RM Paket Berdua ◷', status: 'tunggu' },
+  { code: 'SS', from: [2026, 8, 21], to: [2026, 9, 10], text: 'SS Prasmanan Korporat', status: 'draf' },
+  { code: 'RM', from: [2026, 8, 28], to: [2026, 9, 4], text: 'RM Menu Anak Gratis !', status: 'paksa' },
+];
+
+const HOLIDAYS = { '2026-9-17': 'Libur nasional' };
+
+function rp(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+class Component extends DCLogic {
+  state = { screen: 'cal' };
+
+  go(s) { return () => this.setState({ screen: s }); }
+
+  calendarDays() {
+    const out = [];
+    const start = new Date(2026, 7, 31);
+    for (let i = 0; i < 35; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const inMonth = d.getMonth() === 8;
+      const key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+      const holiday = HOLIDAYS[key];
+      const chips = PROMOS.filter((p) => {
+        const f = new Date(p.from[0], p.from[1], p.from[2]);
+        const t = new Date(p.to[0], p.to[1], p.to[2]);
+        return d >= f && d <= t;
+      }).map((p) => ({
+        text: p.text,
+        style: 'border-left-color:' + BRAND[p.code]
+          + (p.status === 'draf' ? ';background:transparent;border:1px dashed var(--color-divider);border-left:3px solid ' + BRAND[p.code] : '')
+          + (p.status === 'paksa' ? ';background:var(--color-accent-100);color:var(--color-accent-800)' : ''),
+      }));
+      const overlapMx = chips.filter((c) => c.text.startsWith('MX')).length > 1;
+      out.push({
+        num: d.getDate(),
+        note: holiday ? 'Libur' : (overlapMx ? '⚠ 2 promo' : ''),
+        chips,
+        cellStyle: (inMonth ? '' : 'background:var(--color-neutral-100);opacity:.55;')
+          + (holiday ? 'background:#fff6ee;' : '')
+          + (overlapMx ? 'box-shadow:inset 0 0 0 2px var(--color-accent-300);' : ''),
+      });
+    }
+    return out;
+  }
+
+  pickerMonths() {
+    const mk = (label, year, month, firstDow, len, disabledUntil, holidays, range) => {
+      const cells = [];
+      for (let i = 0; i < firstDow; i++) cells.push({ n: '', style: 'height:30px' });
+      for (let n = 1; n <= len; n++) {
+        const disabled = disabledUntil && n < disabledUntil;
+        const inRange = range && n >= range[0] && n <= range[1];
+        const isEnd = range && (n === range[0] || n === range[1]);
+        let style = 'height:30px;display:grid;place-items:center;font:600 12px/1 "Archivo",sans-serif;font-variant-numeric:tabular-nums;';
+        if (disabled) style += 'color:rgba(32,30,29,.28);background:var(--color-neutral-100);';
+        else if (isEnd) style += 'background:var(--color-accent);color:#f3f2f2;';
+        else if (inRange) style += 'background:var(--color-accent-200);';
+        if (holidays && holidays.indexOf(n) >= 0) style += 'box-shadow:inset 0 -2px 0 var(--color-accent);';
+        cells.push({ n, style });
+      }
+      return { label, cells };
+    };
+    return [
+      mk('September 2026', 2026, 8, 1, 30, 10, [17], [10, 24]),
+      mk('Oktober 2026', 2026, 9, 3, 31, 0, [], null),
+    ];
+  }
+
+  renderVals() {
+    const s = this.state.screen;
+    const lead = this.props.leadTimeDays ?? 7;
+    const cancel = this.props.autoCancelDays ?? 5;
+    const cur = SCREENS.find((x) => x[0] === s) || SCREENS[0];
+
+    const inbox = [
+      { code: 'RM', name: 'Paket Berdua Akhir Pekan', meta: '12 – 27 Sep · Ruuma Mall Group, 7 gerai · Dine-in · versi 2', target: rp(940000000), receipts: (18500).toLocaleString('id-ID'), step: 'Langkah 2 dari 5 · Business Analyst', left: 'Batal otomatis H-' + cancel + ' · 3 hari lagi', urgencyColor: RED },
+      { code: 'MX', name: 'BOGO Latte Hari Kerja', meta: '7 – 20 Sep · Maxx Jakarta Selatan, 18 gerai · Semua mode', target: rp(1850000000), receipts: (42000).toLocaleString('id-ID'), step: 'Langkah 2 dari 5 · Business Analyst', left: '6 hari lagi', urgencyColor: MUTED },
+      { code: 'SS', name: 'Prasmanan Korporat Q4', meta: '21 Sep – 10 Okt · Sunshine Korporat, 3 unit · Pengantaran', target: rp(2400000000), receipts: (860).toLocaleString('id-ID'), step: 'Langkah 2 dari 5 · Business Analyst', left: '11 hari lagi', urgencyColor: MUTED },
+      { code: 'MX', name: 'Bundling Sarapan Kantor', meta: '1 – 31 Okt · Maxx CBD Group, 11 gerai · Take away', target: rp(1120000000), receipts: (26400).toLocaleString('id-ID'), step: 'Langkah 2 dari 5 · Business Analyst', left: '19 hari lagi', urgencyColor: MUTED },
+    ];
+
+    const months = [
+      ['Januari', 1900, 1964, 'Selesai'], ['Februari', 1750, 1712, 'Selesai'],
+      ['Maret', 2050, 2118, 'Ramadan'], ['April', 2200, 2341, 'Idul Fitri'],
+      ['Mei', 1900, 1877, 'Selesai'], ['Juni', 1950, 1902, 'Selesai'],
+      ['Juli', 2100, 2044, 'Selesai'], ['Agustus', 1980, 2012, 'Selesai'],
+      ['September', 1950, 1183, 'Berjalan · 2 Sep'], ['Oktober', 2000, 0, 'Belum'],
+      ['November', 1980, 0, 'Belum'], ['Desember', 2650, 0, 'Natal · belum'],
+    ].map((m) => {
+      const t = m[1] * 10000000, a = m[2] * 10000000;
+      const d = a - t;
+      const done = m[2] > 0;
+      return {
+        name: m[0], target: t.toLocaleString('id-ID'), actual: done ? a.toLocaleString('id-ID') : '—',
+        delta: done ? (d >= 0 ? '+' : '−') + Math.abs(d).toLocaleString('id-ID') : '—',
+        pct: done ? (d >= 0 ? '+' : '−') + Math.abs(d / t * 100).toFixed(1) + '%' : '—',
+        vColor: !done ? MUTED : (d >= 0 ? OK : RED), note: m[3],
+      };
+    });
+
+    const report = [
+      ['MX', 'Kopi Susu Rp18.000', 'P-2026-0138', 'Maxx Jakarta Selatan · 18 gerai', '1 – 14 Sep', 1240, 1318, 31400, 'Dirilis ✓', 'tag-neutral'],
+      ['MX', 'BOGO Latte Hari Kerja', 'P-2026-0141', 'Maxx Jakarta Selatan · 18 gerai', '7 – 20 Sep', 1850, 742, 16900, 'Dirilis ✓', 'tag-neutral'],
+      ['RM', 'Paket Berdua Akhir Pekan', 'P-2026-0147', 'Ruuma Mall Group · 7 gerai', '12 – 27 Sep', 940, 0, 0, 'Menunggu ◷', 'tag-accent'],
+      ['RM', 'Menu Anak Gratis', 'P-2026-0152', 'Ruuma Mall Group · 7 gerai', '28 Sep – 4 Okt', 380, 0, 0, 'Rilis paksa !', 'tag-outline'],
+      ['SS', 'Prasmanan Korporat Q4', 'P-2026-0150', 'Sunshine Korporat · 3 unit', '21 Sep – 10 Okt', 2400, 0, 0, 'Draf', 'tag-neutral'],
+      ['MX', 'Promo Ramadan Sore', 'P-2026-0119', 'Maxx CBD Group · 11 gerai', '10 – 24 Mar', 1600, 1489, 38200, 'Dirilis ✓', 'tag-neutral'],
+    ].map((r) => {
+      const t = r[5] * 1000000, a = r[6] * 1000000;
+      const pct = a === 0 ? '—' : (a / t * 100).toFixed(0) + '%';
+      return {
+        brandColor: BRAND[r[0]], name: r[1], code: r[2], group: r[3], period: r[4],
+        target: t.toLocaleString('id-ID'), actual: a === 0 ? '—' : a.toLocaleString('id-ID'),
+        pct, receipts: r[7] === 0 ? '—' : r[7].toLocaleString('id-ID'),
+        vColor: a === 0 ? MUTED : (a >= t ? OK : RED), status: r[8], tagClass: r[9],
+      };
+    });
+
+    const timeline = [
+      ['Dibuat', 'Rina Hartono · Marketing Staff', '28 Agu 2026 09:14 — versi 2 setelah penyuntingan', '✓', 1],
+      ['Langkah 1 · Marketing Head', 'Dimas Prakoso', '29 Agu 2026 16:02 — “Setuju, pastikan materi cetak siap H-3.”', '✓', 1],
+      ['Langkah 2 · Business Analyst', 'Menunggu — Ayu Lestari', 'Belum diputuskan. Menunggu 4 hari 7 jam.', '◷', 2],
+      ['Langkah 3 · Finance Head', 'Menunggu — Hendra Wijaya', 'Belum dapat memutuskan sampai langkah 2 selesai.', '3', 0],
+      ['Langkah 5 · CFO', 'Menunggu — Sari Kusuma', 'Langkah terakhir. Persetujuan di sini merilis promo dan mengirim surel ke daftar penerima.', '5', 0],
+    ].map((t) => ({
+      step: t[0], who: t[1], note: t[2], glyph: t[3],
+      dotBg: t[4] === 1 ? '#201e1d' : (t[4] === 2 ? 'var(--color-accent)' : 'transparent'),
+      dotFg: t[4] === 0 ? 'rgba(32,30,29,.55)' : '#f3f2f2',
+      dotBorder: t[4] === 0 ? 'var(--color-divider)' : (t[4] === 2 ? 'var(--color-accent)' : '#201e1d'),
+    }));
+
+    return {
+      isLogin: s === 'login', inApp: s !== 'login',
+      isCal: s === 'cal', isCreate: s === 'create', isInbox: s === 'inbox', isDetail: s === 'detail',
+      isTarget: s === 'target', isReport: s === 'report', isImport: s === 'import', isAdmin: s === 'admin',
+      isMobile: s === 'mobile',
+      title: cur[1], crumb: cur[2] + ' · marketing_calendar',
+      nav: SCREENS.map((x) => ({ label: x[1], on: s === x[0] ? '1' : '0', go: this.go(x[0]) })),
+      goCal: this.go('cal'), goCreate: this.go('create'), goDetail: this.go('detail'), goLogin: this.go('login'),
+      leadDays: lead, cancelDays: cancel,
+      dows: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+      days: this.calendarDays(),
+      pickerMonths: this.pickerMonths(),
+      earliest: '10 Sep 2026',
+      chainPreview: [
+        { n: 1, role: 'Marketing Head', who: 'Dimas Prakoso' },
+        { n: 2, role: 'Business Analyst', who: 'Ayu Lestari' },
+        { n: 3, role: 'Finance Head', who: 'Hendra Wijaya' },
+        { n: 4, role: 'Operation', who: 'Bagas Nugroho' },
+        { n: 5, role: 'CFO', who: 'Sari Kusuma' },
+      ],
+      chainAdmin: [
+        { n: 1, role: 'marketing_head', rule: 'Satu penyetuju · lingkup perusahaan' },
+        { n: 2, role: 'business_analyst', rule: 'Satu penyetuju · memvalidasi angka' },
+        { n: 3, role: 'finance_head', rule: 'Satu penyetuju' },
+        { n: 4, role: 'operation', rule: 'ANY_OF — satu peran saat ini, mesin siap untuk dua' },
+        { n: 5, role: 'cfo', rule: 'Langkah akhir · memicu surel rilis' },
+      ],
+      inbox, inboxMobile: inbox.slice(0, 3), months, report, timeline,
+      comparables: [
+        { name: 'Paket Berdua Ramadan', period: '10 – 24 Mar 2026', target: rp(820000000), actual: rp(871000000), variance: '+6,2%', vColor: OK },
+        { name: 'Paket Berdua Lebaran', period: '1 – 12 Apr 2026', target: rp(960000000), actual: rp(902000000), variance: '−6,0%', vColor: RED },
+      ],
+      kpis: [
+        { label: 'Target bulan ini', value: rp(7810000000), sub: '5 promo terjadwal', color: MUTED },
+        { label: 'Aktual sampai 2 Sep', value: rp(2060000000), sub: '26,4% dari target', color: MUTED },
+        { label: 'Promo terukur', value: '3 dari 6', sub: 'sisanya belum mulai', color: MUTED },
+        { label: 'Rilis paksa', value: '1', sub: 'P-2026-0152 · alasan tercatat', color: RED },
+      ],
+      imports: [
+        { file: 'txn_20260901.csv', sum: 'a91f…4c2', at: '2 Sep 03:12 WIB', rows: '48.211', ok: '48.207', rej: '4', rejColor: RED, result: 'Sebagian', tagClass: 'tag-accent' },
+        { file: 'txn_20260831.csv', sum: '7b3d…19a', at: '1 Sep 03:11 WIB', rows: '51.904', ok: '51.904', rej: '0', rejColor: MUTED, result: 'Selesai ✓', tagClass: 'tag-neutral' },
+        { file: 'txn_20260831.csv', sum: '7b3d…19a', at: '1 Sep 08:40 WIB', rows: '51.904', ok: '0', rej: '0', rejColor: MUTED, result: 'Dilewati — checksum sama', tagClass: 'tag-neutral' },
+        { file: 'txn_20260830.csv', sum: 'c05e…88f', at: '31 Agu 03:10 WIB', rows: '44.630', ok: '44.630', rej: '0', rejColor: MUTED, result: 'Selesai ✓', tagClass: 'tag-neutral' },
+      ],
+      rejections: [
+        { line: '1.204', site: 'MX-014 Kemang', receipt: 'MX014-260901-0331', reason: 'Kode gerai tidak dikenal pada perusahaan ini' },
+        { line: '8.933', site: 'RM-003 Grand Indonesia', receipt: 'RM003-260901-1188', reason: 'Mode pesanan kosong' },
+        { line: '22.417', site: 'MX-021 Bintaro', receipt: 'MX021-260901-0902', reason: 'Jumlah bukan bilangan bulat rupiah' },
+        { line: '39.870', site: 'SS-002 Cakung', receipt: 'SS002-260901-0044', reason: 'Nomor struk ganda di dalam berkas' },
+      ],
+      users: [
+        { name: 'Rina Hartono', email: 'rina.hartono@maxx.co.id', role: 'marketing_staff', companies: 'Maxx Coffee', totp: 'Aktif', export: 'Diizinkan', exportColor: OK },
+        { name: 'Dimas Prakoso', email: 'dimas.p@group.co.id', role: 'marketing_head', companies: 'Maxx Coffee, Ruuma', totp: 'Aktif', export: 'Diizinkan', exportColor: OK },
+        { name: 'Ayu Lestari', email: 'ayu.lestari@group.co.id', role: 'business_analyst', companies: 'Maxx, Ruuma, Sunshine', totp: 'Aktif', export: 'Diizinkan', exportColor: OK },
+        { name: 'Hendra Wijaya', email: 'hendra.w@group.co.id', role: 'finance_head', companies: 'Maxx, Ruuma, Sunshine', totp: 'Aktif', export: 'Diizinkan', exportColor: OK },
+        { name: 'Bagas Nugroho', email: 'bagas.n@group.co.id', role: 'operation', companies: 'Maxx, Ruuma, Sunshine', totp: 'Aktif', export: 'Diizinkan', exportColor: OK },
+        { name: 'Sari Kusuma', email: 'sari.k@group.co.id', role: 'cfo', companies: 'Maxx, Ruuma, Sunshine', totp: 'Aktif', export: 'Diizinkan', exportColor: OK },
+        { name: 'Arif Setiawan', email: 'arif.s@group.co.id', role: 'it · superadmin', companies: 'Maxx, Ruuma, Sunshine', totp: 'Aktif', export: 'Ditolak', exportColor: RED },
+      ],
+    };
+  }
+}
+
+</script>
+
+
+<div id="__claude_design_branding"><style>#__claude_design_branding{position:fixed;right:16px;bottom:16px;z-index:2147483646;display:flex;align-items:center;gap:7px;height:30px;padding:0 5px 0 10px;border-radius:999px;font-family:"Anthropic Sans",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;font-size:12.5px;font-weight:400;line-height:1;letter-spacing:normal;text-transform:none;color:#141413;background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 0 0 .5px rgba(31,30,29,.14),0 2px 10px rgba(0,0,0,.09)}
+#__claude_design_branding *{box-sizing:border-box;margin:0}
+#__claude_design_branding a{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+#__claude_design_branding a:hover span{text-decoration:underline}
+#__claude_design_branding svg{flex:none}
+#__claude_design_branding a svg{color:#D97757}
+#__claude_design_branding button{width:20px;height:20px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:currentColor;opacity:.55;border:0;background:none;cursor:pointer;flex:none;font:inherit;transition:opacity .14s}
+#__claude_design_branding button:hover{opacity:1;background:rgba(127,127,127,.22)}
+@media print{#__claude_design_branding{display:none}}</style><a href="https://claude.com/product/design" target="_blank" rel="noopener noreferrer"><svg width="14" height="14" viewBox="0 0 20 21" fill="none" aria-hidden="true"><path fill="currentColor" d="M9.99902 0C15.5258 0.000170936 19.999 4.50643 19.999 10.0547C19.999 11.7656 19.5863 12.9976 18.7861 13.8203C17.9924 14.6362 16.9465 14.9138 15.9854 15.0078C15.05 15.0993 14.0097 15.0262 13.2549 15.0186C12.8524 15.0145 12.5177 15.0267 12.2441 15.0703C11.9682 15.1144 11.8143 15.1813 11.7305 15.2432C11.4745 15.4322 11.3353 15.7121 11.2656 16.1602C11.2303 16.3875 11.2168 16.6362 11.209 16.9131C11.2017 17.1715 11.1986 17.4893 11.1807 17.7705C11.1469 18.2975 11.0495 19.0865 10.4199 19.5908C9.7846 20.0996 8.88652 20.1057 7.85449 19.877C7.36399 19.7682 6.88652 19.6232 6.42578 19.4453C2.66989 17.9949 0.000187748 14.3414 0 10.0547C0 4.50643 4.47223 0.000171048 9.99902 0ZM9.99902 1.60547C5.36781 1.60564 1.60547 5.38391 1.60547 10.0547C1.60566 13.6582 3.84823 16.7296 7.00391 17.9482C7.39027 18.0974 7.79085 18.2184 8.20215 18.3096C9.1375 18.5169 9.384 18.3633 9.41602 18.3379C9.4524 18.3087 9.54558 18.1915 9.5791 17.668C9.5947 17.4239 9.59473 17.1786 9.60352 16.8672C9.61179 16.5742 9.62831 16.2435 9.67969 15.9131C9.78359 15.2455 10.0474 14.4906 10.7764 13.9521C11.1479 13.6778 11.5842 13.5493 11.9912 13.4844C12.4007 13.4191 12.8434 13.4088 13.2705 13.4131C14.1753 13.4222 15.0071 13.4905 15.8291 13.4102C16.6257 13.3322 17.2249 13.1235 17.6357 12.7012C18.0401 12.2855 18.3935 11.5261 18.3936 10.0547C18.3936 5.38391 14.6302 1.60564 9.99902 1.60547ZM5.11621 9.86719C5.86386 9.91468 6.45486 10.5348 6.45508 11.2939C6.45506 12.0838 5.81519 12.7245 5.02539 12.7246C4.28481 12.7246 3.67573 12.1617 3.60254 11.4404L3.59473 11.2939L3.60156 11.1533C3.66942 10.4596 4.23282 9.91186 4.93359 9.86719H5.11621ZM14.9814 7.19141C15.729 7.23889 16.3199 7.85919 16.3203 8.61816C16.3203 9.40801 15.6804 10.0487 14.8906 10.0488C14.1501 10.0487 13.5409 9.48586 13.4678 8.76465L13.46 8.61816L13.4668 8.47754C13.5348 7.78403 14.0983 7.23618 14.7988 7.19141H14.9814ZM6.4541 4.93457C7.20161 4.9822 7.79275 5.60231 7.79297 6.36133C7.79288 7.151 7.15291 7.7917 6.36328 7.79199C5.62274 7.79199 5.01369 7.22903 4.94043 6.50781L4.93262 6.36133L4.93945 6.2207C5.00731 5.52698 5.5707 4.97922 6.27148 4.93457H6.4541ZM11.3867 3.59668C12.1343 3.64419 12.7253 4.26436 12.7256 5.02344C12.7256 5.81326 12.0857 6.45393 11.2959 6.4541C10.5553 6.4541 9.94622 5.89123 9.87305 5.16992L9.86523 5.02344L9.87207 4.88281C9.93996 4.18912 10.5033 3.64133 11.2041 3.59668H11.3867Z"></path></svg><span>Made with Claude Design</span></a><button type="button" aria-label="Dismiss" onclick="this.parentElement.remove()"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></button></div></body></html>
