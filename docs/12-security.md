@@ -22,7 +22,7 @@ unattended machine. The controls below are weighted accordingly.
 
 | # | Category | Control | Where | Proven by |
 |---|---|---|---|---|
-| A01 | Broken access control | Deny-by-default; every handler declares a permission; every query scoped by company **and** site in the SQL; group-level roles explicit | `adapter/http` middleware, `adapter/postgres` | `security_authz_test.go` — full matrix, asserting what each role **cannot** reach; `security_idor_test.go` — every cross-company read returns 404 |
+| A01 | Broken access control | Deny-by-default; every handler declares a permission; every query scoped by company **and** site in the SQL; company assignment is an explicit NOT NULL list, never a wildcard | `adapter/http` middleware, `adapter/postgres` | `security_authz_test.go` — full matrix, asserting what each role **cannot** reach; `security_idor_test.go` — every cross-company read returns 404 |
 | A02 | Cryptographic failures | argon2id passwords; TOTP secrets encrypted at rest; refresh tokens stored as SHA-256; TLS in front; secrets only from env | `platform/security`, `09` §10 | `security_test.go::TestPasswordIsArgon2id`, `TestRefreshTokenStoredHashed` |
 | A03 | Injection | Placeholders everywhere, no string-built SQL; output encoded per context; **CSV formula injection neutralised** | `adapter/postgres`, `platform/sanitize`, `platform/csvexport` | `csv_test.go::TestFormulaInjection`; `security_injection_test.go` |
 | A04 | Insecure design | Approval is a domain state machine with the transition table as a test; approved plans immutable; append-only history | `domain/approval` | `approval_test.go` (BR-4 matrix) |
@@ -55,48 +55,61 @@ catches regressions.
 
 The role names are the group's real ones (**BR-5.7**, D28).
 
-| Permission | Mktg Staff | Mktg Head | Finance Head | Operation | CFO | Bus Analyst | IT | Superadmin |
+| Permission | Mktg Staff | Mktg Head | Bus Analyst | Finance Head | Operation | CFO | IT | Superadmin |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | `promo.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `promo.create` | ✓ | ✓ | | | | | | ✓ |
 | `promo.manage` | | ✓ | | | | | | ✓ |
 | `target.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `target.manage` | | ✓ | ✓ | | ✓ | | | ✓ |
+| `target.manage` | | ✓ | | ✓ | | ✓ | | ✓ |
 | `report.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `report.export` | | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
+| `report.export` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
 | `import.run` | | | | | | | ✓ | ✓ |
-| `import.view` | | ✓ | ✓ | | | ✓ | ✓ | ✓ |
+| `import.view` | | ✓ | ✓ | ✓ | | | ✓ | ✓ |
 | `site.manage` | | | | | | | ✓ | ✓ |
+| `user.manage` | | | | | | | ✓ | ✓ |
 | `settings.manage` | | | | | | | ✓ | ✓ |
-| `audit.view` | | | | | ✓ | | ✓ | ✓ |
+| `audit.view` | | | | | | ✓ | ✓ | ✓ |
 | `force_release` | | | | | | | | ✓ |
 
 Approval rights are **not** in this table — they come from the chain
 configuration (BR-4.2), which is the point of a configurable chain.
 
-Three choices in that grid are deliberate and worth contesting rather than
-inheriting:
+Three choices in that grid are deliberate:
 
-- **`report.export` is denied to Marketing Staff and to IT.** Export is how the
-  whole sales history leaves the building; the roles that need the numbers get
-  it, the role that creates plans and the role that administers the box do not.
-- **`audit.view` includes the CFO.** Somebody outside IT has to be able to see
-  who bypassed a control, or the audit trail only protects the people who can
-  read it.
+- **`report.export` reaches every business role, including Marketing Staff**
+  *(D38)*. Steven's call: the person who plans the promotion needs the numbers
+  behind it, and refusing the export while granting `report.view` only pushes
+  the same data out through a screenshot. **IT is still denied it** — the role
+  that administers the box has no business reason to carry the sales history
+  out of it. Every export is audited with its row count and its filters, which
+  is the control that now does the work.
+- **`audit.view` is CFO, IT and superadmin.** Somebody outside IT has to be
+  able to see who bypassed a control, or the audit trail only protects the
+  people who can read it.
 - **`superadmin` is a separate role, not a permission on `it`.** It is
   break-glass: force-release and revive, nothing else it does not already have.
 
-> **Segregation-of-duties note, stated rather than hidden.** `superadmin` will
-> in practice be held by an IT account, which means a technical role can
-> release a promotion the business has not approved. The controls that make
-> that survivable are all in place — a typed reason is mandatory (BR-4.8), an
-> audit row names the actor (BR-8.2), and the plan carries `force_released`
-> onto the promotion report (BR-7.5) — but the residual risk is real and is
-> Steven's to accept or to reassign. See `00-README-and-decisions.md` §3 Q29.
+> **Segregation of duties: the trade is made, not overlooked.** `superadmin` is
+> held by IT *(D35, Steven's decision)*. A technical role can therefore release
+> a promotion the business has not approved. What makes that survivable is
+> already built: a typed reason is mandatory (BR-4.8), an audit row names the
+> actor (BR-8.2), and the plan carries `force_released` onto the promotion
+> report (BR-7.5) where a reviewer sees it. What is **not** mitigated is IT
+> approving its own bypass — `audit.view` reaching the CFO is the compensating
+> control, and it is the reason that ✓ is in the grid.
 
 **Scoping.** Every query filters `company_id` against the caller's companies,
-and `site_id` against their site scope where one is set. A `user_role` row with
-`company_id IS NULL` is group-level and sees all three brands (D19).
+and `site_id` against their site scope where one is set. A user's companies are
+**an explicit list, chosen at user creation, one or more** (BR-5.4, D37): three
+`user_role` rows are what "sees all three brands" looks like. `company_id` is
+`NOT NULL`, so there is no wildcard row that quietly widens when a fourth brand
+is added.
+
+**Approval eligibility is scoped the same way** (BR-4.4a): holding `operation`
+for Maxx Coffee does not approve a Ruuma plan. This is what lets one
+`operation` role serve three brands without a role per brand — the separation
+lives on the user, not in the role name.
 
 **IDOR.** Asking for another company's promotion returns `404`, not `403` — the
 existence of the row is not disclosed. Tested per resource, per role.

@@ -144,19 +144,29 @@ roles** and a satisfaction rule:
   `Role_3 OR Role_4` is expressed.
 - `ALL_OF` — every listed role must approve before the step completes.
 
-Default chain, in the group's real role names *(D14, renamed by D28)*:
+Default chain, in the group's real role names *(D14, renamed by D28, with
+Business Analyst inserted by D36)*:
 
 | Step | Roles | Rule |
 |---|---|---|
 | 1 | Marketing Head | ANY_OF |
-| 2 | Finance Head | ANY_OF |
-| 3 | Operation | ANY_OF |
-| 4 | CFO | ANY_OF |
+| 2 | Business Analyst | ANY_OF |
+| 3 | Finance Head | ANY_OF |
+| 4 | Operation | ANY_OF |
+| 5 | CFO | ANY_OF |
 
 The creator is **Marketing Staff**. The either/or step from D14 collapsed to a
 single role because the group has one Operation function, not a brand head and
 an operations head — the `ANY_OF` machinery stays, because a step with two
 roles is exactly how it comes back.
+
+> **Five steps and a seven-working-day lead time leave very little slack, and
+> that is a tuning problem the parameters already solve.** A plan submitted at
+> the earliest permitted start (BR-3.3, 7 working days ≈ 9–11 calendar days
+> ahead) is auto-cancelled 5 calendar days before start (BR-4.6), so the whole
+> chain has roughly **4 to 6 calendar days — about one step per day**. That is
+> feasible and unforgiving. Both numbers are `sys_parameters` rows precisely so
+> the first month of real use retunes them rather than a deploy.
 
 **BR-4.3 A chain is versioned, and a plan is bound to the version it started
 with.** Changing the configured chain affects **only plans created afterwards**.
@@ -165,6 +175,14 @@ administrator rewrites the chain mid-flight. *This is explicit in the brief.*
 
 **BR-4.4 Approval is sequential.** Step *n+1* opens only when step *n* is
 satisfied. An approver at a later step cannot approve early.
+
+**BR-4.4a An approver must hold the step's role *in the subject's company*.**
+Holding `operation` for Maxx Coffee does not permit approving a Ruuma plan, and
+the approver's inbox lists only the instances whose company they are assigned
+to. Roles are not per brand — the **company assignment on the user is** (BR-5.4,
+D37) — so this is the rule that makes one `operation` role safe across three
+brands. It is enforced in the eligibility query, not checked after loading.
+*(D37)*
 
 **BR-4.5 Rejection returns the plan to the creator, with a mandatory reason.**
 The plan moves to `REJECTED`, retains its full history, and the creator may
@@ -234,8 +252,18 @@ registration; there is no public surface on which to offer one.
 **BR-5.3 TOTP is mandatory for every account.** A user without a confirmed TOTP
 enrolment can reach only the enrolment flow. *(D18)* Passwords are argon2id.
 
-**BR-5.4 Roles are scoped per company.** A user may hold different roles in
-different companies. A **group-level** role sees all companies. *(D19)*
+**BR-5.4 A user is assigned one or more companies, explicitly.** Creating a
+user selects the companies that user works in — **one or more, never none, and
+never an implicit "all"**. A user may hold different roles in different
+companies. Someone who works across the group is given all three companies by
+an administrator ticking three boxes. *(D19, made explicit by D37)*
+
+> **There is no `company_id IS NULL` meaning "every company".** It was the
+> original design and it is withdrawn, because an implicit superset **grows
+> silently**: add a fourth brand and every group-level account can see its sales
+> the moment the row is inserted, with no decision and no audit entry. An
+> explicit list grants nobody anything until somebody chooses. Deny by default
+> (BR-5.1) has to mean the same thing tomorrow as it does today.
 
 **BR-5.5 Site scoping.** A role may additionally be limited to a set of sites.
 Where present, every read is filtered to those sites in the query.
@@ -251,16 +279,18 @@ ones *(D28)*. The permission matrix is in `12-security.md` §4.
 |---|---|---|:--:|
 | `marketing_staff` | Staf Marketing | Marketing Staff | creates |
 | `marketing_head` | Kepala Marketing | Marketing Head | step 1 |
-| `finance_head` | Kepala Keuangan | Finance Head | step 2 |
-| `operation` | Operasional | Operation | step 3 |
-| `cfo` | CFO | CFO | step 4 |
-| `business_analyst` | Analis Bisnis | Business Analyst | — |
+| `business_analyst` | Analis Bisnis | Business Analyst | step 2 |
+| `finance_head` | Kepala Keuangan | Finance Head | step 3 |
+| `operation` | Operasional | Operation | step 4 |
+| `cfo` | CFO | CFO | step 5 |
 | `it` | IT | IT | — |
 | `superadmin` | Superadmin | Superadmin | force-release |
 
-`business_analyst` reads and exports; it does not approve. `it` is the
-administrator role — users, roles, sites, holidays, parameters, imports.
-Roles are data, not code: adding one is a row and a permission grant.
+`it` is the administrator role — users, roles, sites, holidays, parameters,
+imports. **`superadmin` is held by IT** *(D35)*, which is a segregation-of-duties
+trade Steven has made explicitly; see `12-security.md` §4.
+Roles are data, not code: adding one is a row and a permission grant, and the
+chain that uses it is a back-office edit.
 
 ---
 

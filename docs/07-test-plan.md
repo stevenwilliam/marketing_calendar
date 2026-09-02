@@ -55,6 +55,14 @@ The matrix, and it is the one most likely to be wrong:
 ### 2.4 Approval (BR-4) — the heart of it
 
 - The full chain completes step by step and releases.
+- **The default chain is five steps** (BR-4.2): Marketing Head → Business
+  Analyst → Finance Head → Operation → CFO. A plan is not `RELEASED` until all
+  five are satisfied, and step 5 cannot be reached early.
+- **An approver holding the step's role in the *wrong company* is refused**
+  (BR-4.4a, D37): an `operation` user assigned only to Maxx Coffee cannot
+  approve a Ruuma plan, and the instance never appears in their inbox. Tested
+  as an authorisation case, not only as a filter — the refusal is asserted on
+  the POST, not just the absence from the list.
 - **`ANY_OF` with two roles**: either role satisfies the step; the other cannot
   then also decide it.
 - `ALL_OF`: every role must act.
@@ -136,9 +144,13 @@ Per `12-security.md`, and at minimum:
 
 - The permission matrix of `12-security.md` §4, for all eight roles of BR-5.7,
   asserting for every role both what it **can** and what it **cannot** reach.
-  Specifically: Marketing Staff and IT are refused `report.export`; only
-  `superadmin` reaches `force_release`; `business_analyst` cannot approve
-  anything at any step.
+  Specifically: **IT** is refused `report.export` while every business role
+  including Marketing Staff holds it (D38); only `superadmin` reaches
+  `force_release`; only CFO, IT and superadmin reach `audit.view`.
+- **`POST /users` with an empty company list is refused** `422`, and a user
+  created with one company cannot read another's rows (BR-5.4, D37). The
+  absence of a wildcard is asserted directly: no `user_role` row may have a
+  NULL `company_id`, checked against the schema rather than the handler.
 - IDOR: every read of another company's or another site's row returns `404`.
 - A user with no TOTP enrolment can reach only the enrolment flow.
 - Login does not distinguish an unknown email from a wrong password — the

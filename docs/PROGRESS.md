@@ -5,8 +5,8 @@
 **A ✅ here has been re-earned by running the gate in THIS repo.** Nothing is
 inherited from another project.
 
-**Last updated:** 2026-09-02 — Q22–Q28 answered by Steven and folded into the
-documents (D28–D34). Still no application code.
+**Last updated:** 2026-09-02 — Q22–Q32 answered by Steven and folded into the
+documents (D28–D38). Still no application code.
 
 ---
 
@@ -22,7 +22,7 @@ skill and the contrast checker.
 
 | # | Milestone | State | Notes |
 |---|---|---|---|
-| M0 | Documents | ✅ | This set. **Awaiting Steven's confirmation** — D2–D22 were taken by default, not answered. D28–D34 *are* his answers (Q22–Q28), and are folded in |
+| M0 | Documents | ✅ | This set. **Awaiting Steven's confirmation** — D2–D22 were taken by default, not answered. D28–D38 *are* his answers (Q22–Q32), and are folded in |
 | M1 | Environment & config | ⬜ | |
 | M2 | Schema | ⬜ | Designed in `03`; no migration written |
 | M3 | Domain | ⬜ | Designed in `02`; no code |
@@ -86,12 +86,9 @@ The documents are a specification, not a report.
 | # | Item | Effect |
 |---|---|---|
 | 1 | **Confirm or amend D2–D22** | The build starts from these; they are cheap to change now |
-| 2 | Q29 — who holds `superadmin`, IT or the CFO? | Default applied: IT. It is the force-release role, so this is a segregation-of-duties call, not a technical one |
-| 3 | Q30 — is Business Analyst an approval step? | Default applied: no, reads and exports only |
-| 4 | Q31 — is Operation one role or one per brand? | Default applied: one. A per-brand split makes step 3 an `ANY_OF` over three roles — a back-office edit |
-| 5 | Q32 — should Marketing Staff hold `report.export`? | Default applied: no. It is how the whole sales history leaves the building |
-| 6 | A port on `claudedev`, and the networks users arrive from | `13a` B4 and B7 |
-| 7 | The GitHub repository | Created; the remote is set to `git@github.com:stevenwilliam/marketing_calendar.git` |
+| 2 | R1 — does "business analyst approves after marketing" mean after the **Marketing Head step** (taken) or after Marketing Staff creates? | Taken as step 2, after Marketing Head. Either way it is a chain edit, not code |
+| 3 | A port on `claudedev`, and the networks users arrive from | `13a` B4 and B7 |
+| 4 | The GitHub repository | Created; the remote is set to `git@github.com:stevenwilliam/marketing_calendar.git` |
 
-**Q22–Q28 are answered and closed** — see D28–D34. Nothing above blocks the
-build; each carries an applied default.
+**Q22–Q32 are answered and closed** — see D28–D38. Nothing above blocks the
+build.

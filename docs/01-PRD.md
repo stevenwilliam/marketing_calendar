@@ -44,10 +44,10 @@ The group's real roles (**BR-5.7**, D28).
 |---|---|---|
 | **Marketing Staff** | Creates promotions | A fast create form, a calendar of what is already planned, and to know where a submission is stuck |
 | **Marketing Head** | Step 1 approver | A queue of what is waiting for them, with enough detail to decide without opening a spreadsheet |
-| **Finance Head** | Step 2 approver | The target impact, and whether this promotion is affordable against the month |
-| **Operation** | Step 3 approver | Whether the sites can actually run it |
+| **Business Analyst** | Step 2 approver | The numbers behind the plan — target versus actual, prior comparable promotions — and a CSV of whatever is on screen |
+| **Finance Head** | Step 3 approver | The target impact, and whether this promotion is affordable against the month |
+| **Operation** | Step 4 approver | Whether the sites can actually run it |
 | **CFO** | Final approver | A one-screen summary; they will approve from a phone |
-| **Business Analyst** | Reads and exports | Target versus actual across brands, and a CSV of whatever is on screen — no approval rights |
 | **IT** | Configures | Users, roles, chains, parameters, holiday calendar, recipient lists, imports |
 | **Superadmin** | Breaks glass | Force-release, revive a cancelled plan — both audited |
 
@@ -57,7 +57,7 @@ The group's real roles (**BR-5.7**, D28).
 
 | Capability | Requirement |
 |---|---|
-| Identity | Staff accounts created by an administrator. Argon2id passwords. **Mandatory TOTP.** Rotating refresh tokens, revocable. |
+| Identity | Staff accounts created by an administrator, each assigned **one or more companies explicitly** (D37). Argon2id passwords. **Mandatory TOTP.** Rotating refresh tokens, revocable. |
 | Authorisation | Deny by default. Every handler declares a permission. Every query scoped by company and site. |
 | Master data | Company, site, site group with many-to-many membership, holiday calendar. Full CRUD with search. |
 | Approval engine | **Generic.** Configurable ordered steps; a step may be satisfied by any one of several roles. Versioned so a chain change does not disturb plans in flight. |

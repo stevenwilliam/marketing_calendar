@@ -75,7 +75,7 @@ erDiagram
     user_role {
         uuid user_id FK
         uuid role_id FK
-        uuid company_id FK "NULL = group-level, sees all companies"
+        uuid company_id FK "NOT NULL — one row per company the user works in"
     }
 ```
 
@@ -90,8 +90,10 @@ erDiagram
   honest is not duplication; it is the constraint.
 - Creating a site creates its system group in the same transaction. That group
   is not deletable and its membership is not editable.
-- `user_role.company_id IS NULL` means group-level: the role applies across all
-  companies (**BR-5.4**).
+- `user_role.company_id` is **`NOT NULL`** (**BR-5.4**, D37). A user working in
+  two brands has two rows; a user working in all three has three. There is no
+  NULL meaning "all companies" — that shape grows silently when a fourth brand
+  is inserted, and an access grant nobody made is the one nobody reviews.
 
 ---
 
@@ -332,6 +334,26 @@ ALTER TABLE approval_event
       OR length(btrim(coalesce(reason,''))) > 0);
 ```
 
+### 5.5a Company assignment (BR-5.4, D37)
+
+```sql
+ALTER TABLE user_role
+  ALTER COLUMN company_id SET NOT NULL;                   -- no implicit "all"
+
+-- One grant of a role per company per user; a duplicate is a defect, not a
+-- second grant.
+CREATE UNIQUE INDEX user_role_uk ON user_role (user_id, role_id, company_id);
+```
+
+> A user with **no** `user_role` row can authenticate and see nothing — deny by
+> default (BR-5.1) is the resting state, not an error condition. The user
+> creation flow requires at least one company (BR-5.4); the database's job here
+> is only to refuse the ambiguous NULL.
+
+**The eligibility query for an approval step** joins `user_role` on the
+**subject's** `company_id` (BR-4.4a). One `operation` role serves three brands
+because the user's company assignment does the separating, not the role name.
+
 ### 5.6 Site groups
 
 ```sql
@@ -417,10 +439,13 @@ because relative dates in a migration are wrong tomorrow (`99` §7).
   hand-made multi-site groups.
 - The eight roles of **BR-5.7** and the permission matrix from
   `12-security.md` §4 (D28).
-- The default approval chain as version 1: Marketing Head → Finance Head →
-  Operation → CFO (BR-4.2).
+- The default approval chain as version 1: Marketing Head → Business Analyst →
+  Finance Head → Operation → CFO (BR-4.2, D36).
 - One user per role, each with TOTP unenrolled, so the enrolment flow is
-  exercised rather than assumed.
+  exercised rather than assumed. At least one role — `operation` — is seeded
+  **twice**: once assigned to a single company and once to all three, so the
+  company-scoped eligibility of BR-4.4a is exercised by the seed rather than
+  only by a test.
 - Indonesian public holidays for the current and next year (**D22**).
 - `sys_parameters` including `promo.lead_time_working_days = 7`,
   `promo.auto_cancel_days_before = 5` and `notify.release_recipients` (D32).

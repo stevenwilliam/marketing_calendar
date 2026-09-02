@@ -75,6 +75,27 @@ reworded. A driver error is never serialised — it is logged with the
 
 Login, TOTP and refresh are rate limited per IP.
 
+## 3a. Users and roles
+
+| Method | Path | Permission |
+|---|---|---|
+| GET | `/users` | `user.manage` — `?q=` search, filter by company and role |
+| POST | `/users` | `user.manage` |
+| GET/PUT | `/users/{id}` | `user.manage` |
+| POST/DELETE | `/users/{id}/roles` | `user.manage` — grant or revoke a role **in a named company** |
+| POST | `/users/{id}/reset-totp` | `user.manage` — forces re-enrolment; audited |
+| GET | `/roles`, `/permissions` | `user.manage` |
+
+- **`POST /users` requires at least one `{role, company}` grant.** An empty
+  `companies` array is `422 VALIDATION` naming the field, not a user who can log
+  in and see nothing by accident (BR-5.4, D37).
+- A grant names its company explicitly. There is no "all companies" value; a
+  user who works across the group gets three grants and the audit log has three
+  rows saying so.
+- Revoking the last grant is permitted — it is how access is removed — but
+  returns the count so the caller sees what they did.
+- Every grant and revoke writes an audit row (BR-8.2).
+
 ## 4. Master data
 
 | Method | Path | Permission |
@@ -145,8 +166,8 @@ because BR-2.3 makes disagreement legal and the number is the point.
 |---|---|---|
 | GET | `/approvals/inbox` | authenticated |
 | GET | `/approvals/{instance_id}` | `promo.view` |
-| POST | `/approvals/{instance_id}/approve` | step role |
-| POST | `/approvals/{instance_id}/reject` | step role, reason required |
+| POST | `/approvals/{instance_id}/approve` | step role **in the subject's company** (BR-4.4a) |
+| POST | `/approvals/{instance_id}/reject` | step role in the subject's company, reason required |
 | POST | `/approvals/{instance_id}/force-release` | `superadmin`, reason required |
 | GET/POST | `/approval-chains` | `settings.manage` |
 | POST | `/approval-chains/{id}/versions` | `settings.manage` |

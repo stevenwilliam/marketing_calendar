@@ -41,6 +41,10 @@ reminder.
    already acted.
 2. If nobody holds the role, an administrator grants it — the queue is
    role-based, so the plan appears immediately, with no re-submission.
+   **Check the company**: the grant has to be for the plan's own brand
+   (BR-4.4a). A user holding `operation` for Maxx Coffee will not see a Ruuma
+   plan, and the symptom is indistinguishable from nobody holding the role at
+   all.
 3. If the start date is close, check the auto-cancel date: it is
    `start_date − promo.auto_cancel_days_before`.
 4. Last resort: a superadmin force-releases, with a reason (BR-4.8). The plan
@@ -177,6 +181,16 @@ report for a month that had data.
 |---|---|---|
 | `promo.lead_time_working_days` | `7` | earliest promo start (BR-3.3) |
 | `promo.auto_cancel_days_before` | `5` | when an incomplete chain is cancelled (BR-4.6) |
+
+> **These two together decide whether the five-step chain is survivable.** At
+> 7 and 5, a plan submitted at the earliest permitted start has roughly 4–6
+> calendar days for five approvals — about one a day, with no allowance for a
+> weekend or an approver on leave. If auto-cancellations start appearing in the
+> first month, the fix is `promo.lead_time_working_days` upward or
+> `promo.auto_cancel_days_before` downward, and it is a parameter change with
+> no deploy. Measure the actual step-to-step times from `approval_event` before
+> picking a new number.
+
 | `promo.overlap_warning_enabled` | `true` | the acknowledgement gate (BR-3.6) |
 | `notify.release_recipients` | list | **exactly** who is emailed on release — chain actors are not appended (BR-4.12, D32) |
 | `import.drop_path` | `/srv/mc/import` | where the nightly job looks |

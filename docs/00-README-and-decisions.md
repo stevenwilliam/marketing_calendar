@@ -1,10 +1,10 @@
 # marketing_calendar — Document Set
 
-**Version:** 0.2 (Q22–Q28 answered by Steven; D28–D34 recorded)
+**Version:** 0.3 (Q22–Q32 answered by Steven; D28–D38 recorded)
 **Date:** 2 September 2026 (written 1 September 2026)
 **Status:** the brief landed on 2026-09-01 and is stored verbatim at
 `PROMPT.md`. The documents below are written, and Steven's answers to Q22–Q28
-are folded in (D28–D34). **No application code until Steven confirms the set**,
+are folded in (D28–D38). **No application code until Steven confirms the set**,
 per `CLAUDE.md` §9 step 2.
 
 ---
@@ -76,7 +76,7 @@ in the affected docs the same day.
 | D16 | 2026-09-01 | *(default)* **Email notifications in phase 1; WhatsApp behind the same port for later.** | WAHA is the documented provider, per `99` §9. | 05, 06 |
 | D17 | 2026-09-01 | *(default)* **Reached over the internal network with an nginx IP allowlist, TLS on.** | Not public facing. The Go service binds loopback; nginx is the only way in. | 09, 12 |
 | D18 | 2026-09-01 | *(default)* **TOTP is mandatory for every staff account.** | One login sees all three brands' sales. Admin-only MFA would leave the largest blast radius unprotected. | 12, 02 BR-5.3 |
-| D19 | 2026-09-01 | *(default)* **A user may hold roles in more than one company**, and a group-level role sees all three brands. | The finance and director roles are group-level in a three-brand group; forcing one account per brand would guarantee shared logins. | 02 BR-5, 03, 12 |
+| D19 | 2026-09-01 | *(default, **amended by D37** — the multi-company part stands; the group-level wildcard is withdrawn)* **A user may hold roles in more than one company**, and a group-level role sees all three brands. | The finance and director roles are group-level in a three-brand group; forcing one account per brand would guarantee shared logins. | 02 BR-5, 03, 12 |
 | D20 | 2026-09-01 | *(default)* **Indonesian and English, via message catalogues, Indonesian as the default.** | No inline strings, from the first string. | 10, 11 |
 | D21 | 2026-09-01 | *(default)* **`Asia/Jakarta` operating zone, UTC storage.** | Business-day logic converts explicitly. | 02 BR-1.4, 03 |
 | D22 | 2026-09-01 | *(default)* **An Indonesian public-holiday calendar is required and administrator-maintained**, seeded for the current and next year. | "7 working days" computed on weekdays alone gives the wrong date around Idul Fitri, Christmas and Nyepi — a promotion would be approved for a date the lead time never legitimately allowed. | 02 BR-3.3, 03, 06 |
@@ -85,13 +85,17 @@ in the affected docs the same day.
 | D25 | 2026-09-01 | **The approval engine is generic from day one.** `approval` takes a subject type and subject id; promotions are its first consumer and are not special-cased inside it. | A superapp needs approvals for purchase orders, leave, discounts and price changes. A chain written inside the promotion module gets rewritten five times. | 05, 02 BR-4 |
 | D26 | 2026-09-01 | **No SEO baseline.** `99` §13 does not apply to this project. | There is no public page. Building titles-for-search, Open Graph, `robots.txt`, `sitemap.xml` and JSON-LD would be dead code. | CLAUDE.md §1, 05 |
 | D27 | 2026-09-01 | **Superadmin force-release requires a typed reason and writes an audit row.** | A bypass of an approval chain with no recorded justification is the control most likely to be questioned in a review. | 02 BR-4.8, 12 |
-| D28 | 2026-09-02 | **The group's real role names replace D14's invented ones (Q22).** Steven's list, plus CFO added the same day: `marketing_staff`, `marketing_head`, `finance_head`, `operation`, `cfo`, `business_analyst`, `it`, `superadmin`. The default chain becomes **Marketing Head → Finance Head → Operation → CFO**, created by Marketing Staff. `business_analyst` reads and exports and does not approve; `it` is the administrator role; `superadmin` stays a separate break-glass role. | Real names now, while the matrix is a document. D14's either/or step collapses to one role because the group has a single Operation function — the `ANY_OF` machinery stays, since a two-role step is exactly how it returns. | 02 BR-4.2 / BR-5.7, 12 §4, 01 §3, 03 §7 |
+| D28 | 2026-09-02 | **The group's real role names replace D14's invented ones (Q22).** Steven's list, plus CFO added the same day: `marketing_staff`, `marketing_head`, `finance_head`, `operation`, `cfo`, `business_analyst`, `it`, `superadmin`. The default chain becomes **Marketing Head → Finance Head → Operation → CFO**, created by Marketing Staff *(amended the same day by D36, which inserts Business Analyst at step 2)*. `business_analyst` reads and exports and does not approve; `it` is the administrator role; `superadmin` stays a separate break-glass role. | Real names now, while the matrix is a document. D14's either/or step collapses to one role because the group has a single Operation function — the `ANY_OF` machinery stays, since a two-role step is exactly how it returns. | 02 BR-4.2 / BR-5.7, 12 §4, 01 §3, 03 §7 |
 | D29 | 2026-09-02 | **No budget or discount-cost field, and no budget limit, in phase 1 (Q23).** `budget_idr` is removed from `promotion_plan_version`. | Steven: "no budget promo limit for now". A nullable column nobody fills is worse than no column — it invites a half-built P&L. The consequence is stated in BR-3.1 rather than discovered: the promo report shows **revenue, not margin**. Phase 2's promo P&L is the real answer, and it starts by adding this column back. | 02 BR-3.1, 03 §4, 08 |
 | D30 | 2026-09-02 | **The importer defines our own pipe-delimited CSV contract (Q24)**, specified in `06` §3.0: header matched by name, `#TOTAL` trailer required, file identity by checksum. A POS adapter is a second implementation of the same port, in phase 2. | Steven: "will discuss integration to third party later". Waiting for a format that does not exist yet blocks M10; a contract we control does not. The port is the whole reason the wait costs nothing. | 02 BR-6.1, 06 §3.0, 07 §2.8, 08 |
 | D31 | 2026-09-02 | **A site group is restricted to one brand (Q25) — rejected, not warned.** Enforced in the database by a composite foreign key: `site_group_member` carries `company_id`, and both its foreign keys include it. A cross-brand campaign is one plan per brand, permanently. | Steven: "yes restricted". A warning is for something that might be intended; this is not. Enforcing it with a composite FK rather than a trigger or an application check means the next writer cannot route around it. | 02 BR-1.3 / BR-3.7, 03 §2 / §5.6, 04 §4, 07 §2.7 |
 | D32 | 2026-09-02 | **The release email goes to a fixed list maintained in the back office (Q26)** — `notify.release_recipients`, a `sys_parameters` row. Chain actors are **not** appended automatically. Workflow notifications to the creator and pending approvers are unaffected. | Steven: "fixed lists, maintained via backend". The default would have appended every actor; he chose the narrower rule, so the list is exactly the list. Its known failure is going stale, so changes are audited and `06` §4 puts reading it into the month-end routine. | 02 BR-4.12, 01 §4.1, 06 §4 / §6, 08 M12 |
 | D33 | 2026-09-02 | **No retention limit (Q27).** `audit_log`, `approval_event`, `import_run` and `import_rejection` are kept indefinitely. No purge job exists, and adding one requires reversing this decision. | Steven: "no limit". These are event tables, not transaction tables; the table that grows with trading is `history_txn`, and its answer is partitioning, not deletion. | 02 BR-8.5, 06 §4a |
 | D34 | 2026-09-02 | **The palette is rebuilt around `#778AAB` (Q28).** Steven's colour measures **3.50 on white**, which decides its job: it is the **control boundary**, the chrome and the accent chip — not an ink. `--primary` `#2E4C7E` is the same 218° hue darkened until it can carry text (8.57). Canvas `#F2F5F9`, ink `#151B24`, muted `#475466`, success `#146B3C`, warn `#845000`, danger `#9E1C28`, info `#0F5F73`, brands `#6B3B2A` / `#7A2E63` / `#7C4A00`. All 29 pairings measured by `scripts/contrast.py`, which passes. | Steven: "choose moderen color template, i prefer #778aab, others is mix and match". The one trap is recorded in the checker: **3.50 passes as a border and fails as text**, so white on `#778AAB` is rejected and a filled accent chip takes `--ink` (4.95). `#778AAB` is reserved as the dark-theme primary, where it has the headroom — a plan, not yet a measurement. | 10 §2 / §7, `design.md` §2–§3, `scripts/contrast.py` |
+| D35 | 2026-09-02 | **`superadmin` is held by IT (Q29).** | Steven: "superadmin = it". The trade is explicit: a technical role can force-release a promotion the business never approved. Compensating controls — mandatory typed reason, audit row naming the actor, `force_released` on the promotion report, and `audit.view` reaching the CFO so the bypass is visible outside IT. | 12 §4, 02 BR-5.7 |
+| D36 | 2026-09-02 | **Business Analyst is an approver, at step 2 (Q30).** The chain becomes Marketing Head → **Business Analyst** → Finance Head → Operation → CFO. | Steven: "business analyst is approver also, after marketing". The BA validates the numbers before Finance is asked whether they are affordable, which is the right order. Read as *after the Marketing Head step*, since Marketing Staff creates rather than approves. **Five steps against a 7-working-day lead time and a 5-day auto-cancel leaves about one step per day** — noted in BR-4.2 and `06` §6, and both numbers are parameters. | 02 BR-4.2 / BR-5.7, 01 §3, 03 §7, 07 §2.4 |
+| D37 | 2026-09-02 | **A user is assigned one or more companies explicitly at creation; `user_role.company_id` becomes `NOT NULL` (Q31).** The "NULL means all companies" group-level marker from D19 is withdrawn. Approval eligibility is company-scoped (new **BR-4.4a**), which is what lets a single `operation` role serve three brands. | Steven: "when create user, it will choose company (1 or more)". An implicit superset **grows silently** — insert a fourth brand and every group-level account can see its sales with no decision and no audit row. An explicit list grants nobody anything until somebody chooses. It also answers the per-brand-Operation question without adding roles: the separation lives on the user. | 02 BR-4.4a / BR-5.4, 03 §2 / §5.5a, 04 §3a, 12 §4, 07 §2.4 / §2.10 |
+| D38 | 2026-09-02 | **`report.export` is granted to Marketing Staff (Q32)**, and to every other business role. **IT remains denied.** | Steven: "permit it". The person planning a promotion needs the numbers behind it, and denying the export while granting `report.view` only routes the same data out through a screenshot. The control that does the work is the audit row on every export, with row count and filters. IT stays out: administering the box is not a reason to carry the sales history off it. | 12 §4, 07 §2.10 |
 
 ---
 
@@ -120,12 +124,21 @@ answers, verbatim:
 Still open, and none of them blocks the build. Each carries an applied default,
 so the documents are complete either way:
 
-| # | Question | Why it matters | Applied default |
+**Q29–Q32 were answered by Steven on 2026-09-02** and became D35–D38:
+
+| # | Question | Steven's answer | Decision |
 |---|---|---|---|
-| Q29 | Who holds **`superadmin`** — IT, or a business officer such as the CFO? | It is the force-release role. Held by IT, a technical role can release a promotion the business never approved. The mitigations are real (typed reason, audit row, `force_released` on the report) but the residual risk is a judgement, not a control. | IT holds it; the risk is written down in `12` §4 rather than hidden |
-| Q30 | Does **Business Analyst** belong in the approval chain? | Steven listed the role but not where it sits. A BA validating the target numbers before Finance sees them is a plausible step 1. | Not in the chain — reads and exports only. Adding a step is a back-office edit, not a code change |
-| Q31 | Is **Operation** one role or one per brand? | D28 collapsed D14's brand-head/ops-head either-or into a single `operation`. If the group actually has an operations head per brand, step 3 becomes an `ANY_OF` over three roles. | One `operation` role. The `ANY_OF` machinery is retained precisely so this is a data change |
-| Q32 | Should `report.export` reach **Marketing Staff**? | It is the permission through which the entire sales history leaves the building, and it is currently denied to the role that creates promotions. | Denied. Reversing it is one seed row |
+| Q29 | Who holds `superadmin` | "superadmin = it" | **D35** |
+| Q30 | Is Business Analyst in the chain | "business analyst is approver also, after marketing" | **D36** |
+| Q31 | Is Operation one role or one per brand | "when create user, it will choose company (1 or more)" | **D37** |
+| Q32 | Does `report.export` reach Marketing Staff | "permit it" | **D38** |
+
+**Nothing is open.** One reading was taken rather than asked, and it is cheap
+to correct:
+
+| # | Reading taken | Alternative | Cost to change |
+|---|---|---|---|
+| R1 | "after marketing" = **after the Marketing Head step**, so Business Analyst is step 2 | If it meant "after Marketing Staff creates", the BA is step 1 and the Marketing Head follows | A back-office chain edit, or one line of the seed before M6 |
 
 ---
 
