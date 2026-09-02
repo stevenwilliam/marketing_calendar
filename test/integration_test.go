@@ -8,7 +8,11 @@ package test
 
 import (
 	"context"
+	"io"
+	"log/slog"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -397,4 +401,84 @@ func createApprover(t *testing.T, g *gorm.DB, roleID, companyID uuid.UUID) uuid.
 		t.Fatal(err)
 	}
 	return uid
+}
+
+// --- the trailer rule (BR-6.4) -------------------------------------------
+
+// The trailer exists to catch a TRUNCATED upload, and the row count is what
+// catches that. The total is a second opinion and is only meaningful when
+// every row loaded — a file with one bad line legitimately sums lower than its
+// trailer states. Enforcing the total regardless failed the whole file for one
+// bad row, which loses a night of trading to guard against something the row
+// count already catches. Found by running the nightly job against a real file.
+func TestTrailerTotalDoesNotFailAFileWithRejections(t *testing.T) {
+	g := db(t)
+	ctx := context.Background()
+
+	dir := t.TempDir()
+	// Three good rows and one unknown site. The trailer total names the sum of
+	// ALL four, so the loaded total is legitimately lower.
+	good := "site_code|business_date|pos_receipt_no|sales_type|promo_code|order_mode|gross_amount_idr\n" +
+		"MXX-001|2025-02-10|TR-1|normal||dine_in|10000\n" +
+		"MXX-001|2025-02-10|TR-2|normal||dine_in|20000\n" +
+		"MXX-001|2025-02-10|TR-3|normal||dine_in|30000\n" +
+		"NOPE-1|2025-02-10|TR-4|normal||dine_in|40000\n" +
+		"#TOTAL|4|100000\n"
+	partial := filepath.Join(dir, "partial.csv")
+	if err := os.WriteFile(partial, []byte(good), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	deps := testDeps(t, g)
+	res, err := deps.ImportFile(ctx, partial, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.Run.Outcome != "PARTIAL" {
+		t.Fatalf("outcome = %s (%s); one bad row must not fail the whole file",
+			res.Run.Outcome, res.Run.Message)
+	}
+	if res.Run.RowsInserted != 3 {
+		t.Fatalf("inserted %d rows, want 3", res.Run.RowsInserted)
+	}
+	if res.Run.RowsRejected != 1 {
+		t.Fatalf("rejected %d rows, want 1", res.Run.RowsRejected)
+	}
+	// The shortfall must be EXPLAINED, not hidden: the reconciliation screen
+	// has to show why the loaded total is below the file's own.
+	if !strings.Contains(res.Run.Message, "ditolak") {
+		t.Fatalf("the message must explain the shortfall, got %q", res.Run.Message)
+	}
+
+	// A genuinely truncated file STILL fails, on the row count.
+	truncated := "site_code|business_date|pos_receipt_no|sales_type|promo_code|order_mode|gross_amount_idr\n" +
+		"MXX-001|2025-02-11|TR-9|normal||dine_in|10000\n" +
+		"#TOTAL|9|90000\n"
+	short := filepath.Join(dir, "truncated.csv")
+	if err := os.WriteFile(short, []byte(truncated), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	res2, err := deps.ImportFile(ctx, short, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res2.Run.Outcome != "FAILED" {
+		t.Fatalf("a truncated file must FAIL, got %s", res2.Run.Outcome)
+	}
+	if res2.Run.RowsInserted != 0 {
+		t.Fatalf("a truncated file must load nothing, loaded %d", res2.Run.RowsInserted)
+	}
+}
+
+// testDeps builds the minimum app.Deps the importer needs.
+func testDeps(t *testing.T, g *gorm.DB) *app.Deps {
+	t.Helper()
+	return &app.Deps{
+		DB:     g,
+		Log:    slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Now:    func() time.Time { return time.Now().UTC() },
+		Params: postgres.NewParamRepo(g),
+		Facts:  postgres.NewFactRepo(g),
+		Audit:  postgres.NewAuditRepo(g),
+	}
 }

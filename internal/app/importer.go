@@ -96,7 +96,16 @@ func (d *Deps) ImportFile(ctx context.Context, path string, actor *uuid.UUID) (*
 		saved, err := d.Facts.LoadFile(ctx, run, nil, rejects, actor)
 		return &ImportResult{Run: saved, Rejections: rejects}, err
 	}
-	if trailerTotal != nil {
+	// The TOTAL is only enforced when nothing was rejected.
+	//
+	// The trailer exists to catch a truncated upload, and the ROW COUNT above
+	// is what catches that — a truncated file is short. The total is a second
+	// opinion, and it is only meaningful when every row loaded: a file with
+	// one bad line has a legitimately smaller sum than its trailer states.
+	// Enforcing it regardless would fail the whole file for one bad row and
+	// lose a night of trading, which is a far worse outcome than the one the
+	// check is guarding against.
+	if trailerTotal != nil && len(rejects) == 0 {
 		var sum money.IDR
 		for _, r := range rows {
 			sum += r.GrossIDR
@@ -114,6 +123,18 @@ func (d *Deps) ImportFile(ctx context.Context, path string, actor *uuid.UUID) (*
 	if len(rejects) > 0 {
 		run.Outcome = "PARTIAL"
 		run.Message = fmt.Sprintf("%d baris ditolak", len(rejects))
+		if trailerTotal != nil {
+			var sum money.IDR
+			for _, r := range rows {
+				sum += r.GrossIDR
+			}
+			if sum != *trailerTotal {
+				// Said plainly rather than hidden: the reconciliation screen
+				// must show why the loaded total is below the file's own.
+				run.Message += fmt.Sprintf("; total dimuat Rp %s dari Rp %s pada trailer — selisihnya adalah baris yang ditolak",
+					sum.Format(), trailerTotal.Format())
+			}
+		}
 	}
 	saved, err := d.Facts.LoadFile(ctx, run, rows, rejects, actor)
 	if err != nil {
