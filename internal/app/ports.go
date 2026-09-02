@@ -144,7 +144,7 @@ type Holiday struct {
 
 type MasterRepo interface {
 	Companies(ctx context.Context) ([]Company, error)
-	Sites(ctx context.Context, companies []uuid.UUID, q string) ([]Site, error)
+	Sites(ctx context.Context, companies, siteScope []uuid.UUID, q string) ([]Site, error)
 	SiteByID(ctx context.Context, id uuid.UUID) (*Site, error)
 	CreateSite(ctx context.Context, s Site, actor uuid.UUID) (uuid.UUID, error)
 	UpdateSite(ctx context.Context, s Site, actor uuid.UUID) error

@@ -35,7 +35,7 @@ func handleCompanies(d *app.Deps) gin.HandlerFunc {
 func handleSites(d *app.Deps) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p := principal(c)
-		rows, err := d.Master.Sites(c.Request.Context(), p.CompanyIDs, c.Query("q"))
+		rows, err := d.Master.Sites(c.Request.Context(), p.CompanyIDs, p.SiteIDs, c.Query("q"))
 		if err != nil {
 			fail(c, err)
 			return

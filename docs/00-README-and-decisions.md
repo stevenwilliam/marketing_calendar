@@ -1,11 +1,12 @@
 # marketing_calendar — Document Set
 
-**Version:** 0.4 (design guideline landed; D28–D39 recorded)
+**Version:** 0.5 (built and running; D28–D43 recorded)
 **Date:** 2 September 2026 (written 1 September 2026)
 **Status:** the brief landed on 2026-09-01 and is stored verbatim at
-`PROMPT.md`. The documents below are written, and Steven's answers to Q22–Q28
-are folded in (D28–D38). **No application code until Steven confirms the set**,
-per `CLAUDE.md` §9 step 2.
+`PROMPT.md`. The documents are written, Steven's answers to Q22–Q32 are folded
+in (D28–D38), his design guideline is adopted (D39), and **the application is
+built, tested and running** on the dev server. D40–D43 are decisions the build
+itself forced.
 
 ---
 
@@ -36,6 +37,9 @@ document, it wins. Build and working conventions live in `../CLAUDE.md`.
 | 11 | `11-local-dev-setup.md` | Local/dev environment, everyday commands | ✅ |
 | 12 | `12-security.md` | ASVS L2 / Top-10 control map, abuse cases | ✅ |
 | 13a | `13a-development-server-preparation.md` | Dev-server handbook | ✅ |
+| 13 | `13-production-deployment-handbook.md` | Empty machine → running service | ✅ |
+| 14 | `14-user-guide.md` | Panduan pengguna (Bahasa Indonesia) | ✅ |
+| 15 | `15-admin-guide.md` | Panduan administrator | ✅ |
 | 99 | `99-steven-preference.md` | Portable engineering DNA — project-agnostic | ✅ |
 | — | `PROMPT.md` | Steven's brief, verbatim | ✅ |
 | — | `PROGRESS.md` | Live build status | ✅ |
@@ -97,6 +101,10 @@ in the affected docs the same day.
 | D37 | 2026-09-02 | **A user is assigned one or more companies explicitly at creation; `user_role.company_id` becomes `NOT NULL` (Q31).** The "NULL means all companies" group-level marker from D19 is withdrawn. Approval eligibility is company-scoped (new **BR-4.4a**), which is what lets a single `operation` role serve three brands. | Steven: "when create user, it will choose company (1 or more)". An implicit superset **grows silently** — insert a fourth brand and every group-level account can see its sales with no decision and no audit row. An explicit list grants nobody anything until somebody chooses. It also answers the per-brand-Operation question without adding roles: the separation lives on the user. | 02 BR-4.4a / BR-5.4, 03 §2 / §5.5a, 04 §3a, 12 §4, 07 §2.4 / §2.10 |
 | D38 | 2026-09-02 | **`report.export` is granted to Marketing Staff (Q32)**, and to every other business role. **IT remains denied.** | Steven: "permit it". The person planning a promotion needs the numbers behind it, and denying the export while granting `report.view` only routes the same data out through a screenshot. The control that does the work is the audit row on every export, with row count and filters. IT stays out: administering the box is not a reason to carry the sales history off it. | 12 §4, 07 §2.10 |
 | D39 | 2026-09-02 | **Steven's design guideline replaces the D34 palette.** Artifact `f896dbfe`, saved verbatim at `docs/design/mockup.html`: the **Modernist** system — Archivo (800/600/400), accent `#ec3013` on warm neutrals `#f3f2f2`/`#eae9e9`, near-black `#201e1d` sidebar, **radius 0**, Indonesian copy, and mockups for all ten screens. The identity is kept exactly. **Six of its values fail WCAG AA and are retuned to the nearest passing value from Steven's own tonal ramp**: the primary button and accent text go to `#ae1800` (3.76 → 6.41), the divider from 40% to 55% (2.41 → 3.66), muted text from 55% to 65% (3.66 → 4.96), table headers from 60% to 65% (4.23 → 4.96), sidebar tertiary from 45% to 62% (4.06 → 6.46). All 39 pairings measured; `scripts/contrast.py` passes and carries every rejected original by name. | Steven chose the look; CLAUDE.md §7 makes AA a hard rule and says contrast is *calculated*. Shipping the guideline unmeasured would have put a **2.41** border on every input in the product and a **3.76** label on the most-used button. Retuning inside his own ramp keeps the design his and the numbers true. `#ec3013` stays vivid everywhere it is not read — 2px rules, the active nav bar, focus rings, the chip border. | 10 §2–§3 / §6–§7, `design.md` §1–§3, `scripts/contrast.py`, `docs/design/mockup.html` |
+| D40 | 2026-09-02 | **`TRUNCATE` is refused on every append-only table.** `refuse_mutation()` is a `FOR EACH ROW` trigger and `TRUNCATE` is statement-level, so it removed every row of `audit_log` without raising. Migration 0008 adds statement-level `BEFORE TRUNCATE` triggers on `audit_log`, `approval_event`, `import_run` and `import_rejection`. | Found by probing the live database rather than reading the migration. BR-8.1 promises append-only; a guarantee a single statement can erase is not one. The first probe *looked* like a pass because the table was empty and a row trigger has no rows to fire on. | 02 BR-8.1, 03 §5.7, db/0008 |
+| D41 | 2026-09-02 | **`history_txn.import_run_id` is `DEFERRABLE INITIALLY DEFERRED`.** The importer writes transactions and the run row in one transaction, but the row counts are only known after the inserts and `import_run` is append-only, so they cannot be back-filled. | Found by the importer integration test failing with a 23503 against the live schema. Deferring the constraint lets the run row be written last with its true counts, checked at COMMIT. | 03 §5.4, db/0009 |
+| D42 | 2026-09-02 | **The import trailer's TOTAL is enforced only when no row was rejected**; the ROW COUNT is always enforced. A partial file records the shortfall in its message instead of failing. | The trailer exists to catch a truncated upload, and the row count is what catches that. Enforcing the total regardless failed an entire file for one bad line — losing a night of trading to guard against something already guarded. Found by running the nightly job against a real file. | 02 BR-6.4, 06 §3.0, 07 §2.8 |
+| D43 | 2026-09-02 | **The dev server runs on port 8093**, not 8081. | 8081 and 8082 are taken by other projects on `claudedev`, and 8090/8091 by evermore. Recorded so the next person does not rediscover it by getting another project's 404. | 09, 11, 13, deploy/ |
 
 ---
 

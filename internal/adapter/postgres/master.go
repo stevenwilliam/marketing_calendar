@@ -34,15 +34,23 @@ func (r *MasterRepo) Companies(ctx context.Context) ([]app.Company, error) {
 	return out, nil
 }
 
-// Sites is scoped by company IN THE QUERY, never filtered afterwards (BR-1.5).
-func (r *MasterRepo) Sites(ctx context.Context, companies []uuid.UUID, q string) ([]app.Site, error) {
+// Sites is scoped by company IN THE QUERY, never filtered afterwards (BR-1.5),
+// and by the caller's site scope where one is set (BR-5.5).
+//
+// An EMPTY siteScope means "no site restriction", not "no sites". The two read
+// the same in a naive implementation and are opposites: getting it backwards
+// either shows everything to a restricted user or nothing to an unrestricted
+// one. The cardinality() test says which is meant, explicitly.
+func (r *MasterRepo) Sites(ctx context.Context, companies, siteScope []uuid.UUID, q string) ([]app.Site, error) {
 	like := "%" + q + "%"
 	rows, err := r.db.WithContext(ctx).Raw(`
 		SELECT site_id, company_id, site_code, site_name, site_type, is_active
 		  FROM site
 		 WHERE company_id = ANY(?::uuid[])
+		   AND (cardinality(?::uuid[]) = 0 OR site_id = ANY(?::uuid[]))
 		   AND (? = '' OR site_code ILIKE ? OR site_name ILIKE ?)
-		 ORDER BY site_code`, uuidList(companies), q, like, like).Rows()
+		 ORDER BY site_code`,
+		uuidList(companies), uuidList(siteScope), uuidList(siteScope), q, like, like).Rows()
 	if err != nil {
 		return nil, err
 	}

@@ -151,7 +151,7 @@ func TestUserWithNoGrantsSeesNothing(t *testing.T) {
 		t.Fatalf("an ungranted user holds %d permissions in %d companies",
 			len(p.Permissions), len(p.CompanyIDs))
 	}
-	sites, err := master.Sites(ctx, p.CompanyIDs, "")
+	sites, err := master.Sites(ctx, p.CompanyIDs, nil, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -171,7 +171,7 @@ func TestListsAreScopedInTheQuery(t *testing.T) {
 	maxx := mustUUID(t, g, `SELECT company_id FROM company WHERE company_code = 'MAXX'`)
 	ruuma := mustUUID(t, g, `SELECT company_id FROM company WHERE company_code = 'RUUMA'`)
 
-	sites, err := master.Sites(ctx, []uuid.UUID{maxx}, "")
+	sites, err := master.Sites(ctx, []uuid.UUID{maxx}, nil, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,11 +206,96 @@ func TestListsAreScopedInTheQuery(t *testing.T) {
 
 	// An EMPTY company scope must return nothing, not everything. This is the
 	// failure mode where a missing filter reads as "no filter".
-	empty, err := master.Sites(ctx, nil, "")
+	empty, err := master.Sites(ctx, nil, nil, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(empty) != 0 {
 		t.Fatalf("an empty company scope returned %d sites: absent scope read as unrestricted", len(empty))
+	}
+}
+
+// BR-5.5: a role may additionally be limited to a set of sites, and where one
+// is set every read is filtered to those sites IN THE QUERY.
+//
+// The two empty cases are opposites and are easy to swap: no scope means all
+// sites, while a scope that excludes everything requested must return nothing.
+func TestSiteScopeFiltersInTheQuery(t *testing.T) {
+	g := db(t)
+	ctx := context.Background()
+	master := postgres.NewMasterRepo(g)
+	users := postgres.NewUserRepo(g)
+
+	maxx := mustUUID(t, g, `SELECT company_id FROM company WHERE company_code = 'MAXX'`)
+	role := mustUUID(t, g, `SELECT role_id FROM role WHERE role_code = 'operation'`)
+	uid := createApprover(t, g, role, maxx)
+
+	all, err := master.Sites(ctx, []uuid.UUID{maxx}, nil, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(all) < 2 {
+		t.Fatalf("the fixture needs at least two Maxx sites, has %d", len(all))
+	}
+
+	// No scope set: the user sees every site in their company.
+	p, err := users.Principal(ctx, uid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.SiteIDs) != 0 {
+		t.Fatal("a new user must start unrestricted")
+	}
+	unrestricted, err := master.Sites(ctx, p.CompanyIDs, p.SiteIDs, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(unrestricted) != len(all) {
+		t.Fatalf("an unrestricted user sees %d of %d sites: an empty scope was read as 'no sites'",
+			len(unrestricted), len(all))
+	}
+
+	// Scope to ONE site.
+	only := all[0]
+	if err := g.Exec(`INSERT INTO user_site_scope (user_id, site_id) VALUES (?, ?)`,
+		uid, only.SiteID).Error; err != nil {
+		t.Fatal(err)
+	}
+	p, err = users.Principal(ctx, uid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.SiteIDs) != 1 {
+		t.Fatalf("the scope did not reach the principal: %d sites", len(p.SiteIDs))
+	}
+	scoped, err := master.Sites(ctx, p.CompanyIDs, p.SiteIDs, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(scoped) != 1 || scoped[0].SiteID != only.SiteID {
+		t.Fatalf("a site-scoped user saw %d sites; the filter is not in the query", len(scoped))
+	}
+
+	// Narrowing within the scope is allowed; widening past it is not.
+	if got := app.IntersectSites(*p, []uuid.UUID{only.SiteID}); len(got) != 1 || got[0] != only.SiteID {
+		t.Fatal("a scoped user must be able to ask for a site inside their scope")
+	}
+	outside := all[1].SiteID
+	got := app.IntersectSites(*p, []uuid.UUID{outside})
+	if len(got) == 0 {
+		t.Fatal("asking only for a forbidden site returned an EMPTY filter, which reads as 'no filter' downstream")
+	}
+	for _, s := range got {
+		if s == outside {
+			t.Fatal("a scoped user widened past their scope")
+		}
+	}
+	// And that filter must genuinely return nothing.
+	none, err := master.Sites(ctx, p.CompanyIDs, got, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(none) != 0 {
+		t.Fatalf("asking for a forbidden site returned %d sites", len(none))
 	}
 }

@@ -112,21 +112,26 @@ for Maxx Coffee does not approve a Ruuma plan. This is what lets one
 lives on the user, not in the role name.
 
 **IDOR.** Asking for another company's promotion returns `404`, not `403` — the
-existence of the row is not disclosed. Tested per resource, per role.
+existence of the row is not disclosed. Proven in
+`test/authz_test.go::TestListsAreScopedInTheQuery`, which also asserts the
+failure mode that matters most: an **empty** company scope returns nothing
+rather than everything, because a missing filter reads exactly like no filter.
 
 ## 5. The controls specific to this product
 
 | Risk | Control | Proven by |
 |---|---|---|
-| A promotion goes live unapproved | status is `RELEASED` only when the chain completes or a superadmin force-releases | `approval_test.go::TestNotReleasedUntilChainComplete` |
+| A promotion goes live unapproved | status is `RELEASED` only when the chain completes or a superadmin force-releases | `approval_test.go::TestNotReleasedUntilChainComplete`, and walked end to end against the running service |
 | An approved promotion is edited | approved plans immutable; an edit creates a new version re-entering the chain (BR-4.7) | `TestApprovedPlanIsImmutable` |
 | Someone approves their own plan | refused at every step (BR-4.11) | `TestCreatorCannotApprove` |
-| Two approvers race | row lock plus unique index; exactly one wins (BR-4.10) | `approval_concurrency_test.go` |
-| A chain is edited to remove an inconvenient approver | instances bind to a chain **version**; in-flight plans keep theirs (BR-4.3) | `TestChainChangeDoesNotAffectInFlight` |
+| Two approvers race | `SELECT … FOR UPDATE` plus a partial unique index; exactly one wins (BR-4.10) | `test/integration_test.go::TestTwoApproversRaceExactlyOneWins` — two goroutines released together against a real database |
+| A chain is edited to remove an inconvenient approver | instances bind to a chain **version**; in-flight plans keep theirs (BR-4.3) | `approval_test.go::TestChainChangeDoesNotAffectInFlight` **and** `test/integration_test.go::TestChainChangeDoesNotAffectInFlight` against a real chain rewrite |
 | A bypass leaves no trace | force-release and lead-time override both require a typed reason and write an audit row (BR-4.8, D27) | `TestForceReleaseRequiresReason` |
 | The whole sales history walks out | `report.export` is a separate permission from `report.view`; every export is audited with row count and filters | `security_authz_test.go` |
 | An import silently doubles revenue | idempotent by `(site, date, receipt_no)` (BR-6.3) | `importer_test.go::TestReimportIsIdempotent` |
-| History is quietly rewritten | `audit_log`, `approval_event` and `import_run` refuse UPDATE and DELETE by trigger | `schema_test.go::TestAppendOnly` |
+| History is quietly rewritten | `audit_log`, `approval_event`, `import_run` and `import_rejection` refuse UPDATE, DELETE **and TRUNCATE** by trigger (D40) | `test/integration_test.go::TestAppendOnlyRefusesUpdateDeleteAndTruncate` |
+| A site-scoped user reads another site | `user_site_scope` filtered **in the query**; an empty scope means unrestricted, an excluded request returns nothing (BR-5.5) | `test/authz_test.go::TestSiteScopeFiltersInTheQuery` |
+| One export drains the whole history | `report.max_export_rows` refused **before** a byte is written, since a streaming CSV cannot become a clean error once the 200 is out | `internal/app/report.go::checkExportCap` |
 
 ## 6. Input handling
 

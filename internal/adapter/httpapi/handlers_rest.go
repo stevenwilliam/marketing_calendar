@@ -193,6 +193,9 @@ func targetFilter(c *gin.Context, p app.Principal) app.TargetFilter {
 			f.SiteIDs = []uuid.UUID{u}
 		}
 	}
+	// BR-5.5: a caller may narrow to a subset of their sites; they can never
+	// widen past their scope. Applied here so every target path inherits it.
+	f.SiteIDs = app.IntersectSites(p, f.SiteIDs)
 	return f
 }
 

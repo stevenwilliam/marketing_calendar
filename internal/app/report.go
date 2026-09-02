@@ -86,6 +86,40 @@ func (d *Deps) TargetReport(ctx context.Context, p Principal, f TargetFilter) ([
 	return d.Facts.TargetVsActual(ctx, f)
 }
 
+// IntersectSites is BR-5.5. An EMPTY site scope on the principal means "no
+// site restriction", so a request without a site filter stays unfiltered; a
+// scoped caller can narrow within their sites but never past them.
+//
+// The empty cases are opposites and are easy to swap: no scope means all,
+// while a scope that excludes everything requested must return nothing. The
+// sentinel below is what keeps "asked for a site I may not see" from
+// collapsing into "asked for nothing, so show me everything".
+func IntersectSites(p Principal, requested []uuid.UUID) []uuid.UUID {
+	if len(p.SiteIDs) == 0 {
+		return requested // unrestricted caller
+	}
+	if len(requested) == 0 {
+		return p.SiteIDs // restricted caller, no narrowing asked for
+	}
+	allowed := map[uuid.UUID]bool{}
+	for _, s := range p.SiteIDs {
+		allowed[s] = true
+	}
+	out := make([]uuid.UUID, 0, len(requested))
+	for _, s := range requested {
+		if allowed[s] {
+			out = append(out, s)
+		}
+	}
+	if len(out) == 0 {
+		// Asked only for sites they may not see. Returning an empty slice
+		// would read as "no filter" downstream and show them everything, so
+		// an impossible id is returned instead and the result is empty.
+		return []uuid.UUID{uuid.Nil}
+	}
+	return out
+}
+
 // intersectCompanies is the scoping rule. A caller may narrow to a subset of
 // their companies; they can never widen beyond them, and an empty request
 // means "all of mine" rather than "all that exist".
@@ -119,6 +153,9 @@ func (d *Deps) ExportPromoReport(ctx context.Context, p Principal, f PlanFilter,
 	if err != nil {
 		return 0, err
 	}
+	if err := d.checkExportCap(ctx, len(rows)); err != nil {
+		return 0, err
+	}
 	c := csvexport.New(w)
 	c.Write([]string{"kode_rencana", "nama_promo", "merek", "kelompok_toko",
 		"mulai", "selesai", "mode_pesanan", "status", "rilis_paksa",
@@ -149,6 +186,9 @@ func (d *Deps) ExportTargetReport(ctx context.Context, p Principal, f TargetFilt
 	}
 	rows, err := d.TargetReport(ctx, p, f)
 	if err != nil {
+		return 0, err
+	}
+	if err := d.checkExportCap(ctx, len(rows)); err != nil {
 		return 0, err
 	}
 	c := csvexport.New(w)
@@ -184,6 +224,9 @@ func (d *Deps) ExportPlans(ctx context.Context, p Principal, f PlanFilter, w io.
 	if err != nil {
 		return 0, err
 	}
+	if err := d.checkExportCap(ctx, len(rows)); err != nil {
+		return 0, err
+	}
 	c := csvexport.New(w)
 	c.Write([]string{"kode_rencana", "nama_promo", "merek", "kelompok_toko", "status",
 		"mulai", "selesai", "mode_pesanan", "target_penjualan_idr", "target_struk",
@@ -208,6 +251,9 @@ func (d *Deps) ExportTargets(ctx context.Context, p Principal, f TargetFilter, w
 	if err != nil {
 		return 0, err
 	}
+	if err := d.checkExportCap(ctx, len(rows)); err != nil {
+		return 0, err
+	}
 	c := csvexport.New(w)
 	c.Write([]string{"kode_toko", "nama_toko", "periode", "tahun", "bulan", "jenis_penjualan", "target_idr"})
 	for _, r := range rows {
@@ -219,6 +265,21 @@ func (d *Deps) ExportTargets(ctx context.Context, p Principal, f TargetFilter, w
 			r.SalesType, csvexport.Money(r.AmountIDR)})
 	}
 	return len(rows), c.Flush()
+}
+
+// checkExportCap enforces report.max_export_rows.
+//
+// It refuses BEFORE a byte is written, because the CSV streams straight to the
+// response: once the 200 and the headers are out there is no way to turn a
+// failure into a clean error, and the user would get a silently short file.
+func (d *Deps) checkExportCap(ctx context.Context, rows int) error {
+	max := d.Params.Int(ctx, ParamMaxExportRows, 100000)
+	if max > 0 && rows > max {
+		return apierror.Newf(apierror.CodeValidation,
+			"ekspor berisi %d baris, melebihi batas %d — persempit filter atau naikkan report.max_export_rows",
+			rows, max)
+	}
+	return nil
 }
 
 // formatBPS renders basis points as a percentage with two decimals, in

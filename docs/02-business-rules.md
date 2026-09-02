@@ -321,6 +321,15 @@ for that site within one transaction.
 (read, inserted, skipped, rejected), the actor, and the outcome. The table is
 append-only.
 
+**The file's `#TOTAL` trailer is checked in two parts, and they are not
+equal.** The **row count** is always enforced: a file shorter than its trailer
+claims is truncated, and a truncated upload is the only import failure that
+looks exactly like a quiet day of trading. The **rupiah total** is enforced
+**only when no row was rejected** — a file with one bad line legitimately sums
+lower than its trailer, and failing the whole file for it would lose a night of
+trading to guard against something the row count already guards. A partial run
+states the shortfall on the run rather than hiding it. *(D42)*
+
 **BR-6.5 A rejected row never silently disappears.** Rows failing validation are
 written to a rejection table with the reason and the original line, and the
 reconciliation screen shows them.
@@ -362,8 +371,14 @@ for a month or a year, split by sales type.
 
 ## BR-8 — Audit
 
-**BR-8.1 Append-only.** `audit_log` and `approval_event` take no updates and no
-deletes; their migrations say so and a trigger enforces it.
+**BR-8.1 Append-only.** `audit_log`, `approval_event`, `import_run` and
+`import_rejection` take no updates, no deletes **and no `TRUNCATE`**.
+
+> The `TRUNCATE` clause is not decoration. `refuse_mutation()` is a
+> `FOR EACH ROW` trigger, and `TRUNCATE` is statement-level: it removes every
+> row without visiting any of them, so the row trigger never fires. Probed
+> against the live database, `TRUNCATE audit_log` emptied the table and raised
+> nothing. Statement-level `BEFORE TRUNCATE` triggers close it *(D40)*.
 
 **BR-8.2 What is always audited:** every approval decision; every force-release
 and every revive, with the reason; every lead-time override; every change to a
