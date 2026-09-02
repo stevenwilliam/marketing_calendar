@@ -1,11 +1,7 @@
-.env
-*.pem
-*.key
-/bin/
-/dist/
-web/dist/
-node_modules/
-*.log
-.DS_Store
 __pycache__/
 *.pyc
+.env
+/bin/
+/web/node_modules/
+/web/dist/
+/tmp/
