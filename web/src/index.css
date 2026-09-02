@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Archivo, self-hosted. Never a font CDN: it hands a third party every staff
+   member's IP and the page they are on, and this application is deliberately
+   not public. */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/archivo-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/archivo-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/archivo-800.woff2') format('woff2');
+}
+
+@layer base {
+  :root {
+    --color-bg: #f3f2f2;
+    --color-surface: #eae9e9;
+    --color-paper: #ffffff;
+    --color-text: #201e1d;
+    --color-muted: rgba(32, 30, 29, 0.65);
+    --color-accent: #ec3013;
+    --color-accent-ink: #ae1800;
+    --color-divider: rgba(32, 30, 29, 0.55);
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    font-weight: 400;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+  h1 { font-size: 42px; }
+  h2 { font-size: 32px; }
+  h3 { font-size: 25px; }
+  h4 { font-size: 20px; }
+  h5 { font-size: 16px; }
+  h6 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* A ring nobody can see is not a ring. 2px accent at 3.76 clears 1.4.11. */
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection { background: rgba(236, 48, 19, 0.3); }
+
+  /* Money and counts line up or they cannot be scanned, which is the only
+     reason the column exists. */
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 cursor-pointer
+           font-extrabold text-[14px] leading-[1.2] px-4 py-2 border border-transparent
+           no-underline transition-colors;
+  }
+  .btn:disabled { @apply opacity-45 cursor-not-allowed; }
+  /* #ae1800, not #ec3013: the label is 14px, which is not large text, so the
+     brand red's 3.76 would fail. 6.41 here. */
+  .btn-primary { @apply bg-accent-ink text-bg; }
+  .btn-primary:hover:not(:disabled) { @apply bg-accent-hover; }
+  .btn-secondary { @apply border-divider text-ink; }
+  .btn-secondary:hover:not(:disabled) { background: rgba(32, 30, 29, 0.07); }
+  .btn-ghost { @apply text-accent-ink px-1; }
+  .btn-ghost:hover:not(:disabled) { background: rgba(236, 48, 19, 0.1); }
+  .btn-danger { @apply bg-danger text-bg; }
+
+  .input {
+    @apply w-full min-h-[36px] px-2.5 py-1.5 text-[14px] text-ink bg-paper
+           border border-divider;
+    caret-color: var(--color-accent);
+  }
+  .input:hover { border-color: rgba(32, 30, 29, 0.75); }
+  .input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+  .input:disabled { @apply bg-surface cursor-not-allowed; }
+
+  .label { @apply block text-xs text-muted mb-1.5; }
+
+  .card { @apply bg-surface p-4; }
+  .card-paper { @apply bg-paper p-4 border border-hairline; }
+
+  .kicker { @apply text-[10px] font-semibold tracking-[0.12em] uppercase text-muted; }
+
+  .table { @apply w-full border-collapse text-[14px]; }
+  .table th {
+    @apply text-left text-[11px] tracking-[0.08em] uppercase text-muted
+           p-2 border-b-2 border-divider font-semibold;
+  }
+  .table td { @apply p-2 border-b border-hairline align-top; }
+  .table tbody tr:hover { background: rgba(32, 30, 29, 0.04); }
+
+  /* Status is never colour alone: every pill carries a glyph AND a word. */
+  .pill {
+    @apply inline-flex items-center gap-1 text-[11px] px-2 py-0.5
+           tracking-[0.02em] font-semibold;
+  }
+}
