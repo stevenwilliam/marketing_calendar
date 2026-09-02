@@ -25,26 +25,47 @@ no personality typography. Those cost legibility at 13px and buy nothing.
 
 Every value measured, never estimated. Full table in `design.md` §2–§3.
 
+**The palette is anchored on `#778AAB`, Steven's colour (D34).** It is a 218°
+slate blue that measures **3.50 on white**, which decides its job for it: at
+that ratio it is a *boundary*, not an *ink*. So it is the **control border** on
+every input, the chrome fill, and the accent chip — and `--primary`, the colour
+that has to carry text and fill buttons, is the same 218° hue darkened until it
+does. Steven's colour is on every screen; it is simply on the edges rather than
+in the words.
+
 | Token | Hex | Role |
 |---|---|---|
-| `--canvas` | `#F4F6F8` | the page |
+| `--canvas` | `#F2F5F9` | the page — a cool tint of the accent hue |
 | `--surface` | `#FFFFFF` | cards, tables, panels |
-| `--ink` | `#16202A` | primary text — 15.21 on canvas, 16.48 on surface |
-| `--ink-muted` | `#4A5A6A` | secondary — 6.54 / 7.09 |
-| `--primary` | `#0F5C6B` | primary action and focus ring — 7.01 / 7.60 |
-| `--success` | `#1B6B3A` | 6.54 on surface |
-| `--warn` | `#8A5A00` | 5.93 on surface |
-| `--danger` | `#A31621` | 7.80 on surface |
-| `--info` | `#1B4F9C` | 7.94 on surface |
-| `--border` | `#7C8A97` | **control boundary**, 3.26 / 3.54 — clears 1.4.11 |
-| `--hairline` | `#DFE4E9` | decorative separator, 1.18 / 1.28 — no 3:1 duty |
-| `--brand-maxx` | `#5B3A29` | Maxx Coffee, 10.09 |
-| `--brand-ruuma` | `#8A2B3B` | Ruuma, 8.44 |
-| `--brand-sunshine` | `#7A5A00` | Sunshine, 6.38 |
+| `--ink` | `#151B24` | primary text — 15.82 on canvas, 17.30 on surface |
+| `--ink-muted` | `#475466` | secondary — 7.04 / 7.70 |
+| `--primary` | `#2E4C7E` | primary action and focus ring — 7.83 / 8.57 |
+| `--accent` | `#778AAB` | **Steven's colour** — border, chrome, chip; 3.20 / 3.50 |
+| `--success` | `#146B3C` | 6.00 / 6.57 |
+| `--warn` | `#845000` | 6.14 / 6.71 |
+| `--danger` | `#9E1C28` | 7.25 / 7.92 |
+| `--info` | `#0F5F73` | 6.61 / 7.23 |
+| `--border` | `#778AAB` | **control boundary** — the accent; clears 1.4.11 |
+| `--hairline` | `#DDE3EC` | decorative separator, 1.18 / 1.29 — no 3:1 duty |
+| `--brand-maxx` | `#6B3B2A` | Maxx Coffee, 9.19 |
+| `--brand-ruuma` | `#7A2E63` | Ruuma, 8.76 |
+| `--brand-sunshine` | `#7C4A00` | Sunshine, 7.40 |
+
+Two rejections are recorded in `scripts/contrast.py` so they survive the next
+person's good idea:
 
 > `#8A97A3` was the obvious border grey and is **rejected**: 2.98 on white,
-> under the 3:1 floor by 0.02. It is recorded in the checker so the rejection
-> survives the next person's good idea.
+> under the 3:1 floor by 0.02.
+
+> **White text on `#778AAB` is rejected.** 3.50 is a *pass* as a control
+> boundary and a *fail* as text — the same number, two verdicts. A filled
+> accent chip takes `--ink` (4.95), never white.
+
+Hues are separated so two meanings never arrive as the same colour: primary
+218°, accent 218° (the same family, deliberately), info 192°, success 148°,
+warn 36°, danger 355°, Maxx 16°, Ruuma 318°, Sunshine 36°. **Sunshine and
+`--warn` share the amber family** — a known adjacency, not an oversight: they
+never appear on the same element, and neither is ever carried by colour alone.
 
 ## 3. Typography
 
@@ -109,7 +130,7 @@ in text. The colour is a fast scan aid, never the only identification.
 
 ## 5. Layout
 
-Mobile-first at 360px. A director approving from a phone is a real persona, so
+Mobile-first at 360px. A CFO approving from a phone is a real persona, so
 the approval inbox and the approve/reject action must work at that width.
 
 | Breakpoint | Layout |
@@ -137,8 +158,13 @@ A token swap, not a second stylesheet. **None of the ratios above carries over**
 — every pairing is re-measured for dark before dark ships, and until it has
 been, dark is not claimed as supported.
 
+`#778AAB` is reserved as the dark-theme `--primary`: against a dark ground it
+has the headroom it lacks on white, so Steven's colour becomes the action
+colour there rather than the boundary. That is the plan and not a measurement —
+it enters `design.md` when `scripts/contrast.py` has the numbers.
+
 ## 8. Language
 
 Indonesian is the default, English second, both through message catalogues
 (D20). No inline strings. A missing key is a build-time failure, not a screen
-rendering `promo.status.pending` to a director.
+rendering `promo.status.pending` to the CFO.

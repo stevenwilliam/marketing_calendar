@@ -63,6 +63,7 @@ erDiagram
     site_group_member {
         uuid site_group_id FK
         uuid site_id FK
+        uuid company_id FK "denormalised so the composite FK can enforce BR-1.3"
     }
     holiday {
         uuid holiday_id PK
@@ -82,6 +83,11 @@ erDiagram
 
 - `site_group` is many-to-many via `site_group_member` (**BR-1.3**, D23). The
   brief's `site_group(site_id)` shape could not express a multi-site group.
+- `site_group_member.company_id` is **deliberately denormalised**. It is the
+  only way to make "a group's members are all in the group's own brand"
+  (**BR-1.3**, D31) a declarative constraint rather than a trigger or an
+  application check — see §5.6. A denormalised column that a foreign key keeps
+  honest is not duplication; it is the constraint.
 - Creating a site creates its system group in the same transaction. That group
   is not deletable and its membership is not editable.
 - `user_role.company_id IS NULL` means group-level: the role applies across all
@@ -207,7 +213,6 @@ erDiagram
         int  target_receipt_count
         text order_mode "dine_in | take_away"
         text promo_rule "free text, large"
-        bigint budget_idr "nullable, Q23"
         bool overlap_acknowledged
         bool lead_time_overridden
         text lead_time_override_reason
@@ -341,7 +346,26 @@ ALTER TABLE site_group
 
 -- Uniqueness is per company, never global (BR-1.5).
 CREATE UNIQUE INDEX site_code_uk ON site (company_id, site_code);
+
+-- BR-1.3 / D31: a group's members are all in the group's own brand.
+-- Enforced by making the company part of both foreign keys, so the database
+-- refuses the cross-brand row itself. A trigger or an application check would
+-- both be bypassable by the next writer; this is not.
+ALTER TABLE site       ADD CONSTRAINT site_id_company_uk       UNIQUE (site_id, company_id);
+ALTER TABLE site_group ADD CONSTRAINT site_group_id_company_uk UNIQUE (site_group_id, company_id);
+
+ALTER TABLE site_group_member
+  ADD CONSTRAINT sgm_group_fk  FOREIGN KEY (site_group_id, company_id)
+      REFERENCES site_group (site_group_id, company_id),
+  ADD CONSTRAINT sgm_site_fk   FOREIGN KEY (site_id, company_id)
+      REFERENCES site (site_id, company_id),
+  ADD CONSTRAINT sgm_pk        PRIMARY KEY (site_group_id, site_id);
 ```
+
+> One `company_id` on the member row, referenced by both foreign keys, is what
+> makes it impossible: the row can only exist if the group and the site agree
+> on the company. A `CHECK` cannot see two other tables, and a trigger runs
+> only as long as nobody disables it.
 
 ### 5.7 Append-only history
 
@@ -391,11 +415,17 @@ because relative dates in a migration are wrong tomorrow (`99` §7).
 - Three companies: Maxx Coffee, Ruuma, Sunshine.
 - A handful of sites each, with their auto-created system groups, plus two
   hand-made multi-site groups.
-- Roles and the permission matrix from `12-security.md`.
-- The default approval chain (D14) as version 1.
+- The eight roles of **BR-5.7** and the permission matrix from
+  `12-security.md` §4 (D28).
+- The default approval chain as version 1: Marketing Head → Finance Head →
+  Operation → CFO (BR-4.2).
+- One user per role, each with TOTP unenrolled, so the enrolment flow is
+  exercised rather than assumed.
 - Indonesian public holidays for the current and next year (**D22**).
-- `sys_parameters` including `promo.lead_time_working_days = 7` and
-  `promo.auto_cancel_days_before = 5`.
+- `sys_parameters` including `promo.lead_time_working_days = 7`,
+  `promo.auto_cancel_days_before = 5` and `notify.release_recipients` (D32).
+- Two hand-made multi-site groups, **both single-brand** — a cross-brand group
+  cannot be seeded, because the database refuses it (D31).
 - Year and month targets for the current year.
 - A few promotion plans in each status, including one pending mid-chain.
 - Enough `history_txn` to make the promotion report non-trivial.

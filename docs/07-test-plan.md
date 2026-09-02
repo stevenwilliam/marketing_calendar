@@ -93,7 +93,16 @@ The matrix, and it is the one most likely to be wrong:
 - Retrying with the acknowledgement succeeds and records it.
 - Adjacent, non-overlapping ranges do not warn (end = start − 1 day).
 
-### 2.7 Import (BR-6)
+### 2.7 Single-brand site groups (BR-1.3, D31)
+
+- Adding a Ruuma site to a Maxx Coffee group is refused **by the database**,
+  not only by the handler — the test writes it with raw SQL, bypassing the
+  application, and asserts the constraint fires. A rule that only the
+  application enforces is a rule the next writer can skip.
+- The API returns `422 CROSS_BRAND_MEMBER`, not a leaked constraint name.
+- A cross-brand campaign is two plans, and both approve independently.
+
+### 2.8 Import (BR-6)
 
 - A clean file loads and the counts match.
 - **Re-importing the identical file inserts zero rows and is not an error.**
@@ -103,8 +112,15 @@ The matrix, and it is the one most likely to be wrong:
   original line.
 - A partial failure does not leave half a file loaded.
 - `import_run` refuses `UPDATE` and `DELETE`.
+- **The CSV contract of `06` §3.0 is tested as a contract** (D30): a file whose
+  header columns are reordered still loads correctly by name; a file with an
+  unknown column is rejected whole; a `#TOTAL` trailer that disagrees with the
+  rows fails the file. The truncated-upload case is the one that matters —
+  without the trailer it is indistinguishable from a quiet trading day.
+- A renamed but byte-identical file still imports zero rows: identity is the
+  checksum, not the filename.
 
-### 2.8 Reporting (BR-7)
+### 2.9 Reporting (BR-7)
 
 - CSV is pipe-delimited, RFC 4180, with a UTF-8 BOM.
 - A value containing `|`, `"` and a newline survives the round trip.
@@ -114,12 +130,15 @@ The matrix, and it is the one most likely to be wrong:
 - Promo actuals are attributed by `promo_id`, never by date window (BR-7.6): a
   `normal` transaction inside a promo's dates does not appear in its actuals.
 
-### 2.9 Security
+### 2.10 Security
 
 Per `12-security.md`, and at minimum:
 
-- The permission matrix, asserting for every role both what it **can** and what
-  it **cannot** reach.
+- The permission matrix of `12-security.md` §4, for all eight roles of BR-5.7,
+  asserting for every role both what it **can** and what it **cannot** reach.
+  Specifically: Marketing Staff and IT are refused `report.export`; only
+  `superadmin` reaches `force_release`; `business_analyst` cannot approve
+  anything at any step.
 - IDOR: every read of another company's or another site's row returns `404`.
 - A user with no TOTP enrolment can reach only the enrolment flow.
 - Login does not distinguish an unknown email from a wrong password — the
@@ -127,7 +146,7 @@ Per `12-security.md`, and at minimum:
 - Refresh rotation, and reuse revoking the family.
 - No endpoint leaks a driver error, a table name or a column name.
 
-### 2.10 Visual
+### 2.11 Visual
 
 `tools/shot` at 360px and 1440px, on the running app:
 

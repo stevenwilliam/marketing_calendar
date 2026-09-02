@@ -262,6 +262,11 @@ whose docs are stale is not done.
    confirmation. ← the brief is `docs/PROMPT.md`; the 21 open questions in it
    were **answered by their proposed defaults** so the documents could be
    written (D2–D22). Every one is reversible; see the `00` decision log.
+   **Steven answered Q22–Q28 on 2026-09-02** — real role names plus CFO, no
+   budget field, our own CSV contract, single-brand site groups, a fixed
+   release-recipient list, no retention limit, and a palette anchored on
+   `#778AAB`. Those are D28–D34, and they are folded into every affected
+   document.
 3. **Claude — build all documents A→Z.** ← done 2026-09-01
 4. **Claude — build all modules in one shot, A→Z.** Do not stop partway.
 5. **Claude — test, debug and security-harden, A→Z.** Do not stop partway.

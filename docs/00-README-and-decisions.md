@@ -1,10 +1,11 @@
 # marketing_calendar — Document Set
 
-**Version:** 0.1 (documents written, awaiting Steven's confirmation)
-**Date:** 1 September 2026
+**Version:** 0.2 (Q22–Q28 answered by Steven; D28–D34 recorded)
+**Date:** 2 September 2026 (written 1 September 2026)
 **Status:** the brief landed on 2026-09-01 and is stored verbatim at
-`PROMPT.md`. The documents below are written. **No application code until
-Steven confirms them**, per `CLAUDE.md` §9 step 2.
+`PROMPT.md`. The documents below are written, and Steven's answers to Q22–Q28
+are folded in (D28–D34). **No application code until Steven confirms the set**,
+per `CLAUDE.md` §9 step 2.
 
 ---
 
@@ -70,7 +71,7 @@ in the affected docs the same day.
 | D11 | 2026-09-01 | *(default)* **A promotion whose approval chain is incomplete on the Nth day before start is auto-cancelled** (N configurable, default 5). Audited, notifying the creator and the pending approver, and revivable by a superadmin. | Steven's rule that nothing automated cancels a *customer booking* does not bite — this is an internal plan. The safeguards make it recoverable. | 02 BR-4.6, 06 |
 | D12 | 2026-09-01 | *(default)* **Approval locks the plan. An edit creates a new version that re-enters the chain from the start**; the previous version is retained. | If an approved plan can be edited, the approval means nothing. This is the single most important control in the module. | 02 BR-4.7, 03 |
 | D13 | 2026-09-01 | *(default)* **Overlapping promotions on one site group are allowed, with a loud warning** at creation and a flag on the calendar. | A stacked promotion is sometimes intended. Blocking it outright would be wrong; letting it pass silently is how a store ends up running two conflicting offers. | 02 BR-3.6 |
-| D14 | 2026-09-01 | *(default)* **Default approval chain:** Marketing Staff creates → Marketing Manager → Finance Manager → (Brand Head **OR** Operations Head) → Director. Superadmin may force-release. | Matches the shape in the brief, including the either/or step. Fully reconfigurable in the back office. | 02 BR-4, 03 |
+| D14 | 2026-09-01 | *(default, **superseded by D28** — kept because a decision log records what was decided, not what is current)* **Default approval chain:** Marketing Staff creates → Marketing Manager → Finance Manager → (Brand Head **OR** Operations Head) → Director. Superadmin may force-release. | Matches the shape in the brief, including the either/or step. Fully reconfigurable in the back office. | 02 BR-4, 03 |
 | D15 | 2026-09-01 | *(default)* **Rejection returns the plan to the creator with a mandatory reason**; the plan keeps its full history. | Killing the plan loses the work and the audit trail. | 02 BR-4.5 |
 | D16 | 2026-09-01 | *(default)* **Email notifications in phase 1; WhatsApp behind the same port for later.** | WAHA is the documented provider, per `99` §9. | 05, 06 |
 | D17 | 2026-09-01 | *(default)* **Reached over the internal network with an nginx IP allowlist, TLS on.** | Not public facing. The Go service binds loopback; nginx is the only way in. | 09, 12 |
@@ -84,6 +85,13 @@ in the affected docs the same day.
 | D25 | 2026-09-01 | **The approval engine is generic from day one.** `approval` takes a subject type and subject id; promotions are its first consumer and are not special-cased inside it. | A superapp needs approvals for purchase orders, leave, discounts and price changes. A chain written inside the promotion module gets rewritten five times. | 05, 02 BR-4 |
 | D26 | 2026-09-01 | **No SEO baseline.** `99` §13 does not apply to this project. | There is no public page. Building titles-for-search, Open Graph, `robots.txt`, `sitemap.xml` and JSON-LD would be dead code. | CLAUDE.md §1, 05 |
 | D27 | 2026-09-01 | **Superadmin force-release requires a typed reason and writes an audit row.** | A bypass of an approval chain with no recorded justification is the control most likely to be questioned in a review. | 02 BR-4.8, 12 |
+| D28 | 2026-09-02 | **The group's real role names replace D14's invented ones (Q22).** Steven's list, plus CFO added the same day: `marketing_staff`, `marketing_head`, `finance_head`, `operation`, `cfo`, `business_analyst`, `it`, `superadmin`. The default chain becomes **Marketing Head → Finance Head → Operation → CFO**, created by Marketing Staff. `business_analyst` reads and exports and does not approve; `it` is the administrator role; `superadmin` stays a separate break-glass role. | Real names now, while the matrix is a document. D14's either/or step collapses to one role because the group has a single Operation function — the `ANY_OF` machinery stays, since a two-role step is exactly how it returns. | 02 BR-4.2 / BR-5.7, 12 §4, 01 §3, 03 §7 |
+| D29 | 2026-09-02 | **No budget or discount-cost field, and no budget limit, in phase 1 (Q23).** `budget_idr` is removed from `promotion_plan_version`. | Steven: "no budget promo limit for now". A nullable column nobody fills is worse than no column — it invites a half-built P&L. The consequence is stated in BR-3.1 rather than discovered: the promo report shows **revenue, not margin**. Phase 2's promo P&L is the real answer, and it starts by adding this column back. | 02 BR-3.1, 03 §4, 08 |
+| D30 | 2026-09-02 | **The importer defines our own pipe-delimited CSV contract (Q24)**, specified in `06` §3.0: header matched by name, `#TOTAL` trailer required, file identity by checksum. A POS adapter is a second implementation of the same port, in phase 2. | Steven: "will discuss integration to third party later". Waiting for a format that does not exist yet blocks M10; a contract we control does not. The port is the whole reason the wait costs nothing. | 02 BR-6.1, 06 §3.0, 07 §2.8, 08 |
+| D31 | 2026-09-02 | **A site group is restricted to one brand (Q25) — rejected, not warned.** Enforced in the database by a composite foreign key: `site_group_member` carries `company_id`, and both its foreign keys include it. A cross-brand campaign is one plan per brand, permanently. | Steven: "yes restricted". A warning is for something that might be intended; this is not. Enforcing it with a composite FK rather than a trigger or an application check means the next writer cannot route around it. | 02 BR-1.3 / BR-3.7, 03 §2 / §5.6, 04 §4, 07 §2.7 |
+| D32 | 2026-09-02 | **The release email goes to a fixed list maintained in the back office (Q26)** — `notify.release_recipients`, a `sys_parameters` row. Chain actors are **not** appended automatically. Workflow notifications to the creator and pending approvers are unaffected. | Steven: "fixed lists, maintained via backend". The default would have appended every actor; he chose the narrower rule, so the list is exactly the list. Its known failure is going stale, so changes are audited and `06` §4 puts reading it into the month-end routine. | 02 BR-4.12, 01 §4.1, 06 §4 / §6, 08 M12 |
+| D33 | 2026-09-02 | **No retention limit (Q27).** `audit_log`, `approval_event`, `import_run` and `import_rejection` are kept indefinitely. No purge job exists, and adding one requires reversing this decision. | Steven: "no limit". These are event tables, not transaction tables; the table that grows with trading is `history_txn`, and its answer is partitioning, not deletion. | 02 BR-8.5, 06 §4a |
+| D34 | 2026-09-02 | **The palette is rebuilt around `#778AAB` (Q28).** Steven's colour measures **3.50 on white**, which decides its job: it is the **control boundary**, the chrome and the accent chip — not an ink. `--primary` `#2E4C7E` is the same 218° hue darkened until it can carry text (8.57). Canvas `#F2F5F9`, ink `#151B24`, muted `#475466`, success `#146B3C`, warn `#845000`, danger `#9E1C28`, info `#0F5F73`, brands `#6B3B2A` / `#7A2E63` / `#7C4A00`. All 29 pairings measured by `scripts/contrast.py`, which passes. | Steven: "choose moderen color template, i prefer #778aab, others is mix and match". The one trap is recorded in the checker: **3.50 passes as a border and fails as text**, so white on `#778AAB` is rejected and a filled accent chip takes `--ink` (4.95). `#778AAB` is reserved as the dark-theme primary, where it has the headroom — a plan, not yet a measurement. | 10 §2 / §7, `design.md` §2–§3, `scripts/contrast.py` |
 
 ---
 
@@ -96,17 +104,28 @@ decision.
 Steven should review those first — while no code exists, reversing any of them
 costs a document edit.
 
-Genuinely unanswered, and none of them blocks the documents:
+**Q22–Q28 were answered by Steven on 2026-09-02** and became D28–D34. His
+answers, verbatim:
 
-| # | Question | Why it matters | Proposed default |
+| # | Question | Steven's answer | Decision |
 |---|---|---|---|
-| Q22 | What are the **real role names** in the group today? | D14 invented plausible ones. The permission matrix is easy to change now and tedious once accounts exist. | Use D14's names; rename on Steven's list |
-| Q23 | Does a promotion need a **budget or discount cost** field? | Without it the promo report shows revenue but not margin, and a promotion that raised sales while destroying margin looks like a success. | Add `budget_idr` as optional in phase 1, and a promo P&L in phase 2 |
-| Q24 | Is there an existing **POS export format** to match? | The importer's column mapping depends on it entirely. | Define our own CSV contract; write an adapter when the real format arrives |
-| Q25 | Should a site group be **restricted to one brand**? | A group spanning Maxx Coffee and Ruuma is probably a mistake, but might be a deliberate cross-brand campaign. | Allow it, warn at creation |
-| Q26 | Who receives the **release email** — a fixed list, or the approvers plus a list? | Recipient lists silently going stale is a common failure. | A maintained list in the back office, plus every actor in the chain |
-| Q27 | Retention: how long are **audit and approval events** kept? | Append-only tables grow forever without an answer. | Indefinitely in phase 1; revisit at 24 months |
-| Q28 | Does the group have an existing **brand palette** for internal tools? | `10-design-system.md` currently proposes a neutral one with measured contrast. | Use the proposed palette until Steven supplies artwork |
+| Q22 | Real role names | "marketing staff, marketing head, operation, business analyst, finance head, it" — then, the same day: "add CFO to role" | **D28** |
+| Q23 | Budget / discount-cost field | "no budget promo limit for now" | **D29** |
+| Q24 | Existing POS export format | "will discuss integration to third party later" | **D30** |
+| Q25 | Site group restricted to one brand | "yes restricted" | **D31** |
+| Q26 | Release-email recipients | "fixed lists, maintained via backend" | **D32** |
+| Q27 | Audit / approval retention | "no limit" | **D33** |
+| Q28 | Brand palette | "choose moderen color template, i prefer #778aab, others is mix and match" | **D34** |
+
+Still open, and none of them blocks the build. Each carries an applied default,
+so the documents are complete either way:
+
+| # | Question | Why it matters | Applied default |
+|---|---|---|---|
+| Q29 | Who holds **`superadmin`** — IT, or a business officer such as the CFO? | It is the force-release role. Held by IT, a technical role can release a promotion the business never approved. The mitigations are real (typed reason, audit row, `force_released` on the report) but the residual risk is a judgement, not a control. | IT holds it; the risk is written down in `12` §4 rather than hidden |
+| Q30 | Does **Business Analyst** belong in the approval chain? | Steven listed the role but not where it sits. A BA validating the target numbers before Finance sees them is a plausible step 1. | Not in the chain — reads and exports only. Adding a step is a back-office edit, not a code change |
+| Q31 | Is **Operation** one role or one per brand? | D28 collapsed D14's brand-head/ops-head either-or into a single `operation`. If the group actually has an operations head per brand, step 3 becomes an `ANY_OF` over three roles. | One `operation` role. The `ANY_OF` machinery is retained precisely so this is a data change |
+| Q32 | Should `report.export` reach **Marketing Staff**? | It is the permission through which the entire sales history leaves the building, and it is currently denied to the role that creates promotions. | Denied. Reversing it is one seed row |
 
 ---
 

@@ -18,12 +18,16 @@ money. Sen is not represented.
 **BR-1.2 Rates are basis points**, rounded half-up:
 `floor((amount * bps + 5000) / 10000)`. 11% is `1100`.
 
-**BR-1.3 A site group is a set of sites.** `site_group` has many `site`
-members through `site_group_member`. When a site is created, a site group named
-after it is created automatically containing exactly that site, so a
-single-site promotion needs no set-up.
+**BR-1.3 A site group is a set of sites, all in one brand.** `site_group` has
+many `site` members through `site_group_member`. When a site is created, a site
+group named after it is created automatically containing exactly that site, so
+a single-site promotion needs no set-up.
 *(D23 — the brief's `site_group(site_id)` shape cannot express a multi-site
 group, which is the thing promotions target.)*
+
+**Every member must belong to the group's own company.** A group spanning Maxx
+Coffee and Ruuma is **rejected**, not warned. The database enforces it through
+a composite foreign key, not an application check. *(D31)*
 
 **BR-1.4 Time.** All timestamps are stored `timestamptz` in UTC. Every business
 date — a promotion's start, a target's month, a transaction's business day — is
@@ -80,6 +84,13 @@ the target was amended after the period ended.
 count**, an **order mode**, and a **promo rule** as free text. All are required
 to submit; a draft may be incomplete.
 
+**There is no budget or discount-cost field in phase 1, and no budget limit.**
+*(D29)* The consequence is stated plainly so nobody discovers it in a meeting:
+the promotion report shows **revenue, not margin**, so a promotion that lifted
+sales while destroying margin reads as a success. Adding a nullable
+`budget_idr` later is one migration; the phase-2 promo P&L is the real answer
+(`08-roadmap.md`).
+
 **BR-3.2 The period may span months.** Start and end are picked as a range and
 may cross month and year boundaries. End must be on or after start.
 
@@ -112,9 +123,11 @@ are permitted, because a stacked promotion is sometimes intended. Creation
 raises a **blocking-acknowledgement warning** listing the overlaps, and the
 calendar flags both. *(D13)*
 
-**BR-3.7 A plan belongs to exactly one company.** A site group spanning
-companies is rejected. *(A cross-brand campaign is modelled as one plan per
-brand until Q25 is answered.)*
+**BR-3.7 A plan belongs to exactly one company.** A site group cannot span
+companies at all (BR-1.3), so a plan cannot either. **A cross-brand campaign is
+modelled as one plan per brand** — permanently, not provisionally. Each brand
+then approves its own, which is what the separate finance and operations
+sign-off is for. *(D31)*
 
 ---
 
@@ -131,14 +144,19 @@ roles** and a satisfaction rule:
   `Role_3 OR Role_4` is expressed.
 - `ALL_OF` — every listed role must approve before the step completes.
 
-Default chain *(D14)*:
+Default chain, in the group's real role names *(D14, renamed by D28)*:
 
 | Step | Roles | Rule |
 |---|---|---|
-| 1 | Marketing Manager | ANY_OF |
-| 2 | Finance Manager | ANY_OF |
-| 3 | Brand Head, Operations Head | **ANY_OF** |
-| 4 | Director | ANY_OF |
+| 1 | Marketing Head | ANY_OF |
+| 2 | Finance Head | ANY_OF |
+| 3 | Operation | ANY_OF |
+| 4 | CFO | ANY_OF |
+
+The creator is **Marketing Staff**. The either/or step from D14 collapsed to a
+single role because the group has one Operation function, not a brand head and
+an operations head — the `ANY_OF` machinery stays, because a step with two
+roles is exactly how it comes back.
 
 **BR-4.3 A chain is versioned, and a plan is bound to the version it started
 with.** Changing the configured chain affects **only plans created afterwards**.
@@ -189,7 +207,19 @@ and proven by a concurrency test.
 they hold the role. A superadmin force-release is the documented escape.
 
 **BR-4.12 On final approval the plan is `RELEASED`** and a notification email is
-sent to the maintained recipient list plus every actor in the chain. *(D26/Q26)*
+sent to a **fixed recipient list maintained in the back office** —
+`notify.release_recipients`, a `sys_parameters` row with admin CRUD. The list is
+**exactly** who is emailed; chain actors are not appended automatically. *(D32)*
+
+> Workflow notifications are a different thing and are unaffected: the creator
+> is told when their plan is approved, rejected (BR-4.5) or auto-cancelled
+> (BR-4.6), and a pending approver is told there is something in their queue.
+> Those go to the people involved. The **release announcement** goes to the
+> list.
+
+Because the list is fixed, it goes stale silently — that is the known failure
+mode of this decision. Two mitigations: every change to it is audited (BR-8.2),
+and `06-domain-operations.md` §4 puts reviewing it in the month-end routine.
 
 ---
 
@@ -214,13 +244,33 @@ Where present, every read is filtered to those sites in the query.
 are stored hashed, and are revocable. Re-presenting a rotated refresh token
 revokes the whole family — it is the signature of a stolen token.
 
+**BR-5.7 The role catalogue.** Phase 1 ships these roles — the group's real
+ones *(D28)*. The permission matrix is in `12-security.md` §4.
+
+| Code | Label (id-ID) | Label (en) | In the chain |
+|---|---|---|:--:|
+| `marketing_staff` | Staf Marketing | Marketing Staff | creates |
+| `marketing_head` | Kepala Marketing | Marketing Head | step 1 |
+| `finance_head` | Kepala Keuangan | Finance Head | step 2 |
+| `operation` | Operasional | Operation | step 3 |
+| `cfo` | CFO | CFO | step 4 |
+| `business_analyst` | Analis Bisnis | Business Analyst | — |
+| `it` | IT | IT | — |
+| `superadmin` | Superadmin | Superadmin | force-release |
+
+`business_analyst` reads and exports; it does not approve. `it` is the
+administrator role — users, roles, sites, holidays, parameters, imports.
+Roles are data, not code: adding one is a row and a permission grant.
+
 ---
 
 ## BR-6 — Transaction data
 
-**BR-6.1 Source.** Transactions arrive by nightly CSV import. The importer sits
-behind a port so a POS API can replace it without touching anything above.
-*(D5)*
+**BR-6.1 Source.** Transactions arrive by nightly CSV import in **our own
+column contract**, specified in `06-domain-operations.md` §3.0. There is no POS
+export format to match yet; when the third-party integration is settled, it
+arrives as a second implementation of the same port and nothing above the port
+changes. *(D5, D30)*
 
 **BR-6.2 Grain is one row per receipt.** A row carries: business date, site,
 sales type (`normal` / `promo`), promotion id where applicable, **order mode**,
@@ -297,6 +347,16 @@ timestamp in UTC.
 **BR-8.4 Secret-flagged parameter values are masked** in the audit trail as
 well as in the UI and logs.
 
+**BR-8.5 Nothing is purged.** `audit_log`, `approval_event`, `import_run` and
+`import_rejection` are kept **indefinitely**. There is no retention window and
+no purge job, and one must not be added without a decision that reverses this.
+*(D33)*
+
+> The cost is growth, and it is bounded and known: these tables carry events,
+> not transactions. `history_txn` is the table that grows with trading volume,
+> and its size is addressed by partitioning (`03-data-model.md` §6), not by
+> deletion.
+
 ---
 
 ## Rule-to-enforcement map
@@ -306,6 +366,7 @@ Filled in as the build lands; a rule with no enforcement column is not done.
 | Rule | Enforced by | Proven by |
 |---|---|---|
 | BR-1.1 | `internal/domain/money`, `BIGINT` columns | `money_test.go` |
+| BR-1.3 | composite FK on `site_group_member` | `schema_test.go::TestCrossBrandGroupMemberRefused` |
 | BR-2.3 | *no* validation — deliberately absent | `target_test.go::TestMonthsNeedNotSumToYear` |
 | BR-3.3 | `internal/domain/calendar` + holiday table | `calendar_test.go`, incl. Idul Fitri |
 | BR-3.6 | overlap query + acknowledgement flag | `promo_test.go::TestOverlapWarns` |
@@ -313,6 +374,8 @@ Filled in as the build lands; a rule with no enforcement column is not done.
 | BR-4.7 | status guard + version table | `approval_test.go::TestApprovedPlanIsImmutable` |
 | BR-4.10 | `FOR UPDATE` + unique index | `approval_concurrency_test.go` |
 | BR-4.11 | creator check in the domain | `approval_test.go::TestCreatorCannotApprove` |
+| BR-4.12 | `notify.release_recipients` parameter | `notify_test.go::TestReleaseGoesToTheListOnly` |
 | BR-6.3 | unique `(site,date,receipt_no)` | `importer_test.go::TestReimportIsIdempotent` |
 | BR-7.3 | `platform/csvexport` | `csv_test.go::TestFormulaInjection` |
 | BR-8.1 | `refuse_mutation()` trigger | `schema_test.go::TestAppendOnly` |
+| BR-8.5 | no purge job exists — deliberately absent | reviewed; `grep` for a delete on `audit_log` in CI |

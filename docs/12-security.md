@@ -53,24 +53,46 @@ Deny by default. A user has no permission until a role grants it.
 what it can and what it **cannot** reach; the second half is the half that
 catches regressions.
 
-| Permission | Marketing Staff | Marketing Mgr | Finance Mgr | Brand/Ops Head | Director | Admin | Superadmin |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| `promo.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `promo.create` | ✓ | ✓ | | | | | ✓ |
-| `promo.manage` | | ✓ | | | | | ✓ |
-| `target.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `target.manage` | | ✓ | ✓ | | | | ✓ |
-| `report.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `report.export` | | ✓ | ✓ | ✓ | ✓ | | ✓ |
-| `import.run` | | | | | | ✓ | ✓ |
-| `import.view` | | ✓ | ✓ | | | ✓ | ✓ |
-| `site.manage` | | | | | | ✓ | ✓ |
-| `settings.manage` | | | | | | ✓ | ✓ |
-| `audit.view` | | | | | | ✓ | ✓ |
-| `force_release` | | | | | | | ✓ |
+The role names are the group's real ones (**BR-5.7**, D28).
+
+| Permission | Mktg Staff | Mktg Head | Finance Head | Operation | CFO | Bus Analyst | IT | Superadmin |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| `promo.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `promo.create` | ✓ | ✓ | | | | | | ✓ |
+| `promo.manage` | | ✓ | | | | | | ✓ |
+| `target.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `target.manage` | | ✓ | ✓ | | ✓ | | | ✓ |
+| `report.view` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `report.export` | | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
+| `import.run` | | | | | | | ✓ | ✓ |
+| `import.view` | | ✓ | ✓ | | | ✓ | ✓ | ✓ |
+| `site.manage` | | | | | | | ✓ | ✓ |
+| `settings.manage` | | | | | | | ✓ | ✓ |
+| `audit.view` | | | | | ✓ | | ✓ | ✓ |
+| `force_release` | | | | | | | | ✓ |
 
 Approval rights are **not** in this table — they come from the chain
 configuration (BR-4.2), which is the point of a configurable chain.
+
+Three choices in that grid are deliberate and worth contesting rather than
+inheriting:
+
+- **`report.export` is denied to Marketing Staff and to IT.** Export is how the
+  whole sales history leaves the building; the roles that need the numbers get
+  it, the role that creates plans and the role that administers the box do not.
+- **`audit.view` includes the CFO.** Somebody outside IT has to be able to see
+  who bypassed a control, or the audit trail only protects the people who can
+  read it.
+- **`superadmin` is a separate role, not a permission on `it`.** It is
+  break-glass: force-release and revive, nothing else it does not already have.
+
+> **Segregation-of-duties note, stated rather than hidden.** `superadmin` will
+> in practice be held by an IT account, which means a technical role can
+> release a promotion the business has not approved. The controls that make
+> that survivable are all in place — a typed reason is mandatory (BR-4.8), an
+> audit row names the actor (BR-8.2), and the plan carries `force_released`
+> onto the promotion report (BR-7.5) — but the residual risk is real and is
+> Steven's to accept or to reassign. See `00-README-and-decisions.md` §3 Q29.
 
 **Scoping.** Every query filters `company_id` against the caller's companies,
 and `site_id` against their site scope where one is set. A `user_role` row with

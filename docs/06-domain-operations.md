@@ -62,6 +62,45 @@ open, and that is the right moment to notice.
 
 ## 3. Import operations
 
+### 3.0 The transaction CSV contract
+
+There is **no POS export format to match yet** (D30 / Q24). This is our
+contract; when the third-party integration is agreed, it becomes a second
+implementation of the same importer port and nothing above the port moves.
+
+Pipe-delimited, the same convention as every export the product produces
+(BR-7.2). UTF-8, LF line endings, RFC 4180 quoting with `|` as the separator.
+
+```
+site_code|business_date|pos_receipt_no|sales_type|promo_code|order_mode|gross_amount_idr
+MXX-001|2026-09-01|R-000198231|promo|PRM-7QK2|dine_in|185000
+MXX-001|2026-09-01|R-000198232|normal||take_away|42000
+#TOTAL|2|227000
+```
+
+| Column | Type | Rule |
+|---|---|---|
+| `site_code` | text | must exist in master data, else `UNKNOWN_SITE` |
+| `business_date` | `YYYY-MM-DD` | the trading day in **`Asia/Jakarta`**, never UTC |
+| `pos_receipt_no` | text | one row per receipt (BR-6.2); the idempotency key with site and date |
+| `sales_type` | enum | `normal` or `promo`, nothing else |
+| `promo_code` | text | required when `promo`, **empty** when `normal` (BR-6.6) |
+| `order_mode` | enum | `dine_in` or `take_away` |
+| `gross_amount_idr` | integer | whole rupiah. **No decimal point, no thousands separator, no currency symbol** |
+
+**The header row is required** and is matched by name, not by position — a POS
+that reorders its columns must not silently shift every amount into the wrong
+field. An unknown column name is a rejected file, not an ignored column.
+
+**The `#TOTAL` trailer is required**: row count and the sum of
+`gross_amount_idr`. It is what §3.4 reconciles against, and it is the only
+thing that catches a truncated upload — which otherwise arrives looking exactly
+like a quiet day of trading.
+
+Filename convention: `txn_YYYYMMDD_NN.csv` in `import.drop_path`. A file is
+identified for idempotency by its **checksum**, not its name, so renaming a
+file does not let it in twice (BR-6.3, BR-6.4).
+
 ### 3.1 The nightly run
 
 ```bash
@@ -108,6 +147,22 @@ truncated upload, which otherwise looks like a quiet day of trading.
 3. Export the promotion report to CSV (pipe-delimited) for the marketing review.
 4. Note any plan flagged `force_released`; those are the ones a reviewer will
    ask about.
+5. **Read `notify.release_recipients` aloud.** A fixed list is the decision
+   (D32) and going stale is its known failure mode — somebody leaves, and the
+   release email keeps being delivered to a mailbox nobody opens. One minute a
+   month is the whole mitigation.
+
+## 4a. Retention — there is none
+
+`audit_log`, `approval_event`, `import_run` and `import_rejection` are kept
+**indefinitely** (BR-8.5, D33). No purge job exists, and writing one is a
+decision to reverse, not a tidy-up.
+
+If growth is ever raised: these are event tables, not transaction tables. The
+table that grows with trading volume is `history_txn`, and the answer there is
+partitioning (`03-data-model.md` §6). Measure before proposing a delete —
+"the audit log is large" has never once been checked against the actual figure
+in a conversation that proposed truncating it.
 
 ## 5. Backup and restore
 
@@ -123,7 +178,7 @@ report for a month that had data.
 | `promo.lead_time_working_days` | `7` | earliest promo start (BR-3.3) |
 | `promo.auto_cancel_days_before` | `5` | when an incomplete chain is cancelled (BR-4.6) |
 | `promo.overlap_warning_enabled` | `true` | the acknowledgement gate (BR-3.6) |
-| `notify.release_recipients` | list | who is emailed on release (BR-4.12) |
+| `notify.release_recipients` | list | **exactly** who is emailed on release — chain actors are not appended (BR-4.12, D32) |
 | `import.drop_path` | `/srv/mc/import` | where the nightly job looks |
 | `report.max_export_rows` | `100000` | export guard |
 

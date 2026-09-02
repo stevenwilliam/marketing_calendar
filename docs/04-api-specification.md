@@ -88,6 +88,9 @@ Login, TOTP and refresh are rate limited per IP.
 
 - Creating a site creates its system group in the same transaction (BR-1.3).
 - A system group refuses membership edits and deletion: `409 CONFLICT`.
+- `POST /site-groups/{id}/members` with a site from another company returns
+  `422 CROSS_BRAND_MEMBER` (BR-1.3, D31). The database would refuse it anyway;
+  the handler names it so the user gets a sentence instead of a constraint.
 - Secret-flagged parameters return `"••••••"` unless the caller holds
   `settings.manage`, and are masked in logs regardless.
 

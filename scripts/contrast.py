@@ -7,8 +7,8 @@ output; run this to re-earn those numbers rather than trusting them.
 
 Usage:
     scripts/contrast.py                 # check every documented pairing
-    scripts/contrast.py '#1C3D34' '#FFFAE0'
-    scripts/contrast.py --alpha 'rgba(28,61,52,0.60)' '#FFFAE0'
+    scripts/contrast.py '#2E4C7E' '#FFFFFF'
+    scripts/contrast.py --alpha 'rgba(119,138,171,0.60)' '#FFFFFF'
 """
 
 from __future__ import annotations
@@ -102,20 +102,21 @@ def to_rgb(s: str, over: tuple[int, int, int] | None = None) -> tuple[int, int, 
 # the ones written in .claude/skills/impeccable/design.md, and the script
 # asserts the sheet actually contains them rather than claiming it does.
 
-CANVAS  = "#F4F6F8"   # the page
+CANVAS  = "#F2F5F9"   # the page — a cool tint of the accent hue
 SURFACE = "#FFFFFF"   # cards, tables, panels
-INK     = "#16202A"   # primary text
-MUTED   = "#4A5A6A"   # secondary text
-PRIMARY = "#0F5C6B"   # primary action
-SUCCESS = "#1B6B3A"
-WARN    = "#8A5A00"
-DANGER  = "#A31621"
-INFO    = "#1B4F9C"
-MAXX    = "#5B3A29"   # Maxx Coffee
-RUUMA   = "#8A2B3B"   # Ruuma
-SUN     = "#7A5A00"   # Sunshine
-BORDER  = "#7C8A97"   # control boundary — must clear 1.4.11's 3:1
-HAIRLINE = "#DFE4E9"  # decorative separator — carries no 3:1 duty
+INK     = "#151B24"   # primary text
+MUTED   = "#475466"   # secondary text
+PRIMARY = "#2E4C7E"   # primary action — #778AAB darkened to the same hue (218)
+ACCENT  = "#778AAB"   # Steven's colour (D34): control boundary and chrome fill
+SUCCESS = "#146B3C"
+WARN    = "#845000"
+DANGER  = "#9E1C28"
+INFO    = "#0F5F73"
+MAXX    = "#6B3B2A"   # Maxx Coffee
+RUUMA   = "#7A2E63"   # Ruuma
+SUN     = "#7C4A00"   # Sunshine
+BORDER  = ACCENT      # the control boundary IS the accent — must clear 1.4.11's 3:1
+HAIRLINE = "#DDE3EC"  # decorative separator — carries no 3:1 duty
 
 CHECKS: list[tuple[str, str, str, dict]] = [
     ("ink on canvas",             INK, CANVAS, {}),
@@ -125,9 +126,13 @@ CHECKS: list[tuple[str, str, str, dict]] = [
     ("primary text on canvas",    PRIMARY, CANVAS, {}),
     ("primary text on surface",   PRIMARY, SURFACE, {}),
     ("white on primary fill",     "#FFFFFF", PRIMARY, {}),
+    ("success on canvas",         SUCCESS, CANVAS, {}),
     ("success on surface",        SUCCESS, SURFACE, {}),
+    ("warn on canvas",            WARN, CANVAS, {}),
     ("warn on surface",           WARN, SURFACE, {}),
+    ("danger on canvas",          DANGER, CANVAS, {}),
     ("danger on surface",         DANGER, SURFACE, {}),
+    ("info on canvas",            INFO, CANVAS, {}),
     ("info on surface",           INFO, SURFACE, {}),
     ("white on success fill",     "#FFFFFF", SUCCESS, {}),
     ("white on danger fill",      "#FFFFFF", DANGER, {}),
@@ -140,35 +145,47 @@ CHECKS: list[tuple[str, str, str, dict]] = [
     ("control border on canvas",  BORDER, CANVAS, {"non_text": True}),
     ("control border on surface", BORDER, SURFACE, {"non_text": True}),
     ("focus ring on canvas",      PRIMARY, CANVAS, {"non_text": True}),
-    # Recorded as REJECTED so it is not re-proposed. It reads as a perfectly
-    # reasonable grey and misses the 3:1 control-boundary floor by 0.02.
+    # The sanctioned way to FILL with Steven's colour: dark ink on it, never white.
+    ("ink on accent fill",        INK, ACCENT, {}),
+    # Recorded as REJECTED so they are not re-proposed.
+    # #8A97A3 reads as a perfectly reasonable grey and misses the 3:1
+    # control-boundary floor by 0.02.
     ("#8A97A3 as a border (REJECTED)", "#8A97A3", SURFACE, {"non_text": True}),
+    # White on the accent is the mistake this palette invites: 3.50 passes as a
+    # BORDER and fails as TEXT, and the same number does both jobs.
+    ("white on accent fill (REJECTED as text)", "#FFFFFF", ACCENT, {}),
 ]
 
 RECORDED = {
-    "ink on canvas": 15.21,
-    "ink on surface": 16.48,
-    "muted on canvas": 6.54,
-    "muted on surface": 7.09,
-    "primary text on canvas": 7.01,
-    "primary text on surface": 7.60,
-    "white on primary fill": 7.60,
-    "success on surface": 6.54,
-    "warn on surface": 5.93,
-    "danger on surface": 7.80,
-    "info on surface": 7.94,
-    "white on success fill": 6.54,
-    "white on danger fill": 7.80,
-    "Maxx Coffee on surface": 10.09,
-    "Ruuma on surface": 8.44,
-    "Sunshine on surface": 6.38,
-    "white on Maxx fill": 10.09,
-    "white on Ruuma fill": 8.44,
-    "white on Sunshine fill": 6.38,
-    "control border on canvas": 3.26,
-    "control border on surface": 3.54,
-    "focus ring on canvas": 7.01,
+    "ink on canvas": 15.82,
+    "ink on surface": 17.30,
+    "muted on canvas": 7.04,
+    "muted on surface": 7.70,
+    "primary text on canvas": 7.83,
+    "primary text on surface": 8.57,
+    "white on primary fill": 8.57,
+    "success on canvas": 6.00,
+    "success on surface": 6.57,
+    "warn on canvas": 6.14,
+    "warn on surface": 6.71,
+    "danger on canvas": 7.25,
+    "danger on surface": 7.92,
+    "info on canvas": 6.61,
+    "info on surface": 7.23,
+    "white on success fill": 6.57,
+    "white on danger fill": 7.92,
+    "Maxx Coffee on surface": 9.19,
+    "Ruuma on surface": 8.76,
+    "Sunshine on surface": 7.40,
+    "white on Maxx fill": 9.19,
+    "white on Ruuma fill": 8.76,
+    "white on Sunshine fill": 7.40,
+    "control border on canvas": 3.20,
+    "control border on surface": 3.50,
+    "focus ring on canvas": 7.83,
+    "ink on accent fill": 4.95,
     "#8A97A3 as a border (REJECTED)": 2.98,
+    "white on accent fill (REJECTED as text)": 3.50,
 }
 
 

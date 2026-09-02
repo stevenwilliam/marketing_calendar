@@ -38,15 +38,17 @@ inventory, purchasing, HR. See `08-roadmap.md`.
 
 ## 3. Personas
 
+The group's real roles (**BR-5.7**, D28).
+
 | Persona | Role | What they need |
 |---|---|---|
-| **Marketing staff** | Creates promotions | A fast create form, a calendar of what is already planned, and to know where a submission is stuck |
-| **Marketing manager** | First approver | A queue of what is waiting for them, with enough detail to decide without opening a spreadsheet |
-| **Finance manager** | Second approver | The target impact, and whether this promotion is affordable against the month |
-| **Brand / operations head** | Third approver (either) | Whether the sites can actually run it |
-| **Director** | Final approver | A one-screen summary; they will approve from a phone |
-| **Store / area manager** | Reads | What is running at my sites this month |
-| **Administrator** | Configures | Roles, chains, parameters, holiday calendar, recipient lists |
+| **Marketing Staff** | Creates promotions | A fast create form, a calendar of what is already planned, and to know where a submission is stuck |
+| **Marketing Head** | Step 1 approver | A queue of what is waiting for them, with enough detail to decide without opening a spreadsheet |
+| **Finance Head** | Step 2 approver | The target impact, and whether this promotion is affordable against the month |
+| **Operation** | Step 3 approver | Whether the sites can actually run it |
+| **CFO** | Final approver | A one-screen summary; they will approve from a phone |
+| **Business Analyst** | Reads and exports | Target versus actual across brands, and a CSV of whatever is on screen — no approval rights |
+| **IT** | Configures | Users, roles, chains, parameters, holiday calendar, recipient lists, imports |
 | **Superadmin** | Breaks glass | Force-release, revive a cancelled plan — both audited |
 
 ## 4. Scope — phase 1
@@ -59,7 +61,7 @@ inventory, purchasing, HR. See `08-roadmap.md`.
 | Authorisation | Deny by default. Every handler declares a permission. Every query scoped by company and site. |
 | Master data | Company, site, site group with many-to-many membership, holiday calendar. Full CRUD with search. |
 | Approval engine | **Generic.** Configurable ordered steps; a step may be satisfied by any one of several roles. Versioned so a chain change does not disturb plans in flight. |
-| Notifications | Email in phase 1, behind a port that WhatsApp will also implement. Recipient lists maintained in the back office. |
+| Notifications | Email in phase 1, behind a port that WhatsApp will also implement. The release announcement goes to a **fixed list** maintained in the back office (D32). |
 | Reporting | Query → grid → pipe-delimited CSV, one implementation reused by every report. |
 | Audit | Append-only. Who, what, when, from where, and why for anything requiring a reason. |
 | Parameters | `sys_parameters` with admin CRUD. Lead time, auto-cancel day, recipient lists, feature toggles. |
@@ -71,11 +73,11 @@ inventory, purchasing, HR. See `08-roadmap.md`.
 |---|---|
 | Year target | Set per site, per sales type, for a year |
 | Month target | Set per site, per month, per sales type. **The twelve months need not sum to the year.** Show variance; never block. |
-| Promotion planning | Date range spanning months, name, site group, target sales, target receipts, order mode, free-text rule |
+| Promotion planning | Date range spanning months, name, site group (single-brand, D31), target sales, target receipts, order mode, free-text rule. **No budget field** (D29) |
 | Lead time | Earliest start is **N working days** ahead (default 7, configurable), counted against the Indonesian holiday calendar |
 | Auto-cancel | On the **Mth day** before start (default 5), cancel any plan whose approval is incomplete |
 | Approval | Configurable chain, either/or steps, superadmin force-release with a reason |
-| Release | On final approval, send an email to a maintained recipient list |
+| Release | On final approval, send an email to the fixed maintained recipient list |
 | Calendar view | A month grid of what is planned, across brands |
 | Promotion report | Planned versus actual, by site, group, brand and order mode, exportable |
 
