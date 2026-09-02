@@ -416,13 +416,21 @@ func TestTrailerTotalDoesNotFailAFileWithRejections(t *testing.T) {
 	ctx := context.Background()
 
 	dir := t.TempDir()
-	// Three good rows and one unknown site. The trailer total names the sum of
-	// ALL four, so the loaded total is legitimately lower.
+	// The receipt numbers carry a fresh id so each run has its own checksum.
+	// Without it the SECOND run of this test is skipped as an already-loaded
+	// file and the assertions below pass vacuously — idempotency by checksum
+	// is real, and it is proven in TestReimportIsIdempotent, not here.
+	//
+	// The WHOLE uuid, not a prefix: a UUIDv7 begins with a millisecond
+	// timestamp, so its first eight hex characters are identical for every
+	// run inside the same ~65 second window. That is the second time that
+	// trap has bitten in this suite.
+	tag := id.NewString()
 	good := "site_code|business_date|pos_receipt_no|sales_type|promo_code|order_mode|gross_amount_idr\n" +
-		"MXX-001|2025-02-10|TR-1|normal||dine_in|10000\n" +
-		"MXX-001|2025-02-10|TR-2|normal||dine_in|20000\n" +
-		"MXX-001|2025-02-10|TR-3|normal||dine_in|30000\n" +
-		"NOPE-1|2025-02-10|TR-4|normal||dine_in|40000\n" +
+		"MXX-001|2025-02-10|TR-" + tag + "-1|normal||dine_in|10000\n" +
+		"MXX-001|2025-02-10|TR-" + tag + "-2|normal||dine_in|20000\n" +
+		"MXX-001|2025-02-10|TR-" + tag + "-3|normal||dine_in|30000\n" +
+		"NOPE-1|2025-02-10|TR-" + tag + "-4|normal||dine_in|40000\n" +
 		"#TOTAL|4|100000\n"
 	partial := filepath.Join(dir, "partial.csv")
 	if err := os.WriteFile(partial, []byte(good), 0o600); err != nil {
@@ -433,6 +441,9 @@ func TestTrailerTotalDoesNotFailAFileWithRejections(t *testing.T) {
 	res, err := deps.ImportFile(ctx, partial, nil)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if res.Skipped {
+		t.Fatal("the file was skipped as already loaded; the rest of this test would pass vacuously")
 	}
 	if res.Run.Outcome != "PARTIAL" {
 		t.Fatalf("outcome = %s (%s); one bad row must not fail the whole file",
@@ -452,7 +463,7 @@ func TestTrailerTotalDoesNotFailAFileWithRejections(t *testing.T) {
 
 	// A genuinely truncated file STILL fails, on the row count.
 	truncated := "site_code|business_date|pos_receipt_no|sales_type|promo_code|order_mode|gross_amount_idr\n" +
-		"MXX-001|2025-02-11|TR-9|normal||dine_in|10000\n" +
+		"MXX-001|2025-02-11|TR-" + tag + "-9|normal||dine_in|10000\n" +
 		"#TOTAL|9|90000\n"
 	short := filepath.Join(dir, "truncated.csv")
 	if err := os.WriteFile(short, []byte(truncated), 0o600); err != nil {
