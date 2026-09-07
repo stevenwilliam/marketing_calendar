@@ -6,3 +6,5 @@ __pycache__/
 /web/dist/
 /tmp/
 /web/dist/
+/scripts/mermaid-check/node_modules/
+/scripts/mermaid-check/package-lock.json

@@ -1,6 +1,6 @@
 # marketing_calendar — Document Set
 
-**Version:** 1.0 (built, running, reachable, and ready for UAT; D28–D50 recorded)
+**Version:** 1.1 (built, running, reachable, and ready for UAT; D28–D51 recorded)
 **Date:** 2 September 2026 (written 1 September 2026)
 **Status:** the brief landed on 2026-09-01 and is stored verbatim at
 `PROMPT.md`. The documents are written, Steven's answers to Q22–Q32 are folded
@@ -26,6 +26,7 @@ document, it wins. Build and working conventions live in `../CLAUDE.md`.
 | 00 | This file | Index, decision log, open questions | ✅ |
 | 01 | `01-PRD.md` | Problem, personas, scope, requirements, metrics | ✅ |
 | 02 | `02-business-rules.md` | **Normative** business logic, `BR-x.y` | ✅ |
+| 02a | `02a-general-flow.md` | Master data → transaction → report, drawn | ✅ |
 | 03 | `03-data-model.md` | Schema, ERD, DDL, constraints, indexes | ✅ |
 | 04 | `04-api-specification.md` | REST contract, error model, idempotency, auth | ✅ |
 | 05 | `05-architecture-and-nfr.md` | Architecture, security, performance, observability | ✅ |
@@ -113,6 +114,7 @@ in the affected docs the same day.
 | D48 | 2026-09-07 | **A processed file is moved out of the drop directory** — into `processed/` or `failed/`. Name collisions get a timestamp suffix rather than overwriting. | Found by reading the reconciliation screen, not the code: `txn_20260902_truncated.csv` had failed on **six consecutive nights**. The checksum index only remembers runs that succeeded, so a permanently broken file was retried forever, filling the run log and telling nobody. Without the move the drop directory is not a queue, it is a pile. | 06 §3.1, 15, `importer.go` |
 | D49 | 2026-09-07 | **Holidays gain `is_provisional`, five years are seeded, holidays become a fourth import kind, and holiday cells are tinted `#fbe4e8` in the calendar.** Fixed and Easter-derived dates are exact; every lunar date is an estimate and is marked one. The seed never downgrades a confirmed date to its own estimate, and skips a generated holiday when the same holiday is already confirmed that year on another date. | The lead time is computed from this table (BR-3.3), so an unmarked guess is worse than a missing row. Two real errors caught on the way: the Julian-day month term was `29(m-1)+m/2` instead of `30m-(m-1)/2`, putting Idul Fitri 2026 a whole lunar month early; and the decreed Maulid plus the computed one both appeared, showing two non-working days where there is one. The tint was measured before use — ink 13.73, muted 4.80, danger 6.55 — and is only 1.21 against a plain cell, so the cell carries the holiday's **name** as well. | 02 BR-3.3, 03, 06, 10, db/0011–0012, `holidays_id.go` |
 | D50 | 2026-09-07 | **`16-uat-scenario-handbook.md` joins the standard doc set**, and §10 of the portable preference file now carries the whole structure 00–16 plus what 14, 15 and 16 are each for. Copied to every project that holds the preference file. | The set had a user guide and an admin guide and nothing for the person who has to *sign it off*. Those three overlap in subject and not in purpose, and writing one instead of the others is the usual mistake. Roughly half a UAT handbook should be scenarios that must be **refused** — a control nobody has watched refuse is a control nobody knows works. | 16, 99 §10, and evermore / healthy_catering / ruuma |
+| D51 | 2026-09-07 | **`02a-general-flow.md` joins the set** — the flow from master data to transaction to report, as seven mermaid diagrams sitting next to the normative rules they illustrate. `make diagrams` parses every diagram in `docs/` with the real mermaid parser and is part of `make check`. | The rules were complete and there was nowhere to see the shape of the thing. Numbered `02a` so it sits against `02` and defers to it. The parser check exists because a diagram that renders as an error box on GitHub is worse than no diagram: it is a document that looks maintained and is not — and checking that the fence says `mermaid` proves nothing. Verified to FAIL on a deliberately broken diagram before being trusted. | 02a, 99 §10, Makefile |
 
 ---
 

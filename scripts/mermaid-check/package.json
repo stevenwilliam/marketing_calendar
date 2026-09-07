@@ -1,0 +1,6 @@
+{
+  "name": "mermaid-check",
+  "private": true,
+  "description": "Parser for scripts/check-mermaid.mjs. Kept out of web/ so a docs check never touches the application's dependency tree.",
+  "dependencies": { "jsdom": "^26.0.0", "mermaid": "^11.4.1" }
+}

@@ -9,7 +9,7 @@ ENV  := /etc/marketing_calendar/marketing_calendar.env
 LOAD := set -a; . $(ENV); set +a;
 
 .PHONY: help build web run migrate-up migrate-down migrate-status seed job \
-        test test-shuffle vet fmt contrast audit typecheck check deploy clean
+        test test-shuffle vet fmt contrast diagrams audit typecheck check deploy clean
 
 help: ## show this
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-16s %s\n",$$1,$$2}'
@@ -61,7 +61,10 @@ audit: ## npm advisories
 contrast: ## measure every colour pairing against design.md
 	python3 scripts/contrast.py
 
-check: fmt vet test contrast typecheck audit ## everything that gates a commit
+diagrams: ## parse every mermaid diagram in docs/ (a broken one renders as an error box)
+	@node scripts/mermaid-check/check.mjs
+
+check: fmt vet test contrast diagrams typecheck audit ## everything that gates a commit
 
 deploy: web build migrate-up ## build both halves, migrate, then restart
 	sudo systemctl restart marketing-calendar
