@@ -82,6 +82,20 @@ npm run build
 
 ## 5. Ports
 
+**Chosen 2026-09-02: the service binds `127.0.0.1:8093`, and nginx exposes it
+on `:8094` for the LAN.** Browse to **`http://192.168.88.101:8094/`**.
+
+The two ports are not a mistake. 8093 is the Go service and is loopback-only,
+so nothing reaches it without nginx. 8094 is nginx's door: `ruuma` owns
+`listen 80 default_server` on this box, so a request to the bare IP on port 80
+lands on Ruuma Eatery, and `marketing-calendar.sfg.local` is not in DNS — which
+left the application running and unreachable from a browser. A dedicated port
+is the same shape evermore uses on 8090/8091, and it needs no DNS at all.
+
+`:8094` is open in ufw **to `192.168.88.0/24` only**, and the nginx allowlist
+applies on top. In production both go away: the hostname resolves, TLS is on
+443, and a second unencrypted door is not wanted.
+
 Pick a free port and record it here on the day it is chosen. `:8090` and
 `:8091` are taken by other projects on this server, so **check before
 assuming**:

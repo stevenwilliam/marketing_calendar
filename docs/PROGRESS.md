@@ -5,8 +5,8 @@
 **A ✅ here has been re-earned by running the gate in THIS repo.** Nothing is
 inherited from another project.
 
-**Last updated:** 2026-09-02 — the application is **built and running** on the
-dev server at `127.0.0.1:8093`, behind nginx with an IP allowlist.
+**Last updated:** 2026-09-07 — the application is **built, running and
+reachable** at **`http://192.168.88.101:8094/`** from the office LAN.
 
 ---
 
@@ -19,6 +19,7 @@ dev server at `127.0.0.1:8093`, behind nginx with an IP allowlist.
 | Go service | active, loopback only, `127.0.0.1:8093` |
 | Database | `marketing_calendar`, 9 migrations applied, seeded |
 | nginx | `/etc/nginx/sites-available/marketing-calendar`, IP allowlist, verified 403 from outside |
+| Reachable at | **`http://192.168.88.101:8094/`** — LAN only, ufw + nginx allowlist |
 | Import timer | 01:00 Asia/Jakarta, armed |
 | Auto-cancel timer | 02:00 Asia/Jakarta, armed |
 | Frontend | built and embedded in the binary |
@@ -115,7 +116,7 @@ Be specific rather than reassuring.
 |---|---|---|
 | 1 | **Confirm or amend D2–D22** | The build was made against these defaults |
 | 2 | **The nginx allowlist ranges** | `deploy/nginx-…conf` allows `127.0.0.1` and `192.168.88.0/24` only. The VPN range is commented out because nobody has said what it is |
-| 3 | **Port 8093 acceptable?** | 8081/8082/8090/8091 are taken by other projects (D43) |
+| 3 | **Ports 8093/8094 acceptable?** | 8093 is the Go service (loopback); 8094 is nginx's LAN door. 8081/8082/8090/8091 are taken by other projects (D43, D44) |
 | 4 | **The real release-recipient list** | Seeded with placeholders `marketing@sfg.local`, `operasional@sfg.local` |
 | 5 | **The demo accounts** | Nine seeded accounts share one password. Delete them before real data |
 | 6 | R1 — is Business Analyst step 2 (taken) or step 1? | A chain edit either way |
