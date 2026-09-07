@@ -25,6 +25,35 @@ Where this file conflicts with a project's own `CLAUDE.md`, the project wins —
 it is the newer, more specific decision. Where it conflicts with a habit,
 this file wins.
 
+### Keeping this file in sync — Steven's standing instruction
+
+**When I ask you to update my preferences, update this file in EVERY project on
+the server and push each one.** Not only the repository we happen to be working
+in. This file is the single portable standard, and four different versions of it
+is the same as having none — which is exactly what had happened by 2026-09-07:
+`ruuma` was ten sections behind and two others differed from each other.
+
+**`thenie_v2` is excluded.** Steven, 2026-09-07: *"for thenie_v2 dont touch it,
+it is special project."* It does not receive this file and is not synced. Leave
+it alone unless he says otherwise.
+
+**Every project's `CLAUDE.md` must name this file and state that it is a
+source.** A `CLAUDE.md` that does not point here will drift, and nobody will
+notice until the rule that was supposed to prevent something did not.
+
+The relationship, so it is unambiguous:
+
+- `99-steven-preference.md` — portable, project-agnostic, **identical in every
+  repo**. Improvements that are not specific to one project belong here so they
+  reach the next project.
+- `CLAUDE.md` — generated from §3–§9 of this file plus that project's domain,
+  locale and deliberate deviations. It is **the newer, more specific decision**,
+  so it wins locally — but it must say which parts of this file it is departing
+  from, and why.
+
+After syncing, check each project still complies with any rule that is new to
+it, and report where it does not rather than quietly leaving a contradiction.
+
 ### What I actually come back to most
 
 Everything below matters, but these are the ones I invoke over and over.
