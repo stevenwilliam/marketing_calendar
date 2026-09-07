@@ -7,7 +7,8 @@ inherited from another project.
 
 **Last updated:** 2026-09-07 — the application is **built, running and
 reachable** at **`http://192.168.88.101:8094/`** from `192.168.88.0/24` and
-`172.16.0.0/24`. Steven's own superadmin account exists.
+`172.16.0.0/24`. Steven's own superadmin account exists, and
+`16-uat-scenario-handbook.md` is ready to run.
 
 ---
 
@@ -51,7 +52,7 @@ yet run.
 | M13 | Web UI | ✅ | 11 screens; verified in a real browser and **measured**, not eyeballed |
 | M14 | Security hardening | ✅ | Controls built and tested, including site scoping (BR-5.5) and the export cap, both of which were written down as gaps and then closed rather than left as prose |
 | M15 | Deployment | ✅ (dev) / 🟡 (production) | systemd + nginx verified on `claudedev`; production TLS never run |
-| M16 | Guides | ✅ | `13` handbook, `14` user guide, `15` admin guide |
+| M16 | Guides | ✅ | `13` handbook, `14` user guide, `15` admin guide, `16` UAT scenario handbook |
 
 ---
 
