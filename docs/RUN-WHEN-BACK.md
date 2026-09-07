@@ -3,7 +3,27 @@
 Steps that need Steven, an interactive terminal, or a machine that does not
 exist yet. Everything else is done and running.
 
-**Date:** 2026-09-02
+**Date:** 2026-09-07
+
+---
+
+## 0. If you cannot open the application
+
+**`http://192.168.88.101:8094/`** from a machine on `192.168.88.0/24` or
+`172.16.0.0/24`.
+
+If it hangs, your source address is outside both ranges and **ufw drops the
+packet before nginx sees it** — so there is nothing in the nginx log either.
+Find your address and say so, or use the tunnel, which needs no firewall change
+at all because it rides the SSH session you already have:
+
+```bash
+ssh -L 8094:127.0.0.1:8093 aidev@192.168.88.101
+# then browse to http://localhost:8094/
+```
+
+That reaches the Go service directly on loopback and bypasses nginx entirely,
+so it works even when every allowlist is wrong.
 
 ---
 
@@ -11,7 +31,7 @@ exist yet. Everything else is done and running.
 
 | # | Item | Where it bites | What I did meanwhile |
 |---|---|---|---|
-| 1 | **The nginx allowlist ranges.** The office subnets and the VPN range. | `deploy/nginx-marketing-calendar.conf` — the `allow` lines are the whole of "not public facing" | Allowed `127.0.0.1` and `192.168.88.0/24` (the dev LAN). The VPN line is present and **commented out**, because guessing a range that grants access is worse than leaving it shut |
+| 1 | **The nginx allowlist ranges.** Still needs the full office subnet list. | `deploy/nginx-marketing-calendar.conf` — the `allow` lines are the whole of "not public facing" | Now allows `127.0.0.1`, `192.168.88.0/24` (dev LAN) and **`172.16.0.0/24`** — the network staff laptops actually arrive from. That last one is evidence, not a guess: all 36 SSH sessions to this host originate at `172.16.0.1`, and `09-deployment.md` §2 had already named the range. It is still **one host's evidence**; confirm the real office and VPN ranges before production |
 | 2 | **Port 8093** on `claudedev`. | Everything | 8081, 8082, 8090 and 8091 are taken by other projects. Picked 8093, recorded as D43. Change `MC_HTTP_ADDR` and the nginx `upstream` together if it must move |
 | 3 | **The real release-recipient list.** | `notify.release_recipients` in **Pengaturan** | Seeded with `marketing@sfg.local, operasional@sfg.local`. These are placeholders and will silently deliver nowhere |
 | 4 | **The nine demo accounts.** | `mc seed` creates them sharing one password | Fine on the dev server, **must be deleted before real data**. The handbook says so at the point of running the seed |
