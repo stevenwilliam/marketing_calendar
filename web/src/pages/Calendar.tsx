@@ -1,16 +1,46 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type Holiday, type Plan } from '../lib/api'
-import { formatDate, monthName, rp } from '../lib/format'
+import { formatDate, monthName, rp, percentFromBPS } from '../lib/format'
 import { SearchBox, StatusPill, Loading, Empty } from '../components/ui'
 
 const DAY_LABELS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
+
+interface DayAchievement {
+  actual_idr: number
+  receipt_count: number
+  band: 'under' | 'near' | 'over' | 'none'
+  achieved_bps: number | null
+}
+
+interface CalendarPlan extends Plan {
+  days?: number
+  daily_target_idr?: number
+  has_daily_target?: boolean
+  daily?: Record<string, DayAchievement>
+}
+
+/**
+ * The three achievement bands.
+ *
+ * The backgrounds measure 1.01–1.06 against EACH OTHER: pure hue, no
+ * luminance difference at all. To anyone who cannot separate red from green —
+ * roughly one man in twelve — the three chips are identical. So the
+ * PERCENTAGE on the chip is the signal and the colour is the aid, never the
+ * other way round. Each ink is measured on its own ground: 6.85, 7.67, 6.73.
+ */
+const BAND: Record<string, { bg: string; ink: string; glyph: string; label: string }> = {
+  under: { bg: '#fdeaec', ink: '#9E1C28', glyph: '▼', label: 'di bawah 70% target harian' },
+  near:  { bg: '#fff2ef', ink: '#6F4400', glyph: '◆', label: '70–100% target harian' },
+  over:  { bg: '#e8f2ec', ink: '#145F38', glyph: '▲', label: '100% target harian atau lebih' },
+  none:  { bg: '#eae7e7', ink: '#201e1d', glyph: '·', label: 'tidak ada target harian' },
+}
 
 export default function Calendar() {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
-  const [rows, setRows] = useState<Plan[]>([])
+  const [rows, setRows] = useState<CalendarPlan[]>([])
   const [holidays, setHolidays] = useState<Holiday[]>([])
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
@@ -20,7 +50,7 @@ export default function Calendar() {
     setLoading(true)
     const p = new URLSearchParams({ year: String(year), month: String(month) })
     if (q) p.set('q', q)
-    api<{ data: Plan[] }>(`/promotions/calendar?${p}`)
+    api<{ data: CalendarPlan[] }>(`/promotions/calendar?${p}`)
       .then((res) => { if (!cancelled) setRows(res.data ?? []) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
@@ -147,18 +177,31 @@ export default function Calendar() {
                               </span>
                             )}
                           </div>
-                          {running.slice(0, 3).map((p) => (
-                            <Link key={p.plan_id} to={`/promo/${p.plan_id}`}
-                                  title={`${p.plan_code} · ${p.company_name} · ${rp(p.version.target_sales_idr)}`}
-                                  className="block text-[10.5px] font-semibold leading-[1.35] px-1.5 py-0.5 mb-0.5 truncate"
-                                  style={{
-                                    background: '#eae7e7',
-                                    borderLeft: `3px solid ${brand(p.company_code)}`,
-                                    color: '#201e1d',
-                                  }}>
-                              {p.version.promo_name}
-                            </Link>
-                          ))}
+                          {running.slice(0, 3).map((p) => {
+                            const a = p.daily?.[c.iso]
+                            const band = BAND[a?.band ?? 'none'] ?? BAND.none
+                            const pct = a?.achieved_bps == null ? null : percentFromBPS(a.achieved_bps)
+                            return (
+                              <Link key={p.plan_id} to={`/promo/${p.plan_id}`}
+                                    title={`${p.plan_code} · ${p.company_name}\n` +
+                                      `Target harian ${rp(p.daily_target_idr ?? 0)}\n` +
+                                      `Aktual ${rp(a?.actual_idr ?? 0)}` +
+                                      (pct ? ` · ${pct} — ${band.label}` : ' · belum ada target harian')}
+                                    className="flex items-baseline gap-1 text-[10.5px] font-semibold leading-[1.35] px-1.5 py-0.5 mb-0.5"
+                                    style={{
+                                      background: band.bg,
+                                      borderLeft: `3px solid ${brand(p.company_code)}`,
+                                      color: band.ink,
+                                    }}>
+                                <span aria-hidden="true">{band.glyph}</span>
+                                <span className="truncate flex-1">{p.version.promo_name}</span>
+                                {/* The number IS the signal. Without it the three
+                                    bands are the same shade to anyone who cannot
+                                    see hue. */}
+                                <span className="tnum shrink-0">{pct ?? '—'}</span>
+                              </Link>
+                            )
+                          })}
                           {running.length > 3 && (
                             <div className="text-[10px] text-muted">+{running.length - 3} lagi</div>
                           )}
@@ -186,6 +229,24 @@ export default function Calendar() {
             </span>
           </div>
 
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
+            <span className="font-semibold text-ink">Capaian harian:</span>
+            {(['under', 'near', 'over'] as const).map((k) => (
+              <span key={k} className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-semibold"
+                      style={{ background: BAND[k].bg, color: BAND[k].ink }}>
+                  <span aria-hidden="true">{BAND[k].glyph}</span>
+                  {k === 'under' ? '<70%' : k === 'near' ? '70–100%' : '≥100%'}
+                </span>
+                {BAND[k].label}
+              </span>
+            ))}
+            <span>
+              Target harian = target penjualan promo dibagi jumlah harinya.
+              Aktual dihitung dari transaksi bertanda id promo, bukan dari rentang tanggal.
+            </span>
+          </div>
+
           {rows.length === 0 ? (
             <Empty title="Tidak ada promo pada bulan ini"
                    hint="Gunakan panah untuk berpindah bulan, atau buat rencana baru." />
@@ -202,6 +263,11 @@ export default function Calendar() {
                   <span className="text-xs text-muted">
                     {formatDate(p.version.start_date)} – {formatDate(p.version.end_date)}
                   </span>
+                  {p.has_daily_target && (
+                    <span className="text-xs text-muted tnum">
+                      Target harian {rp(p.daily_target_idr ?? 0)} × {p.days} hari
+                    </span>
+                  )}
                   <span className="ml-auto"><StatusPill status={p.status} forceReleased={p.force_released} /></span>
                 </Link>
               ))}

@@ -432,6 +432,23 @@ group, order mode), the actual sales and receipt count from `history_txn`
 attributed to that promotion, the variance in both absolute and percentage
 terms, and whether the plan was force-released.
 
+**BR-7.5a Daily target and daily achievement.** A promotion's **daily target**
+is its sales target divided by the number of days in its period, inclusive of
+both ends. Integer division, so it truncates — this product has no fractional
+rupiah (BR-1.1), and the promotion's own variance is always computed against
+the real total, never against the daily figure multiplied back up. *(D55)*
+
+A day is banded against that target: **under** below 70%, **near** from 70% up
+to but not including 100%, **over** at 100% and above. The boundaries are
+closed at the bottom — a day that hit its number exactly is not "nearly there".
+
+The band is computed from the **same rounded percentage that is displayed**, so
+a chip can never show a number its colour contradicts.
+
+Where there is no target, or no days, there is **no percentage** — rendered as
+an em dash, never as 0%. A percentage of nothing is undefined, and 0% would
+read as a total miss for a promotion nobody set a number on.
+
 **BR-7.6 Actuals are attributed by `promo_id`**, not by date range. A
 transaction inside a promotion's dates but not tagged with its id is
 `normal` sales, and counting it as promo sales would flatter every report.

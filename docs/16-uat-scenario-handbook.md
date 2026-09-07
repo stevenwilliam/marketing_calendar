@@ -169,6 +169,10 @@ Log in as **`it.support@sfg.local`** → **Impor**.
 |---|---|---|
 | G1 | **Kalender**, move to **August 2026** | Every **Saturday and Sunday** is tinted pink, and so is **17 August**, which also shows *Hari Kemerdekaan Republik Indonesia*. The Sab and Min column headers are tinted too |
 | G1b | Count the pink cells | Ten weekend days plus two holidays (17 and 25 August) = twelve. **No weekday is pink unless it is a holiday, and no weekend is left plain** |
+| G1c | Look at a promo chip on a day the promotion is running | It shows a glyph, the promo name, **and a percentage** — the day's sales against the promotion's daily target |
+| G1d | Compare a red chip, a yellow one and a green one | Under 70% is red ▼, 70–100% yellow ◆, 100% or more green ▲. **Cover the colour and the percentage still tells you** — that is deliberate, the three colours differ only in hue |
+| G1e | Find a promo with no sales target | Its chips show **—**, not 0%. A percentage of nothing is undefined |
+| G1f | Check the list under the grid | Each promotion shows its daily target and how many days it runs |
 | G2 | Read the legend under the calendar | One tint, one meaning: *bukan hari kerja*. It explains the `~` marker and says these days are **not counted** in the promo lead time |
 | G3 | Move to a year from **2028 onward** | Some holidays carry `~`. These are **estimates** — the lunar dates are set by decree and cannot be computed |
 | G4 | **Master data → Hari libur**, set the year to 2029 | Each row is marked **Dikonfirmasi** or **Perkiraan** |

@@ -23,7 +23,7 @@ func Seed(ctx context.Context, db *gorm.DB) (int, error) {
 		for _, step := range []func(*gorm.DB) (int, error){
 			seedPermissions, seedRoles, seedRolePermissions, seedCompanies,
 			seedSites, seedGroups, seedParameters, seedHolidays, seedUsers, seedChains,
-			seedTargets, seedPlans, seedTransactions,
+			seedTargets, seedPlans, seedTransactions, seedPromoDays,
 		} {
 			c, err := step(tx)
 			if err != nil {
@@ -794,6 +794,133 @@ func seedApproval(tx *gorm.DB, companyID, planID, creator uuid.UUID, status stri
 
 // seedTransactions generates enough history for the promotion report to be
 // non-trivial. Amounts are integer rupiah throughout.
+// seedPromoDays writes promo-attributed sales for every released plan, shaped
+// so each one shows all three achievement bands (D55).
+//
+// The pattern is deliberate rather than random: a demo where every day happens
+// to land in the same band demonstrates nothing, and a random one demonstrates
+// something different on every machine. Days cycle under 70%, between 70 and
+// 100, and above 100, with the exact boundaries — 70% and 100% — included so
+// the classification can be seen to be right at the edges.
+func seedPromoDays(tx *gorm.DB) (int, error) {
+	rows, err := tx.Raw(`
+		SELECT p.plan_id, p.company_id, p.site_group_id, v.start_date, v.end_date,
+		       v.target_sales_idr
+		  FROM promotion_plan p
+		  JOIN promotion_plan_version v ON v.version_id = p.current_version_id
+		 WHERE p.status = 'RELEASED' AND v.target_sales_idr > 0`).Rows()
+	if err != nil {
+		return 0, err
+	}
+	type plan struct {
+		planID, companyID, groupID uuid.UUID
+		start, end                 time.Time
+		target                     int64
+	}
+	var plans []plan
+	for rows.Next() {
+		var x plan
+		if err := rows.Scan(&x.planID, &x.companyID, &x.groupID, &x.start, &x.end, &x.target); err != nil {
+			rows.Close()
+			return 0, err
+		}
+		plans = append(plans, x)
+	}
+	rows.Close()
+	if len(plans) == 0 {
+		return 0, nil
+	}
+
+	runID := id.New()
+	if err := tx.Exec(`
+		INSERT INTO import_run (import_run_id, file_name, file_checksum, kind, rows_read,
+		    rows_inserted, outcome, message, finished_at)
+		VALUES (?, 'seed-promo-days', ?, 'transactions', 0, 0, 'OK',
+		        'penjualan promo contoh untuk visualisasi kalender', now())`,
+		runID, "seed-promo-"+id.NewString()).Error; err != nil {
+		return 0, err
+	}
+
+	// Percentages of the daily target, in basis points. The cycle covers both
+	// boundaries exactly and both sides of each.
+	pattern := []int64{4200, 5500, 6900, 7000, 8500, 9900, 10000, 11800, 13500, 6100}
+
+	n := 0
+	seq := 0
+	for _, pl := range plans {
+		var siteIDs []uuid.UUID
+		srows, err := tx.Raw(`SELECT site_id FROM site_group_member WHERE site_group_id = ?`, pl.groupID).Rows()
+		if err != nil {
+			return 0, err
+		}
+		for srows.Next() {
+			var s uuid.UUID
+			if err := srows.Scan(&s); err != nil {
+				srows.Close()
+				return 0, err
+			}
+			siteIDs = append(siteIDs, s)
+		}
+		srows.Close()
+		if len(siteIDs) == 0 {
+			continue
+		}
+
+		// Clear any promo rows the generic transaction seed already attributed
+		// to this plan inside its own period. Without this the deliberate
+		// pattern is added to whatever that loop happened to produce, and the
+		// demo shows a different distribution on every machine — which is the
+		// opposite of the point.
+		if err := tx.Exec(`
+			DELETE FROM history_txn
+			 WHERE promo_id = ? AND business_date BETWEEN ? AND ?`,
+			pl.planID, pl.start, pl.end).Error; err != nil {
+			return 0, err
+		}
+
+		days := int(pl.end.Sub(pl.start).Hours()/24) + 1
+		if days <= 0 {
+			continue
+		}
+		dailyTarget := pl.target / int64(days)
+		if dailyTarget <= 0 {
+			continue
+		}
+
+		for i := 0; i < days; i++ {
+			day := pl.start.AddDate(0, 0, i)
+			// The whole day's figure, split across the group's shops. Integer
+			// arithmetic throughout: the last shop takes the remainder so the
+			// day's total is exact rather than short by a few rupiah.
+			dayTotal := dailyTarget * pattern[i%len(pattern)] / 10000
+			per := dayTotal / int64(len(siteIDs))
+			for j, siteID := range siteIDs {
+				amount := per
+				if j == len(siteIDs)-1 {
+					amount = dayTotal - per*int64(len(siteIDs)-1)
+				}
+				if amount <= 0 {
+					continue
+				}
+				seq++
+				err := tx.Exec(`
+					INSERT INTO history_txn (txn_id, company_id, site_id, business_date,
+					    pos_receipt_no, sales_type, promo_id, order_mode, gross_amount_idr, import_run_id)
+					VALUES (?, ?, ?, ?, ?, 'promo', ?, 'dine_in', ?, ?)
+					ON CONFLICT (site_id, business_date, pos_receipt_no) DO NOTHING`,
+					id.New(), pl.companyID, siteID, day,
+					fmt.Sprintf("PROMO-%s-%06d", pl.planID.String()[:8], seq),
+					pl.planID, amount, runID).Error
+				if err != nil {
+					return 0, err
+				}
+				n++
+			}
+		}
+	}
+	return n, nil
+}
+
 func seedTransactions(tx *gorm.DB) (int, error) {
 	var existing int64
 	tx.Raw(`SELECT count(*) FROM history_txn`).Scan(&existing)
@@ -828,26 +955,6 @@ func seedTransactions(tx *gorm.DB) (int, error) {
 	}
 	rows.Close()
 
-	// The released plan, so its actuals are attributable by promo_id (BR-7.6).
-	var releasedPlan, releasedGroup uuid.UUID
-	if err := tx.Raw(`SELECT plan_id, site_group_id FROM promotion_plan WHERE status = 'RELEASED' LIMIT 1`).
-		Row().Scan(&releasedPlan, &releasedGroup); err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return 0, err
-	}
-	promoSites := map[uuid.UUID]bool{}
-	if releasedGroup != uuid.Nil {
-		m, _ := tx.Raw(`SELECT site_id FROM site_group_member WHERE site_group_id = ?`, releasedGroup).Rows()
-		if m != nil {
-			for m.Next() {
-				var sid uuid.UUID
-				if err := m.Scan(&sid); err == nil {
-					promoSites[sid] = true
-				}
-			}
-			m.Close()
-		}
-	}
-
 	today := calendar.Today(time.Now())
 	n := 0
 	seq := 0
@@ -874,15 +981,15 @@ func seedTransactions(tx *gorm.DB) (int, error) {
 				// Deterministic variation without floats: the amount moves
 				// with the day and the receipt index.
 				amount := ticket + int64((day*7+i*13)%25)*1_000
+				// NORMAL sales only. Promo-attributed rows are written by
+				// seedPromoDays, which knows each plan's actual period — this
+				// loop did not, and was tagging transactions with a promotion
+				// that was not running on the day they happened.
 				salesType := "normal"
 				var promoID any
 				mode := "dine_in"
 				if i%3 == 0 {
 					mode = "take_away"
-				}
-				if releasedPlan != uuid.Nil && promoSites[x.siteID] && day < 20 && i%2 == 0 {
-					salesType = "promo"
-					promoID = releasedPlan
 				}
 				if err := tx.Exec(`
 					INSERT INTO history_txn (txn_id, company_id, site_id, business_date,

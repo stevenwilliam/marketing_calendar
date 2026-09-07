@@ -51,6 +51,13 @@ melainkan tidak pernah dimuat sama sekali.
 
 Menu **Kalender** menampilkan satu bulan, lintas merek.
 
+**Setiap promo menampilkan capaian hariannya.** Target harian adalah target
+penjualan promo dibagi jumlah hari periodenya. Setiap hari diberi warna: merah
+▼ di bawah 70%, kuning ◆ antara 70% dan 100%, hijau ▲ pada 100% atau lebih.
+Angka persennya selalu ditulis — warnanya hanya membantu, bukan satu-satunya
+penanda. Tanda `—` berarti promo itu belum punya target, jadi persentasenya
+tidak terdefinisi.
+
 **Kotak berwarna merah muda adalah hari yang bukan hari kerja** — akhir pekan
 dan hari libur nasional. Warnanya sama karena artinya sama: hari-hari itu
 **tidak dihitung** dalam masa tenggang promo. Hari libur juga menampilkan

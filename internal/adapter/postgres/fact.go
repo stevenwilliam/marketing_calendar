@@ -307,6 +307,45 @@ func (r *FactRepo) PromoActuals(ctx context.Context, planIDs []uuid.UUID) (map[u
 	return out, nil
 }
 
+// PromoDailyActuals is sales per promotion per business day inside a window.
+//
+// Attributed by promo_id, never by date range (BR-7.6) — the same rule the
+// promotion report follows, and the reason a transaction sitting inside a
+// promotion's dates but tagged `normal` does not appear here.
+func (r *FactRepo) PromoDailyActuals(ctx context.Context, planIDs []uuid.UUID, from, to time.Time) (map[uuid.UUID]map[string]app.Actual, error) {
+	out := map[uuid.UUID]map[string]app.Actual{}
+	if len(planIDs) == 0 {
+		return out, nil
+	}
+	rows, err := r.db.WithContext(ctx).Raw(`
+		SELECT promo_id, business_date,
+		       COALESCE(SUM(gross_amount_idr), 0)::bigint, count(*)
+		  FROM history_txn
+		 WHERE promo_id = ANY(?::uuid[])
+		   AND sales_type = 'promo'
+		   AND business_date BETWEEN ? AND ?
+		 GROUP BY promo_id, business_date`, uuidList(planIDs), from, to).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var pid uuid.UUID
+		var day time.Time
+		var gross int64
+		var count int
+		if err := rows.Scan(&pid, &day, &gross, &count); err != nil {
+			return nil, err
+		}
+		if out[pid] == nil {
+			out[pid] = map[string]app.Actual{}
+		}
+		out[pid][day.Format("2006-01-02")] = app.Actual{
+			GrossIDR: money.IDR(gross), ReceiptCount: count}
+	}
+	return out, nil
+}
+
 // TargetVsActual joins targets to actuals per site and month. The join is a
 // FULL OUTER JOIN in effect: a site with a target and no sales must appear
 // (that is the interesting row), and so must sales against no target.

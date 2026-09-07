@@ -148,6 +148,23 @@ behind ordinary cell content, so everything the cell draws has to survive it:
 > too, and a holiday cell carries the holiday's name. Rule 1, applied to a
 > background rather than to a pill.
 
+**Daily-achievement chips** on the calendar (D55) — a promo chip is coloured
+by how that day went against the promotion's daily target:
+
+| Band | Ground | Ink | Ratio | |
+| --- | --- | --- | ---: | --- |
+| under, `<70%` | `#fdeaec` | `#9E1C28` | 6.85 | AA |
+| near, `70–100%` | `#fff2ef` | `#6F4400` | 7.67 | AAA |
+| over, `≥100%` | `#e8f2ec` | `#145F38` | 6.73 | AA |
+
+> **The three grounds measure 1.01–1.06 against EACH OTHER.** Pure hue, no
+> luminance difference whatsoever — so to anyone who cannot separate red from
+> green, roughly one man in twelve, the three chips are the same chip. The
+> **percentage printed on the chip is the signal**; the colour is the aid, and
+> a glyph (▼ ◆ ▲) backs both. This is rule 1 at its sharpest: here the colour
+> genuinely carries nothing on its own, and it was measured rather than
+> assumed.
+
 **Brand accents**, on the white of a table row:
 
 | Brand | Ratio | |

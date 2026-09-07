@@ -388,3 +388,86 @@ func TestSubmitReportsEveryMissingFieldAtOnce(t *testing.T) {
 		}
 	}
 }
+
+// --- daily target and achievement bands (D55) ----------------------------
+
+func TestDaysIsInclusiveOfBothEnds(t *testing.T) {
+	v := validVersion()
+	v.StartDate = date(2026, time.September, 15)
+	v.EndDate = date(2026, time.September, 15)
+	if got := v.Days(); got != 1 {
+		t.Fatalf("a one-day promotion is %d days, want 1", got)
+	}
+	v.EndDate = date(2026, time.September, 30)
+	if got := v.Days(); got != 16 {
+		t.Fatalf("15th to 30th inclusive is %d days, want 16", got)
+	}
+}
+
+func TestDailyTargetDividesTheTotal(t *testing.T) {
+	v := validVersion()
+	v.StartDate = date(2026, time.September, 1)
+	v.EndDate = date(2026, time.September, 30)
+	v.TargetSalesIDR = 250_000_000
+
+	amount, days, ok := v.DailyTarget()
+	if !ok || days != 30 {
+		t.Fatalf("days = %d, ok = %v", days, ok)
+	}
+	// Integer division truncates, deliberately: this product has no fractional
+	// rupiah, and the promotion's own variance is computed against the real
+	// total rather than against this figure multiplied back up.
+	if amount != 8_333_333 {
+		t.Fatalf("daily target = %d, want 8333333", amount)
+	}
+	if amount*money.IDR(days) > v.TargetSalesIDR {
+		t.Fatal("the daily target must never round UP: it would set a target above the plan's own")
+	}
+}
+
+// A promotion nobody set a number on has no daily target, and a percentage of
+// zero is undefined — not 0%, which would read as a total miss.
+func TestNoDailyTargetWhenThereIsNoTarget(t *testing.T) {
+	v := validVersion()
+	v.TargetSalesIDR = 0
+	if _, _, ok := v.DailyTarget(); ok {
+		t.Fatal("a zero total must not produce a daily target")
+	}
+	if band, _, ok := BandFor(500_000, 0); ok || band != BandNone {
+		t.Fatalf("band = %s, ok = %v; a percentage of zero is undefined", band, ok)
+	}
+}
+
+// The boundaries are closed at the bottom. A day that hit its number exactly
+// is not "nearly there".
+func TestBandBoundaries(t *testing.T) {
+	const daily = money.IDR(1_000_000)
+	cases := []struct {
+		actual money.IDR
+		want   Band
+		note   string
+	}{
+		{0, BandUnder, "nothing sold"},
+		{699_000, BandUnder, "69,90% is under"},
+		{700_000, BandNear, "exactly 70% is near, not under"},
+		{999_000, BandNear, "99,90% is near"},
+		{1_000_000, BandOver, "exactly 100% is over, not near"},
+		{2_500_000, BandOver, "well past"},
+	}
+	// The band follows the DISPLAYED percentage, so a chip can never show a
+	// number that contradicts its colour. 699.999 rounds to 70,00% and is
+	// therefore `near`, not `under`.
+	if band, bps, _ := BandFor(699_999, daily); band != BandNear || bps != 7000 {
+		t.Fatalf("699999 of 1000000 rounds to %d bps and banded %s; the colour must follow the number shown", bps, band)
+	}
+	for _, c := range cases {
+		got, bps, ok := BandFor(c.actual, daily)
+		if !ok {
+			t.Fatalf("%s: no band", c.note)
+		}
+		if got != c.want {
+			t.Fatalf("%s: actual %d of %d = %d bps -> %s, want %s",
+				c.note, c.actual, daily, bps, got, c.want)
+		}
+	}
+}

@@ -262,6 +262,74 @@ func (v Version) NextVersion(now time.Time, by uuid.UUID) Version {
 	return n
 }
 
+// Days is the length of the promotion in calendar days, inclusive of both
+// ends. A one-day promotion is 1, not 0.
+func (v Version) Days() int {
+	if v.StartDate.IsZero() || v.EndDate.IsZero() || v.EndDate.Before(v.StartDate) {
+		return 0
+	}
+	return int(calendar.Today(v.EndDate).Sub(calendar.Today(v.StartDate)).Hours()/24) + 1
+}
+
+// DailyTarget is the sales target spread evenly across the promotion's days
+// (D55).
+//
+// Integer division, so it truncates: Rp 250.000.000 over 30 days gives
+// Rp 8.333.333 a day, and twelve of those rupiah are lost against the total.
+// That is the right trade for a per-day yardstick — the alternative is a
+// fractional rupiah, and this product has no such thing (BR-1.1). The
+// PROMOTION's variance is always computed against the real total, never
+// against the daily figure multiplied back up.
+//
+// ok is false when there is no meaningful daily target: no days, or a zero
+// total. A percentage of zero is undefined, and rendering 0% would read as a
+// total miss for a promotion nobody set a number on.
+func (v Version) DailyTarget() (amount money.IDR, days int, ok bool) {
+	days = v.Days()
+	if days <= 0 || v.TargetSalesIDR <= 0 {
+		return 0, days, false
+	}
+	return v.TargetSalesIDR / money.IDR(days), days, true
+}
+
+// Achievement bands for a day against its daily target (D55).
+type Band string
+
+const (
+	BandUnder Band = "under" // below 70%
+	BandNear  Band = "near"  // 70% up to but not including 100%
+	BandOver  Band = "over"  // 100% and above
+	BandNone  Band = "none"  // no daily target, so no percentage exists
+)
+
+// BandFor classifies a day's actual against its daily target.
+//
+// The boundaries are closed at the bottom: exactly 70% is `near`, exactly 100%
+// is `over`. A day that hit its number exactly is not "nearly there".
+//
+// The band is computed from the SAME ROUNDED percentage that gets displayed,
+// not from the raw ratio. 699.999 against a target of 1.000.000 is 69,9999%
+// and rounds to 70,00% for display; classifying it on the raw value would put
+// a chip reading "70%" in the red band, and a colour that contradicts the
+// number beside it is worse than either alone.
+func BandFor(actual, dailyTarget money.IDR) (Band, int64, bool) {
+	if dailyTarget <= 0 {
+		return BandNone, 0, false
+	}
+	bps, ok := money.PercentOfBPS(actual, dailyTarget)
+	if !ok {
+		return BandNone, 0, false
+	}
+	switch {
+	case bps >= 10000:
+		return BandOver, bps, true
+	case bps >= 7000:
+		return BandNear, bps, true
+	default:
+		return BandUnder, bps, true
+	}
+}
+
 // DaysUntilAutoCancel is negative once the plan is past its cancellation date.
 func (v Version) AutoCancelDate(m int) time.Time {
 	return calendar.AutoCancelDate(v.StartDate, m)

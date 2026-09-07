@@ -149,9 +149,47 @@ func handleCalendar(d *app.Deps) gin.HandlerFunc {
 			fail(c, err)
 			return
 		}
+		// Per-day achievement against the daily target (D55). Only released
+		// and pending plans can have actuals attributed to them, but asking
+		// for all of them costs one query either way.
+		ids := make([]uuid.UUID, 0, len(rows))
+		for _, r := range rows {
+			ids = append(ids, r.PlanID)
+		}
+		daily, err := d.Facts.PromoDailyActuals(c.Request.Context(), ids, from, to)
+		if err != nil {
+			fail(c, err)
+			return
+		}
+
 		out := make([]gin.H, 0, len(rows))
 		for _, r := range rows {
-			out = append(out, planJSON(r))
+			j := planJSON(r)
+			target, days, ok := r.Version.DailyTarget()
+			j["days"] = days
+			j["daily_target_idr"] = int64(target)
+			j["has_daily_target"] = ok
+
+			perDay := make(map[string]gin.H, len(daily[r.PlanID]))
+			for day, a := range daily[r.PlanID] {
+				band, bps, defined := promo.BandFor(a.GrossIDR, target)
+				perDay[day] = gin.H{
+					"actual_idr":    int64(a.GrossIDR),
+					"receipt_count": a.ReceiptCount,
+					"band":          string(band),
+					// Null rather than 0 when undefined: a percentage of a
+					// zero target is not zero percent, and 0% would read as a
+					// total miss for a promotion nobody set a number on.
+					"achieved_bps": func() any {
+						if defined {
+							return bps
+						}
+						return nil
+					}(),
+				}
+			}
+			j["daily"] = perDay
+			out = append(out, j)
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"data": out, "year": year, "month": month,

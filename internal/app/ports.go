@@ -337,6 +337,9 @@ type FactRepo interface {
 	Runs(ctx context.Context, limit, offset int) ([]ImportRun, int, error)
 	Rejections(ctx context.Context, runID uuid.UUID) ([]Rejection, error)
 	PromoActuals(ctx context.Context, planIDs []uuid.UUID) (map[uuid.UUID]Actual, error)
+	// PromoDailyActuals is the same attribution, broken down by business day,
+	// for the calendar's per-day achievement (D55).
+	PromoDailyActuals(ctx context.Context, planIDs []uuid.UUID, from, to time.Time) (map[uuid.UUID]map[string]Actual, error)
 	TargetVsActual(ctx context.Context, f TargetFilter) ([]TargetActualRow, error)
 	SiteCodeIndex(ctx context.Context) (map[string]Site, error)
 	PlanCodeIndex(ctx context.Context) (map[string]uuid.UUID, error)
