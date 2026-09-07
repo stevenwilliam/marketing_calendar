@@ -269,7 +269,11 @@ a dependency has to earn its place.
 
 **Frontend (when there is a UI): React 18 + Vite + TypeScript + Tailwind.**
 Pin React to 18 — not 19. Structure `web/src/{components,lib,pages}`. Node 20.
-No PWA unless I ask for one.
+**Never a PWA** — no manifest, no service worker, no install prompt, no offline
+shell. This is not a default to weigh; it is a prohibition. Do not propose one,
+and do not add "PWA-ready" scaffolding on the way past. Where a phone matters,
+the answer is a **mobile-first responsive web app** now, and a **native app
+against the same versioned REST API** later.
 
 **Not my defaults, don't reach for them unprompted:** an ORM's automigrate as
 the source of truth, GraphQL, microservices, Kubernetes, a NoSQL primary store,
@@ -501,6 +505,8 @@ naming the docs it touched; `PROGRESS.md` is updated as work lands.
 - Silent scope changes — narrowing, widening or reinterpreting what I asked for.
 - Business logic in a handler, or a domain package importing a driver.
 - An ORM's automigrate treated as the schema's source of truth.
+- **A PWA** — a manifest, a service worker, an install prompt or an offline
+  shell, in any project. See §5.
 
 ---
 
