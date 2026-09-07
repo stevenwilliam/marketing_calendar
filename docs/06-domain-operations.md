@@ -66,7 +66,33 @@ open, and that is the right moment to notice.
 
 ## 3. Import operations
 
-### 3.0 The transaction CSV contract
+### 3.0 The CSV contracts
+
+Three kinds of file go through the same drop directory and the same screen.
+**The kind is detected from the header row**, never from the filename (D47).
+
+| Kind | Header |
+|---|---|
+| `transactions` | `site_code\|business_date\|pos_receipt_no\|sales_type\|promo_code\|order_mode\|gross_amount_idr` |
+| `target_year` | `site_code\|year\|sales_type\|target_amount_idr` |
+| `target_month` | `site_code\|year\|month\|sales_type\|target_amount_idr` |
+
+Templates for all three are downloadable from the **Impor** screen, and each
+one round-trips through the parser that will read the file produced from it —
+there is a test that asserts exactly that, because a template that does not
+parse is a trap rather than a help.
+
+> **Detection order is load-bearing.** A monthly file carries `year` too, so
+> the monthly shape must be tested before the yearly one. The other way round
+> loads every monthly target as a yearly one and overwrites twelve rows with
+> one, silently.
+
+Target rows are **upserted** on the BR-2.1 grain, so re-importing a corrected
+file overwrites rather than duplicating. The same target appearing **twice in
+one file** is rejected: the database would upsert it and the last line would
+quietly win.
+
+#### 3.0.1 The transaction contract in detail
 
 There is **no POS export format to match yet** (D30 / Q24). This is our
 contract; when the third-party integration is agreed, it becomes a second
@@ -104,6 +130,20 @@ like a quiet day of trading.
 Filename convention: `txn_YYYYMMDD_NN.csv` in `import.drop_path`. A file is
 identified for idempotency by its **checksum**, not its name, so renaming a
 file does not let it in twice (BR-6.3, BR-6.4).
+
+#### 3.0.2 The drop directory is a queue, not a pile
+
+Once processed, a file is **moved** to `<drop>/processed/` or `<drop>/failed/`
+(D48). A name collision gets a timestamp suffix rather than overwriting: two
+nights can legitimately produce the same filename, and losing the first would
+destroy the only copy of what was loaded.
+
+This exists because it did not, and the consequence was visible on the live
+server: a truncated file had failed on **six consecutive nights**. The checksum
+index only remembers runs that succeeded, so a file that can never succeed is
+retried forever — filling the run log, and telling nobody.
+
+**`failed/` is a directory somebody has to look at.** Nothing else does.
 
 ### 3.1 The nightly run
 

@@ -189,6 +189,30 @@ set -a && . /etc/marketing_calendar/marketing_calendar.env && set +a
 /home/dev/projects/marketing_calendar/bin/mc job import
 ```
 
+### Tiga jenis berkas
+
+Transaksi, target tahunan dan target bulanan lewat direktori dan layar yang
+sama. **Jenisnya dikenali dari baris header**, bukan dari nama berkas — berkas
+yang diganti namanya tetap diperlakukan sesuai isinya.
+
+Template ketiganya dapat diunduh dari layar **Impor**. Isi template itu, jangan
+menyusun header sendiri.
+
+Target di-*upsert*: memuat ulang berkas yang sudah dikoreksi menimpa, bukan
+menggandakan. Target yang sama muncul dua kali dalam **satu** berkas ditolak,
+karena baris terakhir akan diam-diam menang.
+
+### Berkas yang sudah diproses dipindahkan
+
+Setelah diproses, berkas dipindahkan ke `processed/` atau `failed/` di dalam
+direktori drop. **`failed/` adalah direktori yang harus dilihat orang** —
+tidak ada yang lain yang melihatnya.
+
+Sebelum ini ada, satu berkas terpotong gagal **enam malam berturut-turut**:
+indeks checksum hanya mengingat impor yang berhasil, jadi berkas yang tidak
+mungkin berhasil dicoba lagi selamanya, memenuhi log dan tidak memberi tahu
+siapa pun.
+
 ### Kontrak berkas
 
 Pipa sebagai pemisah, UTF-8, akhiran baris LF:

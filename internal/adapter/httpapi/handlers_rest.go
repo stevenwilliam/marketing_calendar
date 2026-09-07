@@ -436,6 +436,31 @@ func handleRejections(d *app.Deps) gin.HandlerFunc {
 	}
 }
 
+// handleImportTemplate hands back a ready-to-fill example for a kind.
+//
+// A template is cheaper than a specification: the header is exactly what the
+// parser matches on, the example row shows the shape of every value, and the
+// trailer is already correct for the rows above it. Somebody filling this in
+// cannot get the column names wrong.
+func handleImportTemplate(d *app.Deps) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		kind := app.ImportKind(c.Param("kind"))
+		switch kind {
+		case app.KindTransactions, app.KindTargetYear, app.KindTargetMonth:
+		default:
+			fail(c, apierror.NotFound("template"))
+			return
+		}
+		name, body := app.Template(kind)
+		c.Header("Content-Type", "text/csv; charset=utf-8")
+		c.Header("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, name))
+		// The same UTF-8 BOM every export carries, so Excel on Windows opens
+		// the template the same way it will open the file the user produces.
+		c.Writer.Write([]byte{0xEF, 0xBB, 0xBF})
+		c.Writer.WriteString(body)
+	}
+}
+
 func handleRunImport(d *app.Deps) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p := principal(c)

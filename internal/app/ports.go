@@ -301,6 +301,7 @@ type TxnRow struct {
 type ImportRun struct {
 	ImportRunID  uuid.UUID  `json:"import_run_id"`
 	FileName     string     `json:"file_name"`
+	Kind         string     `json:"kind"`
 	Checksum     string     `json:"file_checksum"`
 	RowsRead     int        `json:"rows_read"`
 	RowsInserted int        `json:"rows_inserted"`
@@ -325,6 +326,9 @@ type FactRepo interface {
 	SeenChecksum(ctx context.Context, sum string) (bool, error)
 	// LoadFile replaces the site-days it covers, inside one transaction.
 	LoadFile(ctx context.Context, run ImportRun, rows []TxnRow, rejects []Rejection, actor *uuid.UUID) (ImportRun, error)
+	// LoadTargets is the same contract for a target file: one transaction, the
+	// run row last, rejections kept.
+	LoadTargets(ctx context.Context, run ImportRun, rows []TargetRow, rejects []Rejection, actor *uuid.UUID) (ImportRun, error)
 	Runs(ctx context.Context, limit, offset int) ([]ImportRun, int, error)
 	Rejections(ctx context.Context, runID uuid.UUID) ([]Rejection, error)
 	PromoActuals(ctx context.Context, planIDs []uuid.UUID) (map[uuid.UUID]Actual, error)

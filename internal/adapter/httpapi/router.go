@@ -101,6 +101,9 @@ func NewRouter(d *app.Deps) http.Handler {
 	in.GET("/imports/:id/rejections", require("import.view"), handleRejections(d))
 	in.POST("/imports/run", require("import.run"), handleRunImport(d))
 	in.POST("/imports/upload", require("import.run"), handleUploadImport(d))
+	// Anyone who can see the reconciliation screen can take a template; it is
+	// a blank form, not data.
+	in.GET("/imports/templates/:kind", require("import.view"), handleImportTemplate(d))
 
 	in.GET("/reports/promotions", require("report.view"), handlePromoReport(d))
 	in.GET("/reports/promotions/export", require("report.export"), handleExportPromoReport(d))

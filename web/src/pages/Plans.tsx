@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, download, type Plan } from '../lib/api'
+import { api, download, type Company, type Plan } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { formatDate, rp, count, orderModeLabel } from '../lib/format'
+import { formatDate, rp, count, orderModeLabel, brandColor } from '../lib/format'
 import { SearchBox, ExportButton, StatusPill, TableWrap, Empty, Loading, BrandTag } from '../components/ui'
+import { BrandTabs } from '../components/BrandTabs'
 
 const STATUSES = ['', 'DRAFT', 'PENDING', 'RELEASED', 'REJECTED', 'CANCELLED']
 const STATUS_LABEL: Record<string, string> = {
@@ -15,18 +16,31 @@ export default function Plans() {
   const { can } = useAuth()
   const [rows, setRows] = useState<Plan[]>([])
   const [total, setTotal] = useState(0)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [brand, setBrand] = useState('')          // '' = every brand
+  const [counts, setCounts] = useState<Record<string, number>>({})
+  const [countsLoading, setCountsLoading] = useState(false)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [mode, setMode] = useState('')
   const [loading, setLoading] = useState(true)
 
-  // The query string is built once and used for BOTH the list and the export,
-  // so the file is always what the screen is showing (BR-7.4).
-  const params = new URLSearchParams()
-  if (q) params.set('q', q)
-  if (status) params.set('status', status)
-  if (mode) params.set('order_mode', mode)
+  // The query string is built once and used for the list, the tab counts AND
+  // the export, so the file is always what the screen is showing (BR-7.4) and
+  // a tab's number always means the same thing as its table.
+  const filters = new URLSearchParams()
+  if (q) filters.set('q', q)
+  if (status) filters.set('status', status)
+  if (mode) filters.set('order_mode', mode)
+  const filterQS = filters.toString()
+
+  const params = new URLSearchParams(filters)
+  if (brand) params.set('company_id', brand)
   const qs = params.toString()
+
+  useEffect(() => {
+    api<{ data: Company[] }>('/companies').then((r) => setCompanies(r.data ?? []))
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -36,6 +50,31 @@ export default function Plans() {
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [qs])
+
+  // Per-tab counts, recomputed whenever the filters move. `limit=1` because
+  // only `total` is wanted — asking for the rows as well would download the
+  // whole list three times to render three numbers.
+  useEffect(() => {
+    if (companies.length <= 1) return
+    let cancelled = false
+    setCountsLoading(true)
+    const ask = (companyID: string) => {
+      const p = new URLSearchParams(filters)
+      if (companyID) p.set('company_id', companyID)
+      p.set('limit', '1')
+      return api<{ total: number }>(`/promotions?${p}`).then((r) => [companyID, r.total] as const)
+    }
+    Promise.all([ask(''), ...companies.map((c) => ask(c.company_id))])
+      .then((pairs) => {
+        if (cancelled) return
+        setCounts(Object.fromEntries(pairs))
+      })
+      .catch(() => { /* the tabs simply show no number; the table is the truth */ })
+      .finally(() => { if (!cancelled) setCountsLoading(false) })
+    return () => { cancelled = true }
+    // filters is rebuilt every render; filterQS is its stable identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterQS, companies])
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,6 +87,14 @@ export default function Plans() {
           <Link to="/promo/baru" className="btn btn-primary">Buat rencana</Link>
         )}
       </div>
+
+      <BrandTabs
+        companies={companies}
+        value={brand}
+        onChange={setBrand}
+        counts={counts}
+        loading={countsLoading}
+      />
 
       <div className="flex flex-wrap gap-2 items-end">
         <div className="w-full sm:w-72">
@@ -76,9 +123,11 @@ export default function Plans() {
 
       {loading ? <Loading /> : rows.length === 0 ? (
         <Empty
-          title="Tidak ada rencana yang cocok"
+          title={brand
+            ? `Tidak ada rencana untuk ${companies.find((c) => c.company_id === brand)?.company_name ?? 'merek ini'}`
+            : 'Tidak ada rencana yang cocok'}
           hint={q || status || mode
-            ? 'Ubah kata kunci atau filter di atas.'
+            ? 'Ubah kata kunci atau filter di atas, atau pilih merek lain.'
             : can('promo.create') ? 'Mulai dengan tombol “Buat rencana”.' : 'Belum ada rencana promo yang dibuat.'}
         />
       ) : (
@@ -87,7 +136,9 @@ export default function Plans() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Kode</th><th>Nama promo</th><th>Merek</th><th>Kelompok toko</th>
+                  <th>Kode</th><th>Nama promo</th>
+                  {!brand && <th>Merek</th>}
+                  <th>Kelompok toko</th>
                   <th>Periode</th><th>Mode</th>
                   <th className="text-right">Target penjualan</th>
                   <th className="text-right">Target struk</th>
@@ -96,12 +147,12 @@ export default function Plans() {
               </thead>
               <tbody>
                 {rows.map((p) => (
-                  <tr key={p.plan_id} style={{ borderLeft: `3px solid ${brand(p.company_code)}` }}>
+                  <tr key={p.plan_id} style={{ borderLeft: `3px solid ${brandColor(p.company_code)}` }}>
                     <td className="font-mono text-xs">
                       <Link className="text-accent-ink underline" to={`/promo/${p.plan_id}`}>{p.plan_code}</Link>
                     </td>
                     <td className="font-semibold">{p.version.promo_name}</td>
-                    <td><BrandTag code={p.company_code} name={p.company_name} /></td>
+                    {!brand && <td><BrandTag code={p.company_code} name={p.company_name} /></td>}
                     <td>{p.site_group_name}</td>
                     <td className="whitespace-nowrap">
                       {formatDate(p.version.start_date)} – {formatDate(p.version.end_date)}
@@ -118,14 +169,12 @@ export default function Plans() {
               </tbody>
             </table>
           </TableWrap>
-          <p className="text-xs text-muted">{total} rencana</p>
+          <p className="text-xs text-muted">
+            {total} rencana
+            {brand && ` · ${companies.find((c) => c.company_id === brand)?.company_name ?? ''}`}
+          </p>
         </>
       )}
     </div>
   )
-}
-
-function brand(code: string) {
-  return code === 'MAXX' ? '#6b3b2a' : code === 'RUUMA' ? '#7a2e63'
-    : code === 'SUNSHINE' ? '#7c4a00' : 'transparent'
 }

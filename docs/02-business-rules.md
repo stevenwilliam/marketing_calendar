@@ -315,8 +315,20 @@ chain that uses it is a back-office edit.
 
 ## BR-6 — Transaction data
 
-**BR-6.1 Source.** Transactions arrive by nightly CSV import in **our own
-column contract**, specified in `06-domain-operations.md` §3.0. There is no POS
+**BR-6.1 Source.** Transactions **and targets** arrive by CSV import in **our
+own column contracts**, specified in `06-domain-operations.md` §3.0. Three
+kinds are recognised — `transactions`, `target_year`, `target_month` — and the
+kind is **detected from the header row, never from the filename**: the drop
+directory is unattended, and a file renamed by hand must still be parsed by
+what is in it *(D47)*.
+
+A target import **upserts** on the BR-2.1 grain, so a corrected file overwrites
+rather than duplicating. It performs no arithmetic across rows: BR-2.3 holds on
+the bulk path exactly as it does in the UI.
+
+A file is **moved out of the drop directory** once processed, into `processed/`
+or `failed/` *(D48)*. Without that, a file that can never succeed is retried
+every night forever. There is no POS
 export format to match yet; when the third-party integration is settled, it
 arrives as a second implementation of the same port and nothing above the port
 changes. *(D5, D30)*

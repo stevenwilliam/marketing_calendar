@@ -71,23 +71,7 @@ func (r *FactRepo) LoadFile(ctx context.Context, run app.ImportRun, rows []app.T
 
 		fin := time.Now().UTC()
 		run.FinishedAt = &fin
-		var trailerRows any
-		var trailerTotal any
-		if run.TrailerRows != nil {
-			trailerRows = *run.TrailerRows
-		}
-		if run.TrailerTotal != nil {
-			trailerTotal = int64(*run.TrailerTotal)
-		}
-		if err := tx.Exec(`
-			INSERT INTO import_run (import_run_id, file_name, file_checksum, rows_read,
-			    rows_inserted, rows_skipped, rows_rejected, trailer_rows, trailer_total_idr,
-			    outcome, message, actor_id, started_at, finished_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			run.ImportRunID, run.FileName, run.Checksum, run.RowsRead,
-			run.RowsInserted, run.RowsSkipped, run.RowsRejected,
-			trailerRows, trailerTotal, run.Outcome, run.Message,
-			nullUUID(actor), run.StartedAt, fin).Error; err != nil {
+		if err := insertRun(tx, run, actor, fin); err != nil {
 			return err
 		}
 		for _, rj := range rejects {
@@ -103,6 +87,91 @@ func (r *FactRepo) LoadFile(ctx context.Context, run app.ImportRun, rows []app.T
 	return run, err
 }
 
+// LoadTargets writes a target import: the rows, the rejections and the run row
+// in ONE transaction, the run row last so its counts are the real ones.
+//
+// Targets are UPSERTED by the (site, period_kind, year, month, sales_type)
+// unique index, so re-importing a corrected file overwrites rather than
+// duplicating — the same idempotency the transaction path gets from its
+// receipt key, and the reason a target import needs no delete-then-insert.
+//
+// It deliberately performs no arithmetic across rows. BR-2.3 says the twelve
+// months need not sum to the year, and a bulk loader is the most natural place
+// in the product to break that rule by being helpful.
+func (r *FactRepo) LoadTargets(ctx context.Context, run app.ImportRun, rows []app.TargetRow, rejects []app.Rejection, actor *uuid.UUID) (app.ImportRun, error) {
+	run.ImportRunID = id.New()
+	run.StartedAt = time.Now().UTC()
+
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var written int
+		for _, row := range rows {
+			var month any
+			if row.PeriodKind == "MONTH" {
+				month = row.Month
+			}
+			res := tx.Exec(`
+				INSERT INTO sales_target (target_id, company_id, site_id, period_kind,
+				                          period_year, period_month, sales_type,
+				                          target_amount_idr, updated_by)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+				ON CONFLICT (site_id, period_kind, period_year, COALESCE(period_month, 0), sales_type)
+				DO UPDATE SET target_amount_idr = EXCLUDED.target_amount_idr,
+				              updated_by = EXCLUDED.updated_by,
+				              updated_at = now()`,
+				id.New(), row.CompanyID, row.SiteID, row.PeriodKind,
+				row.Year, month, row.SalesType, int64(row.AmountIDR), nullUUID(actor))
+			if res.Error != nil {
+				return res.Error
+			}
+			written += int(res.RowsAffected)
+		}
+		run.RowsInserted = written
+		run.RowsSkipped = len(rows) - written
+		run.RowsRejected = len(rejects)
+
+		fin := time.Now().UTC()
+		run.FinishedAt = &fin
+		if err := insertRun(tx, run, actor, fin); err != nil {
+			return err
+		}
+		for _, rj := range rejects {
+			if err := tx.Exec(`
+				INSERT INTO import_rejection (rejection_id, import_run_id, line_no, reason, original_line)
+				VALUES (?, ?, ?, ?, ?)`,
+				id.New(), run.ImportRunID, rj.LineNo, rj.Reason, rj.Original).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return run, err
+}
+
+// insertRun is the one place a run row is written, so the two loaders cannot
+// drift in what they record.
+func insertRun(tx *gorm.DB, run app.ImportRun, actor *uuid.UUID, fin time.Time) error {
+	var trailerRows, trailerTotal any
+	if run.TrailerRows != nil {
+		trailerRows = *run.TrailerRows
+	}
+	if run.TrailerTotal != nil {
+		trailerTotal = int64(*run.TrailerTotal)
+	}
+	kind := run.Kind
+	if kind == "" {
+		kind = "transactions"
+	}
+	return tx.Exec(`
+		INSERT INTO import_run (import_run_id, file_name, file_checksum, kind, rows_read,
+		    rows_inserted, rows_skipped, rows_rejected, trailer_rows, trailer_total_idr,
+		    outcome, message, actor_id, started_at, finished_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		run.ImportRunID, run.FileName, run.Checksum, kind, run.RowsRead,
+		run.RowsInserted, run.RowsSkipped, run.RowsRejected,
+		trailerRows, trailerTotal, run.Outcome, run.Message,
+		nullUUID(actor), run.StartedAt, fin).Error
+}
+
 func (r *FactRepo) Runs(ctx context.Context, limit, offset int) ([]app.ImportRun, int, error) {
 	var total int64
 	if err := r.db.WithContext(ctx).Raw(`SELECT count(*) FROM import_run`).Scan(&total).Error; err != nil {
@@ -112,7 +181,7 @@ func (r *FactRepo) Runs(ctx context.Context, limit, offset int) ([]app.ImportRun
 		limit = 50
 	}
 	rows, err := r.db.WithContext(ctx).Raw(`
-		SELECT import_run_id, file_name, file_checksum, rows_read, rows_inserted,
+		SELECT import_run_id, file_name, file_checksum, kind, rows_read, rows_inserted,
 		       rows_skipped, rows_rejected, trailer_rows, trailer_total_idr,
 		       outcome, COALESCE(message, ''), started_at, finished_at
 		  FROM import_run ORDER BY started_at DESC LIMIT ? OFFSET ?`, limit, offset).Rows()
@@ -124,7 +193,7 @@ func (r *FactRepo) Runs(ctx context.Context, limit, offset int) ([]app.ImportRun
 	for rows.Next() {
 		var r app.ImportRun
 		var trailerTotal *int64
-		if err := rows.Scan(&r.ImportRunID, &r.FileName, &r.Checksum, &r.RowsRead,
+		if err := rows.Scan(&r.ImportRunID, &r.FileName, &r.Checksum, &r.Kind, &r.RowsRead,
 			&r.RowsInserted, &r.RowsSkipped, &r.RowsRejected, &r.TrailerRows,
 			&trailerTotal, &r.Outcome, &r.Message, &r.StartedAt, &r.FinishedAt); err != nil {
 			return nil, 0, err
