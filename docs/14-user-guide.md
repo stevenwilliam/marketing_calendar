@@ -77,7 +77,7 @@ Di bawahnya ada daftar semua promo yang berjalan bulan itu.
 | Target penjualan | Rupiah penuh, tanpa sen |
 | Target jumlah struk | Berapa banyak transaksi yang diharapkan |
 | Mode pesanan | Makan di tempat **atau** bawa pulang — satu promo satu mode |
-| Media pemasaran | Opsional. Satu baris per media, dengan harganya. Totalnya dijumlahkan otomatis |
+| Media pemasaran | **Minimal satu baris** sebelum dapat diajukan. Satu baris per media dengan harganya; totalnya dijumlahkan otomatis. Harga boleh 0 untuk media milik sendiri. Draf tetap dapat disimpan tanpa media |
 | Aturan promo | Teks berformat — tebal, miring, dan daftar. Inilah yang dibaca penyetuju dan toko |
 
 **Simpan draf** menyimpan tanpa mengajukan. Draf boleh belum lengkap.

@@ -20,6 +20,9 @@ func validVersion() Version {
 		EndDate: date(2026, time.September, 30), TargetSalesIDR: 250_000_000,
 		TargetReceiptCount: 4_000, OrderMode: DineIn,
 		PromoRule: "Diskon 20% untuk pembelian kedua, 15.00-18.00",
+		Media: []Media{
+			{LineNo: 1, Name: "Billboard Sudirman", PriceIDR: 45_000_000},
+		},
 	}
 }
 
@@ -308,11 +311,13 @@ func TestIncompleteMediaLineIsRefusedAndNamed(t *testing.T) {
 	}
 }
 
-func TestNoMediaIsValid(t *testing.T) {
-	v := validVersion()
-	v.Media = nil
-	if f := v.ValidateForSubmit(); f != nil {
-		t.Fatalf("media is optional: %v", f)
+// Superseded by D54: media used to be optional and is now required at submit.
+// The draft case it protected is covered where it actually lives — the draft
+// path does not call ValidateForSubmit at all — and is asserted end to end in
+// test/integration_test.go.
+func TestValidVersionCarriesMedia(t *testing.T) {
+	if len(validVersion().Media) == 0 {
+		t.Fatal("the fixture must carry media, or every submit test passes for the wrong reason")
 	}
 }
 
@@ -330,5 +335,56 @@ func TestNewVersionCarriesMediaForward(t *testing.T) {
 	n.Media[0].Name = "diubah"
 	if v.Media[0].Name != "Billboard" {
 		t.Fatal("the previous version was mutated through a shared slice")
+	}
+}
+
+// D54: at least one media line to SUBMIT. A draft may still have none —
+// BR-3.1 says a draft may be incomplete, and this is the submit gate.
+func TestSubmitRequiresAtLeastOneMediaLine(t *testing.T) {
+	v := validVersion()
+	v.Media = nil
+
+	f := v.ValidateForSubmit()
+	if f == nil {
+		t.Fatal("submitting with no media must be refused")
+	}
+	if _, ok := f["media"]; !ok {
+		t.Fatalf("the refusal must name the media field: %v", f)
+	}
+
+	// One line is enough.
+	v.Media = []Media{{LineNo: 1, Name: "Billboard Sudirman", PriceIDR: 45_000_000}}
+	if f := v.ValidateForSubmit(); f != nil {
+		t.Fatalf("one complete line is enough: %v", f)
+	}
+}
+
+// A line priced at zero still counts. Owned media — a shop's own window, its
+// social account — costs nothing to place and is still media.
+func TestAZeroPricedMediaLineCounts(t *testing.T) {
+	v := validVersion()
+	v.Media = []Media{{LineNo: 1, Name: "Etalase toko sendiri", PriceIDR: 0}}
+	if f := v.ValidateForSubmit(); f != nil {
+		t.Fatalf("a zero-priced line is still a line: %v", f)
+	}
+	total, err := MediaTotal(v.Media)
+	if err != nil || total != 0 {
+		t.Fatalf("total = %d, %v", total, err)
+	}
+}
+
+// The whole submit gate, in one place: no media is refused, and it is refused
+// ALONGSIDE the other missing fields rather than instead of them.
+func TestSubmitReportsEveryMissingFieldAtOnce(t *testing.T) {
+	v := validVersion()
+	v.Media = nil
+	v.PromoName = "  "
+	v.OrderMode = "both"
+
+	f := v.ValidateForSubmit()
+	for _, want := range []string{"media", "promo_name", "order_mode"} {
+		if _, ok := f[want]; !ok {
+			t.Fatalf("%s was not reported; a user should not fix one field at a time: %v", want, f)
+		}
 	}
 }

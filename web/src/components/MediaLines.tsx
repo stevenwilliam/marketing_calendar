@@ -30,12 +30,16 @@ export function MediaLines({
     <div>
       <div className="flex items-baseline justify-between">
         <span className="label mb-0">Media pemasaran</span>
-        <span className="text-xs text-muted">Opsional</span>
+        <span className="text-xs text-muted">Minimal satu</span>
       </div>
 
       {value.length === 0 ? (
-        <p className="text-sm text-muted py-2">
-          Belum ada media. Tambahkan baris untuk mencatat apa yang dibeli dan berapa harganya.
+        // Said at the point of failure rather than only after a rejected
+        // submit: the requirement is visible while the form is still being
+        // filled in, which is when it can still be met cheaply.
+        <p className="text-sm py-2 text-warn">
+          Minimal satu media pemasaran diperlukan sebelum rencana dapat diajukan.
+          Draf tetap dapat disimpan tanpa media.
         </p>
       ) : (
         <div className="flex flex-col gap-2 mt-1">

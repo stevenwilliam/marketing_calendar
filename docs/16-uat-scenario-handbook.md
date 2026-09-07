@@ -75,7 +75,9 @@ Log in as **`rina.hartono@sfg.local`**.
 | B6h | Press **Hapus** on the middle row | The row goes and the total drops by exactly that row's price |
 | B6i | Press **Tambah media** and leave the new row completely empty, then save | ⛔ Not an error. The blank row is **dropped**; the saved plan has only the filled rows |
 | B6j | Put a negative price on a row and save | ⛔ Refused, naming **which line** — e.g. `media.1.price` |
-| B6k | Save with no media at all | **Allowed.** Media is optional; a promotion that buys none is a real promotion |
+| B6k | **Simpan draf** with no media at all | **Allowed.** A draft may be incomplete |
+| B6l | Now press **Simpan dan ajukan** on that same media-less draft | ⛔ Refused: *"minimal satu media pemasaran wajib diisi sebelum diajukan"*. Add one line and it submits |
+| B6m | Add a line named "Etalase toko sendiri" priced **0**, then submit | **Allowed.** Owned media costs nothing to place and is still media |
 | B7 | Type `185.000` into **Target penjualan** | Only the digits are kept and the field shows `185.000` as a formatted number — the value stored is 185000, not 185 |
 | B8 | Save a plan as **Simpan draf** with the promo rule left empty | **Allowed.** A draft may be incomplete |
 | B9 | Now press **Simpan dan ajukan** on that same incomplete draft | ⛔ Refused, naming the missing field. The gate is at submit, not at save |

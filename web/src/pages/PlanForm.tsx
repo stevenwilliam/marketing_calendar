@@ -34,7 +34,12 @@ export default function PlanForm() {
   const [receipts, setReceipts] = useState('')
   const [mode, setMode] = useState<'dine_in' | 'take_away'>('dine_in')
   const [rule, setRule] = useState('')
-  const [media, setMedia] = useState<MediaLine[]>([])
+  // One empty row for a NEW plan: at least one line is required to submit
+  // (D54), and an empty list would make the user discover that only after
+  // being refused. An existing plan loads whatever it has.
+  const [media, setMedia] = useState<MediaLine[]>(
+    editing ? [] : [{ media_name: '', price_idr: 0 }],
+  )
 
   useEffect(() => {
     (async () => {

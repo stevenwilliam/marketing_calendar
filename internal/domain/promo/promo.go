@@ -61,6 +61,7 @@ func MediaTotal(lines []Media) (money.IDR, error) {
 }
 
 var (
+	ErrMediaRequired  = errors.New("minimal satu media pemasaran wajib diisi sebelum diajukan")
 	ErrMediaName      = errors.New("nama media wajib diisi")
 	ErrMediaPrice     = errors.New("harga media tidak boleh negatif")
 	ErrNameRequired   = errors.New("nama promo wajib diisi")
@@ -134,9 +135,14 @@ func (v Version) ValidateForSubmit() map[string]string {
 	default:
 		f["order_mode"] = ErrOrderMode.Error() // BR-3.4, allow-list
 	}
-	// BR-3.8: media lines are optional — a promotion that buys no media is a
-	// real promotion — but a line that EXISTS must be complete. A blank row
-	// carrying a price is a number nobody can account for.
+	// BR-3.8: at least one media line is required TO SUBMIT (D54). A draft may
+	// still have none — BR-3.1 says a draft may be incomplete — because this
+	// runs at the submit gate and the draft path never calls it.
+	if len(v.Media) == 0 {
+		f["media"] = ErrMediaRequired.Error()
+	}
+	// A line that exists must be complete. A blank row carrying a price is a
+	// number nobody can account for.
 	for i, m := range v.Media {
 		if !hasText(m.Name) {
 			f[fmt.Sprintf("media.%d.name", i+1)] = ErrMediaName.Error()

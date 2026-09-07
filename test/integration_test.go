@@ -493,3 +493,71 @@ func testDeps(t *testing.T, g *gorm.DB) *app.Deps {
 		Audit:  postgres.NewAuditRepo(g),
 	}
 }
+
+// --- media required on submit (BR-3.8, D54) -------------------------------
+
+// The rule is enforced by a TRIGGER as well as by the application, so the test
+// bypasses the application entirely: it moves a plan to PENDING with raw SQL,
+// which is what a repair script at 2am would do.
+func TestSubmitWithoutMediaIsRefusedByTheDatabase(t *testing.T) {
+	g := db(t)
+
+	company := mustUUID(t, g, `SELECT company_id FROM company WHERE company_code = 'MAXX'`)
+	group := mustUUID(t, g, `SELECT site_group_id FROM site_group
+	    WHERE company_id = ? AND NOT is_system LIMIT 1`, company)
+	creator := mustUUID(t, g, `SELECT user_id FROM app_user WHERE email = 'rina.hartono@sfg.local'`)
+
+	planID, versionID := id.New(), id.New()
+	code := "P-TEST-" + planID.String()[:8]
+	if err := g.Exec(`INSERT INTO promotion_plan (plan_id, company_id, plan_code, site_group_id, status, created_by)
+	                  VALUES (?, ?, ?, ?, 'DRAFT', ?)`,
+		planID, company, code, group, creator).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Exec(`
+		INSERT INTO promotion_plan_version (version_id, plan_id, version_no, promo_name,
+		    start_date, end_date, target_sales_idr, target_receipt_count, order_mode,
+		    promo_rule, created_by)
+		VALUES (?, ?, 1, 'Uji media wajib', '2027-06-01', '2027-06-30', 1000, 10,
+		        'dine_in', '<p>x</p>', ?)`, versionID, planID, creator).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Exec(`UPDATE promotion_plan SET current_version_id = ? WHERE plan_id = ?`,
+		versionID, planID).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	// A DRAFT with no media is legitimate — BR-3.1, a draft may be incomplete.
+	var status string
+	g.Raw(`SELECT status FROM promotion_plan WHERE plan_id = ?`, planID).Row().Scan(&status)
+	if status != "DRAFT" {
+		t.Fatalf("the draft did not save: %s", status)
+	}
+
+	// Submitting it must be refused BY THE DATABASE.
+	err := g.Exec(`UPDATE promotion_plan SET status = 'PENDING' WHERE plan_id = ?`, planID).Error
+	if err == nil {
+		t.Fatal("a plan with no media entered the approval chain: the trigger is not enforcing D54")
+	}
+	t.Logf("refused as designed: %v", err)
+
+	// With one line it goes through.
+	if err := g.Exec(`
+		INSERT INTO promotion_media (media_id, version_id, line_no, media_name, price_idr)
+		VALUES (?, ?, 1, 'Billboard Sudirman', 45000000)`, id.New(), versionID).Error; err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Exec(`UPDATE promotion_plan SET status = 'PENDING' WHERE plan_id = ?`, planID).Error; err != nil {
+		t.Fatalf("one media line should be enough: %v", err)
+	}
+
+	// And the trigger must not re-fire on a later transition, or a plan could
+	// never be released.
+	if err := g.Exec(`UPDATE promotion_plan SET status = 'RELEASED' WHERE plan_id = ?`, planID).Error; err != nil {
+		t.Fatalf("moving PENDING -> RELEASED must not be re-validated: %v", err)
+	}
+
+	_ = g.Exec(`DELETE FROM promotion_media WHERE version_id = ?`, versionID).Error
+	_ = g.Exec(`DELETE FROM promotion_plan_version WHERE plan_id = ?`, planID).Error
+	_ = g.Exec(`DELETE FROM promotion_plan WHERE plan_id = ?`, planID).Error
+}
