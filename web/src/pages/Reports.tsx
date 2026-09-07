@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, download } from '../lib/api'
 import { useAuth } from '../lib/auth'
-import { formatDate, rp, count, percentFromBPS, monthName } from '../lib/format'
-import { SearchBox, ExportButton, TableWrap, Loading, Empty, StatusPill } from '../components/ui'
+import { formatDate, rp, count, monthName } from '../lib/format'
+import { SearchBox, ExportButton, TableWrap, Loading, Empty, StatusPill, AchievementBadge } from '../components/ui'
 
 interface PromoReportRow {
   plan_id: string; plan_code: string; promo_name: string
@@ -11,6 +11,8 @@ interface PromoReportRow {
   status: string; force_released: boolean
   target_sales_idr: number; actual_sales_idr: number; sales_delta_idr: number
   achieved_bps: number | null
+  // Why there is no percentage, when there is none (BR-7.5b). Empty otherwise.
+  achieved_note: string
   target_receipts: number; actual_receipts: number; receipt_delta: number
 }
 
@@ -114,15 +116,21 @@ function PromoReport({ canExport }: { canExport: boolean }) {
                   </td>
                   <td className="text-right tnum">{rp(r.target_sales_idr)}</td>
                   <td className="text-right tnum">{rp(r.actual_sales_idr)}</td>
-                  <td className={`text-right tnum ${r.sales_delta_idr >= 0 ? 'text-success' : 'text-danger'}`}>
+                  {/* Bold, but only red where there is a verdict to give.
+                      A draft's "shortfall" is the whole target, and painting
+                      that red calls a plan that never ran a failure — the
+                      same mistake the badge stopped making (BR-7.5b). */}
+                  <td className={`text-right tnum font-extrabold ${
+                    r.achieved_note ? 'text-muted'
+                      : r.sales_delta_idr >= 0 ? 'text-success' : 'text-danger'}`}>
                     {r.sales_delta_idr > 0 ? '+' : ''}{rp(r.sales_delta_idr)}
                   </td>
-                  <td className="text-right tnum">
-                    {/* A percentage of a zero target is undefined, not 0% — a
-                        site with no target must not read as a total miss. */}
-                    {r.achieved_bps === null
-                      ? <span className="text-muted" title="Target nol: capaian tidak terdefinisi">—</span>
-                      : percentFromBPS(r.achieved_bps)}
+                  <td className="text-right">
+                    {/* A percentage of a zero TARGET is undefined — an em dash.
+                        Zero SALES against a real target is 0%, and red. Those
+                        are opposite facts and must not share a rendering. */}
+                    <AchievementBadge bps={r.achieved_bps}
+                      title={r.achieved_note ? `Tidak ada capaian — ${r.achieved_note}` : undefined} />
                   </td>
                   <td className="text-right tnum">{count(r.target_receipts)}</td>
                   <td className="text-right tnum">{count(r.actual_receipts)}</td>
@@ -217,13 +225,12 @@ function TargetReport({ canExport }: { canExport: boolean }) {
                   <td className="text-xs">{r.sales_type === 'promo' ? 'Promo' : 'Normal'}</td>
                   <td className="text-right tnum">{rp(r.target_idr)}</td>
                   <td className="text-right tnum">{rp(r.actual_idr)}</td>
-                  <td className={`text-right tnum ${r.delta_idr >= 0 ? 'text-success' : 'text-danger'}`}>
+                  <td className={`text-right tnum font-extrabold ${r.delta_idr >= 0 ? 'text-success' : 'text-danger'}`}>
                     {r.delta_idr > 0 ? '+' : ''}{rp(r.delta_idr)}
                   </td>
-                  <td className="text-right tnum">
-                    {r.achieved_bps === null
-                      ? <span className="text-muted" title="Target nol: capaian tidak terdefinisi">—</span>
-                      : percentFromBPS(r.achieved_bps)}
+                  <td className="text-right">
+                    <AchievementBadge bps={r.achieved_bps}
+                      title={r.achieved_bps === null ? 'Target nol: capaian tidak terdefinisi' : undefined} />
                   </td>
                   <td className="text-right tnum">{count(r.receipt_count)}</td>
                 </tr>

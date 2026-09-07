@@ -161,11 +161,57 @@ The editor is **not** the security boundary — the server's allow-list is
 (`12-security.md` §6). The editor and the detail view share one `.prose-rule`
 class, so what is typed is what is shown.
 
+### Achievement badge (D56)
+
+Target versus realisation, everywhere it appears — the calendar's daily chips,
+the promotion report's *Capaian* column, the target-vs-actual report — is one
+component: a **solid fill in danger / warn / success carrying `--color-bg` as
+its ink at weight 800**, measured at 7.09 / 7.51 / 6.90.
+
+Solid was asked for and solid is right for a column of numbers, but the
+measurement is worth keeping in view: **the three fills separate from each
+other by 1.03–1.09**, the same as the pale chips they replaced, because the
+difference between them was always hue and never luminance. The badge is
+louder; it is not more distinguishable. The **percentage is the signal**, the
+glyph (▼ ◆ ▲) backs it, and the colour is the aid.
+
+Four states, and the fourth is the one that matters:
+
+| State | Rendering |
+|---|---|
+| under `<70%` | danger fill, ▼, the percentage |
+| near `70–100%` | warn fill, ◆, the percentage |
+| over `≥100%` | success fill, ▲, the percentage |
+| **no target** | grey `#eae7e7`, `·`, an **em dash** |
+| **no verdict** | grey `#eae7e7`, `·`, and the reason in words |
+
+> **Zero sales is 0% and red; a zero target is an em dash (D57).** Selling
+> nothing is a real number and a total miss. Having no target set is the
+> absence of a number, where a percentage is undefined. Rendering both as a
+> dash — which is what the calendar did until Steven caught it — hides the
+> first behind the second, and the first is the whole reason the screen exists.
+
+> **But a zero is only a miss where selling was possible (BR-7.5b, D58).** A
+> draft, a plan still in the approval chain, and a day that has not happened
+> yet have all sold nothing for reasons that are not failures. They take the
+> **no verdict** state, which says *why* — "Promo belum dirilis", "Hari ini
+> belum berjalan" — rather than a red 0%. The first screenshot of the solid
+> badge showed a month of red zeroes across draft promotions on future dates:
+> the API was correct and the screen was making an accusation. **A day with
+> real actuals is always banded**, so the gates can never hide a number that
+> was actually taken.
+
+The **target grid's variance does not use this badge** — see below.
+
 ### Target grid
 
 Twelve month cells plus the year cell. The **variance between the year target
 and the sum of the months is displayed prominently and is never an error**
 (BR-2.3). Colour marks over and under; the number carries the meaning.
+
+It is bold — weight 800, like every other number that matters — but it is
+**deliberately not an achievement badge**. A solid red block here would assert
+a failure that BR-2.3 says does not exist. Emphasis, not judgement.
 
 ### Brand accent
 

@@ -471,3 +471,46 @@ func TestBandBoundaries(t *testing.T) {
 		}
 	}
 }
+
+// BR-7.5b. A zero is only a miss where selling was possible.
+func TestVerdict(t *testing.T) {
+	const today = "2026-09-07"
+	cases := []struct {
+		name          string
+		status        Status
+		date          string
+		hasActual     bool
+		targetDefined bool
+		want          NoVerdict
+	}{
+		{"released, past day, no sales -> 0% is a real miss",
+			StatusReleased, "2026-09-06", false, true, VerdictBanded},
+		{"released, today, no sales -> today counts",
+			StatusReleased, today, false, true, VerdictBanded},
+		{"released, tomorrow, no sales -> nobody has lived through it",
+			StatusReleased, "2026-09-08", false, true, VerdictNotYet},
+		{"draft, past day -> it could not have sold anything",
+			StatusDraft, "2026-09-06", false, true, VerdictNotReleased},
+		{"pending, past day -> still not released",
+			StatusPending, "2026-09-06", false, true, VerdictNotReleased},
+		{"rejected, past day", StatusRejected, "2026-09-06", false, true, VerdictNotReleased},
+		{"cancelled, past day", StatusCancelled, "2026-09-06", false, true, VerdictNotReleased},
+		{"zero target outranks everything else",
+			StatusReleased, "2026-09-06", true, false, VerdictNoTarget},
+		// The escape hatch. A recorded number is never suppressed, whatever
+		// the status or the date says — otherwise a gate meant to avoid a
+		// false accusation would start hiding real sales.
+		{"draft WITH actuals is still banded",
+			StatusDraft, "2026-09-06", true, true, VerdictBanded},
+		{"future day WITH actuals is still banded",
+			StatusReleased, "2026-12-31", true, true, VerdictBanded},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := Verdict(c.status, c.date, today, c.hasActual, c.targetDefined)
+			if got != c.want {
+				t.Fatalf("Verdict(%s, %s) = %q, want %q", c.status, c.date, got, c.want)
+			}
+		})
+	}
+}

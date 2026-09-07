@@ -134,6 +134,7 @@ Log in as **`budi.santoso@sfg.local`** → **Target**.
 | # | Do this | Expected |
 |---|---|---|
 | E1 | Set the twelve months for one shop to values that **do not** add up to its year target | **Accepted.** The **Selisih** column shows the difference. It is never an error — this is the single most important rule on this screen |
+| E1a | Look at how **Selisih** is styled next to the report's **Capaian** badges | Bold, in its own colour — but **not** a solid red block. The report's badge says "you missed"; this difference says nothing of the kind, and must not borrow that voice (BR-2.3) |
 | E2 | Read the note under the grid | It says so explicitly: the months need not sum to the year |
 | E3 | Set a target to **0** | Accepted. Zero is meaningful — a shop closed that month |
 | E4 | ⛔ Set a target to a negative number | Refused |
@@ -189,6 +190,11 @@ Log in as **`it.support@sfg.local`** → **Impor**.
 | H1 | **Laporan → Laporan promo**, filter to **Dirilis**, press **Ekspor CSV** | Downloads. **Only released promotions are in the file** — the export is what the screen shows |
 | H2 | Open the CSV in Excel via *Data → From Text/CSV*, delimiter `\|` | Columns line up. Indonesian names are not mangled |
 | H3 | Look at a promotion with a **zero** target | Capaian shows **—**, not `0%`. A percentage of nothing is undefined, and 0% would read as a total miss |
+| H3a | Import a POS file for a **released** promotion that omits one day of its period, then open that day on **Kalender** | The day shows **`0,00%` on a red badge**, not a dash and not a blank. No sales is zero sales — a real, bad number. The dash belongs only to H3 |
+| H3d | On **Kalender**, look at a **draft** or **pending** promotion, and at any day **after today** | Grey, marked `·`, with the reason on hover — *"Promo belum dirilis"*, *"Hari ini belum berjalan"*. **Never a red 0%**: they sold nothing because they could not sell, which is not a miss (BR-7.5b) |
+| H3e | Open **Laporan → Laporan promo** and read the **Capaian** column against the **Status** column | Every non-`RELEASED` row shows `—`, not `0,00%`. Hover gives the reason. Export the CSV: `capaian_persen` is **empty** for those rows and `status` says why |
+| H3b | Read the **Capaian** column down the page with the screen at arm's length | Solid red / amber / green blocks, weight 800. Then check one against its number: the colour is the aid, **the percentage is the fact** |
+| H3c | View the same column in greyscale (or ask someone colour-blind) | Every badge is still readable — the percentage and the ▼ ◆ ▲ glyph carry it. The three fills differ by hue only, so colour alone must never be enough |
 | H4 | Compare a promotion's **Aktual** with the transactions in its date range | Actuals count only transactions **tagged with that promo id**. Untagged sales in the same window are normal sales |
 | H5 | Find a plan that was **force-released** | Flagged as such in the report. A reviewer must see which promotions bypassed the chain |
 | H6 | As `hendra.gunawan` (CFO), open **Audit** and search `report.export` | Your export is recorded, with its row count and filters |

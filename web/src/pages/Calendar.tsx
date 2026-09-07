@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type Holiday, type Plan } from '../lib/api'
 import { formatDate, monthName, rp, percentFromBPS } from '../lib/format'
-import { SearchBox, StatusPill, Loading, Empty } from '../components/ui'
+import { SearchBox, StatusPill, Loading, Empty, ACHIEVEMENT } from '../components/ui'
 
 const DAY_LABELS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 
@@ -21,20 +21,20 @@ interface CalendarPlan extends Plan {
 }
 
 /**
- * The three achievement bands.
+ * The three achievement bands, now SOLID fills with light ink (D56).
  *
- * The backgrounds measure 1.01–1.06 against EACH OTHER: pure hue, no
- * luminance difference at all. To anyone who cannot separate red from green —
- * roughly one man in twelve — the three chips are identical. So the
- * PERCENTAGE on the chip is the signal and the colour is the aid, never the
- * other way round. Each ink is measured on its own ground: 6.85, 7.67, 6.73.
+ * They still separate from each other by only 1.03–1.09 — hue alone, because
+ * three colours chosen to contrast equally with the page necessarily sit at
+ * the same lightness. Boldness made them scannable, not more distinguishable.
+ * The PERCENTAGE on the chip remains the signal.
  */
-const BAND: Record<string, { bg: string; ink: string; glyph: string; label: string }> = {
-  under: { bg: '#fdeaec', ink: '#9E1C28', glyph: '▼', label: 'di bawah 70% target harian' },
-  near:  { bg: '#fff2ef', ink: '#6F4400', glyph: '◆', label: '70–100% target harian' },
-  over:  { bg: '#e8f2ec', ink: '#145F38', glyph: '▲', label: '100% target harian atau lebih' },
-  none:  { bg: '#eae7e7', ink: '#201e1d', glyph: '·', label: 'tidak ada target harian' },
-}
+const BAND = ACHIEVEMENT
+
+// The operating day in Jakarta. A browser in another timezone must not decide
+// which days have already happened — that is a business date (BR-1.4).
+const todayISO = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',
+}).format(new Date())
 
 export default function Calendar() {
   const now = new Date()
@@ -181,24 +181,39 @@ export default function Calendar() {
                             const a = p.daily?.[c.iso]
                             const band = BAND[a?.band ?? 'none'] ?? BAND.none
                             const pct = a?.achieved_bps == null ? null : percentFromBPS(a.achieved_bps)
+                            // Why there is no percentage, in the order the
+                            // reasons apply. A day nobody has lived through
+                            // yet, and a plan that was never released, have
+                            // sold nothing for reasons that are not failures
+                            // — they must not read as a red 0% (D58), and
+                            // they must not borrow the em dash either, which
+                            // means one thing only: no daily target.
+                            const why = a ? null
+                              : c.iso > todayISO ? 'Hari ini belum berjalan'
+                              : p.status !== 'RELEASED' ? 'Promo belum dirilis — tidak ada realisasi'
+                              : p.has_daily_target === false ? 'Belum ada target harian'
+                              : 'Belum ada realisasi'
                             return (
                               <Link key={p.plan_id} to={`/promo/${p.plan_id}`}
                                     title={`${p.plan_code} · ${p.company_name}\n` +
                                       `Target harian ${rp(p.daily_target_idr ?? 0)}\n` +
-                                      `Aktual ${rp(a?.actual_idr ?? 0)}` +
-                                      (pct ? ` · ${pct} — ${band.label}` : ' · belum ada target harian')}
-                                    className="flex items-baseline gap-1 text-[10.5px] font-semibold leading-[1.35] px-1.5 py-0.5 mb-0.5"
+                                      (why ? why
+                                        : `Aktual ${rp(a?.actual_idr ?? 0)}` +
+                                          (pct ? ` · ${pct} — ${band.label}` : ' · belum ada target harian'))}
+                                    className="flex items-baseline gap-1 text-[10.5px] font-extrabold leading-[1.35] px-1.5 py-0.5 mb-0.5"
                                     style={{
                                       background: band.bg,
                                       borderLeft: `3px solid ${brand(p.company_code)}`,
                                       color: band.ink,
                                     }}>
-                                <span aria-hidden="true">{band.glyph}</span>
+                                <span aria-hidden="true">{why ? '·' : band.glyph}</span>
                                 <span className="truncate flex-1">{p.version.promo_name}</span>
                                 {/* The number IS the signal. Without it the three
                                     bands are the same shade to anyone who cannot
                                     see hue. */}
-                                <span className="tnum shrink-0">{pct ?? '—'}</span>
+                                {why
+                                  ? <span className="sr-only">{why}</span>
+                                  : <span className="tnum shrink-0">{pct ?? '—'}</span>}
                               </Link>
                             )
                           })}
@@ -233,7 +248,7 @@ export default function Calendar() {
             <span className="font-semibold text-ink">Capaian harian:</span>
             {(['under', 'near', 'over'] as const).map((k) => (
               <span key={k} className="inline-flex items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-semibold"
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-extrabold"
                       style={{ background: BAND[k].bg, color: BAND[k].ink }}>
                   <span aria-hidden="true">{BAND[k].glyph}</span>
                   {k === 'under' ? '<70%' : k === 'near' ? '70–100%' : '≥100%'}
@@ -241,6 +256,16 @@ export default function Calendar() {
                 {BAND[k].label}
               </span>
             ))}
+            {/* The fourth state is not a band and must not look like one: it
+                is the absence of a verdict, not a bad one (D58). */}
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-extrabold"
+                    style={{ background: BAND.none.bg, color: BAND.none.ink }}>
+                <span aria-hidden="true">·</span>
+                belum
+              </span>
+              belum berjalan, belum dirilis, atau belum ada target harian
+            </span>
             <span>
               Target harian = target penjualan promo dibagi jumlah harinya.
               Aktual dihitung dari transaksi bertanda id promo, bukan dari rentang tanggal.

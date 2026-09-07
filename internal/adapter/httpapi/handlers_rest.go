@@ -353,7 +353,10 @@ func handlePromoReport(d *app.Deps) gin.HandlerFunc {
 				"actual_sales_idr": int64(r.ActualSalesIDR),
 				"sales_delta_idr":  int64(r.SalesDeltaIDR),
 				"achieved_bps":     achieved,
-				"target_receipts":  r.TargetReceipts, "actual_receipts": r.ActualReceipts,
+				// Empty when the percentage is real. The UI shows it on the
+				// badge so an em dash never has to be guessed at.
+				"achieved_note":   r.SalesUndefinedReason,
+				"target_receipts": r.TargetReceipts, "actual_receipts": r.ActualReceipts,
 				"receipt_delta": r.ReceiptDelta})
 		}
 		c.JSON(http.StatusOK, gin.H{"data": out})

@@ -352,3 +352,44 @@ func hasText(s string) bool {
 	}
 	return false
 }
+
+// NoVerdict says why an achievement percentage does not exist. BR-7.5b.
+//
+// Zero sales against a real target is 0% and it is a miss (BR-7.5a, D57) —
+// but only for a promotion that was in a position to sell something. A draft,
+// a plan still in the approval chain, a rejected or cancelled one, and a date
+// nobody has lived through yet have all taken exactly zero rupiah for reasons
+// that are not failures, and a red 0% accuses them of one.
+type NoVerdict string
+
+const (
+	VerdictBanded      NoVerdict = ""             // a real percentage exists
+	VerdictNoTarget    NoVerdict = "no_target"    // the arithmetic is undefined
+	VerdictNotReleased NoVerdict = "not_released" // it could not have sold anything
+	VerdictNotYet      NoVerdict = "not_yet"      // the date has not happened
+)
+
+// Verdict decides whether a percentage may be shown, and why not when it may
+// not. Dates are compared as yyyy-mm-dd business-date KEYS in the operating
+// zone, never as instants: a `date` column arrives as UTC midnight while
+// "today" is Jakarta midnight, and the two sit seven hours apart on the same
+// calendar day.
+//
+// hasActual is the escape hatch and the reason this is safe: a day or a plan
+// with money recorded against it is ALWAYS banded, so no gate here can hide a
+// number that was actually taken. The gates suppress an inferred zero only.
+func Verdict(status Status, dateKey, todayKey string, hasActual, targetDefined bool) NoVerdict {
+	if !targetDefined {
+		return VerdictNoTarget
+	}
+	if hasActual {
+		return VerdictBanded
+	}
+	if status != StatusReleased {
+		return VerdictNotReleased
+	}
+	if dateKey > todayKey {
+		return VerdictNotYet
+	}
+	return VerdictBanded
+}

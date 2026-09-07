@@ -148,22 +148,39 @@ behind ordinary cell content, so everything the cell draws has to survive it:
 > too, and a holiday cell carries the holiday's name. Rule 1, applied to a
 > background rather than to a pill.
 
-**Daily-achievement chips** on the calendar (D55) — a promo chip is coloured
-by how that day went against the promotion's daily target:
+**The achievement badge** (D56) — target versus realisation, wherever it
+appears: the calendar's daily chips, the promotion report and the target-vs-
+actual report. A **solid fill carrying `--color-bg` as its ink**:
 
-| Band | Ground | Ink | Ratio | |
+| Band | Fill | Ink | Ratio | |
 | --- | --- | --- | ---: | --- |
-| under, `<70%` | `#fdeaec` | `#9E1C28` | 6.85 | AA |
-| near, `70–100%` | `#fff2ef` | `#6F4400` | 7.67 | AAA |
-| over, `≥100%` | `#e8f2ec` | `#145F38` | 6.73 | AA |
+| under, `<70%` | `#9E1C28` danger | `#f3f2f2` | 7.09 | AAA |
+| near, `70–100%` | `#6F4400` warn | `#f3f2f2` | 7.51 | AAA |
+| over, `≥100%` | `#145F38` success | `#f3f2f2` | 6.90 | AA |
+| no target | `#eae7e7` | `#201e1d` | 13.51 | AAA |
 
-> **The three grounds measure 1.01–1.06 against EACH OTHER.** Pure hue, no
+The pale grounds these replaced are still in the product and still measured —
+they are the **status** pills on the plan, master-data and import screens. A
+status is not a measurement: it is read once, not scanned down a column.
+
+| Pill | Ground | Ink | Ratio | |
+| --- | --- | --- | ---: | --- |
+| rejected / error | `#fdeaec` | `#9E1C28` | 6.85 | AA |
+| pending / partial | `#fff2ef` | `#6F4400` | 7.67 | AAA |
+| released / ok | `#e8f2ec` | `#145F38` | 6.73 | AA |
+
+> **The three fills measure 1.03–1.09 against EACH OTHER.** Pure hue, no
 > luminance difference whatsoever — so to anyone who cannot separate red from
-> green, roughly one man in twelve, the three chips are the same chip. The
-> **percentage printed on the chip is the signal**; the colour is the aid, and
-> a glyph (▼ ◆ ▲) backs both. This is rule 1 at its sharpest: here the colour
-> genuinely carries nothing on its own, and it was measured rather than
-> assumed.
+> green, roughly one person in twelve, the three badges are the same badge.
+> Going solid made them louder, not more distinguishable, and it would be easy
+> to mistake the new weight for new information. The **percentage printed on
+> the badge is the signal**; the colour is the aid, and a glyph (▼ ◆ ▲) backs
+> both. This is rule 1 at its sharpest.
+
+> **Zero sales is 0%, and it is red (D57).** A day with no takings is a total
+> miss, not missing data. The em dash `—` is reserved for the one case where a
+> percentage genuinely does not exist: a **zero target**, where the arithmetic
+> is undefined rather than bad. Two opposite facts, two renderings.
 
 **Brand accents**, on the white of a table row:
 

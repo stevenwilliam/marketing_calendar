@@ -191,3 +191,66 @@ export function BrandTag({ code, name }: { code: string; name: string }) {
     </span>
   )
 }
+
+
+/* --- achievement, target versus realisation ------------------------------
+   One component for every place the product compares a target with what
+   actually happened: the calendar chips, the promo report, target versus
+   actual. Solid fills with light ink — strong enough to scan a column at a
+   glance, and measured: 7.09, 7.51 and 6.90 respectively.
+
+   The fills separate from EACH OTHER by only 1.03–1.09, which is hue alone.
+   Making them bolder did not change that and could not: three colours chosen
+   to contrast equally with the page necessarily sit at the same lightness. So
+   the PERCENTAGE remains the signal and the glyph backs it up; the colour is
+   what makes a column scannable, not what carries the meaning. */
+
+export const ACHIEVEMENT = {
+  under: { bg: '#9E1C28', ink: '#f3f2f2', glyph: '▼', label: 'di bawah 70% target' },
+  near:  { bg: '#6F4400', ink: '#f3f2f2', glyph: '◆', label: '70–100% target' },
+  over:  { bg: '#145F38', ink: '#f3f2f2', glyph: '▲', label: '100% target atau lebih' },
+  none:  { bg: '#eae7e7', ink: '#201e1d', glyph: '·', label: 'tidak ada target' },
+} as const
+
+export type AchievementBand = keyof typeof ACHIEVEMENT
+
+/** Band a basis-point achievement. Boundaries closed at the bottom, and it
+ *  follows the ROUNDED value so a badge never shows a number its colour
+ *  contradicts — the same rule the server applies. */
+export function bandOf(bps: number | null | undefined): AchievementBand {
+  if (bps === null || bps === undefined) return 'none'
+  if (bps >= 10000) return 'over'
+  if (bps >= 7000) return 'near'
+  return 'under'
+}
+
+export function AchievementBadge({
+  bps, size = 'md', title,
+}: { bps: number | null | undefined; size?: 'sm' | 'md'; title?: string }) {
+  const band = bandOf(bps)
+  const c = ACHIEVEMENT[band]
+  // A zero TARGET has no percentage — the arithmetic is undefined. Zero SALES
+  // against a real target is 0%, and reads red like any other miss (D57).
+  const text =
+    bps === null || bps === undefined
+      ? '—'
+      : `${(bps / 100).toFixed(2).replace('.', ',')}%`
+  const label = title ?? c.label
+  const undef = bps === null || bps === undefined
+  return (
+    <span
+      title={label}
+      className={`inline-flex items-center gap-1 font-extrabold tnum ${
+        size === 'sm' ? 'text-[10.5px] px-1 py-0' : 'text-[13px] px-2 py-0.5'
+      }`}
+      style={{ background: c.bg, color: c.ink }}
+    >
+      {/* The glyph and the fill are both decoration to a screen reader; the
+          percentage is the fact, and the band is named so an em dash is not
+          announced as a bare dash. */}
+      <span aria-hidden="true">{c.glyph}</span>
+      {undef ? <span aria-hidden="true">{text}</span> : text}
+      <span className="sr-only">{undef ? label : `, ${label}`}</span>
+    </span>
+  )
+}

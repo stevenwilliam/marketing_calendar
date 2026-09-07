@@ -34,9 +34,12 @@ type PromoReportRow struct {
 	SalesDeltaIDR  money.IDR
 	SalesBPS       int64
 	SalesDefined   bool
-	TargetReceipts int
-	ActualReceipts int
-	ReceiptDelta   int
+	// Why there is no percentage, when there is none. Empty when the
+	// percentage is real. See BR-7.5b.
+	SalesUndefinedReason string
+	TargetReceipts       int
+	ActualReceipts       int
+	ReceiptDelta         int
 }
 
 func (d *Deps) PromoReport(ctx context.Context, p Principal, f PlanFilter) ([]PromoReportRow, error) {
@@ -58,6 +61,8 @@ func (d *Deps) PromoReport(ctx context.Context, p Principal, f PlanFilter) ([]Pr
 		return nil, err
 	}
 
+	today := calendar.Key(calendar.Today(d.Now()))
+
 	out := make([]PromoReportRow, 0, len(plans))
 	for _, pl := range plans {
 		a := actuals[pl.PlanID]
@@ -65,6 +70,18 @@ func (d *Deps) PromoReport(ctx context.Context, p Principal, f PlanFilter) ([]Pr
 		if err != nil {
 			return nil, err
 		}
+
+		// BR-7.5b, decided by the domain so the calendar and this report
+		// cannot drift apart. The wording is this screen's; the rule is not.
+		v := promo.Verdict(pl.Status, calendar.Key(pl.Version.StartDate), today,
+			a.GrossIDR != 0, ach.Defined)
+		reason := map[promo.NoVerdict]string{
+			promo.VerdictNoTarget:    "target nol",
+			promo.VerdictNotReleased: "promo belum dirilis",
+			promo.VerdictNotYet:      "periode belum mulai",
+		}[v]
+		defined := v == promo.VerdictBanded
+
 		out = append(out, PromoReportRow{
 			PlanID: pl.PlanID, PlanCode: pl.PlanCode, PromoName: pl.Version.PromoName,
 			CompanyName: pl.CompanyName, SiteGroupName: pl.SiteGroupName,
@@ -72,8 +89,9 @@ func (d *Deps) PromoReport(ctx context.Context, p Principal, f PlanFilter) ([]Pr
 			OrderMode: string(pl.Version.OrderMode), Status: string(pl.Status),
 			ForceReleased:  pl.ForceReleased,
 			TargetSalesIDR: pl.Version.TargetSalesIDR, ActualSalesIDR: a.GrossIDR,
-			SalesDeltaIDR: ach.DeltaIDR, SalesBPS: ach.AchievedBPS, SalesDefined: ach.Defined,
-			TargetReceipts: pl.Version.TargetReceiptCount, ActualReceipts: a.ReceiptCount,
+			SalesDeltaIDR: ach.DeltaIDR, SalesBPS: ach.AchievedBPS, SalesDefined: defined,
+			SalesUndefinedReason: reason,
+			TargetReceipts:       pl.Version.TargetReceiptCount, ActualReceipts: a.ReceiptCount,
 			ReceiptDelta: a.ReceiptCount - pl.Version.TargetReceiptCount,
 		})
 	}

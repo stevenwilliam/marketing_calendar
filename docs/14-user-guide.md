@@ -55,8 +55,20 @@ Menu **Kalender** menampilkan satu bulan, lintas merek.
 penjualan promo dibagi jumlah hari periodenya. Setiap hari diberi warna: merah
 ▼ di bawah 70%, kuning ◆ antara 70% dan 100%, hijau ▲ pada 100% atau lebih.
 Angka persennya selalu ditulis — warnanya hanya membantu, bukan satu-satunya
-penanda. Tanda `—` berarti promo itu belum punya target, jadi persentasenya
-tidak terdefinisi.
+penanda.
+
+**Hari tanpa penjualan sama sekali ditulis `0,00%` dan berwarna merah**, bukan
+dikosongkan. Tidak ada penjualan adalah angka, dan angka itu buruk. Tanda `—`
+dipakai hanya untuk satu hal: promo itu **belum punya target**, sehingga
+persentasenya memang tidak terdefinisi. Dua hal yang berbeda, dua tampilan
+yang berbeda.
+
+**Tetapi nol hanya dihitung gagal kalau promonya memang sempat berjalan.**
+Promo yang masih draf, masih menunggu persetujuan, ditolak atau dibatalkan —
+dan hari yang memang belum tiba — ditandai abu-abu dengan keterangannya, bukan
+merah. Semuanya menjual nol rupiah karena alasan yang bukan kegagalan. Kalau
+suatu hari benar-benar punya penjualan tercatat, hari itu selalu diberi warna
+capaian, apa pun status promonya.
 
 **Kotak berwarna merah muda adalah hari yang bukan hari kerja** — akhir pekan
 dan hari libur nasional. Warnanya sama karena artinya sama: hari-hari itu
@@ -223,7 +235,11 @@ Dua hal yang perlu dipahami saat membaca:
   laporan terlihat lebih bagus dari kenyataannya.
 - **Capaian terhadap target nol ditampilkan sebagai "—", bukan 0%.** Persentase
   dari nol tidak terdefinisi; menampilkan 0% akan terbaca seperti gagal total
-  untuk toko yang memang belum diberi target.
+  untuk toko yang memang belum diberi target. Sebaliknya, **penjualan nol
+  terhadap target yang ada tetap ditulis `0,00%` dan berwarna merah** — itu
+  bukan data yang hilang, itu memang nol — selama promonya sudah dirilis dan
+  periodenya sudah mulai. Kalau belum, kolom **Capaian** menampilkan `—` dan
+  alasannya muncul saat kursor diarahkan ke sana.
 
 ### Ekspor CSV
 

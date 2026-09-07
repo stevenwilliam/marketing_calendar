@@ -133,18 +133,15 @@ MAXX    = "#6B3B2A"   # Maxx Coffee
 RUUMA   = "#7A2E63"   # Ruuma
 SUN     = "#7C4A00"   # Sunshine
 NONWORKING = "#fbe4e8" # calendar tint: weekend OR public holiday (D49, D51)
-# Daily-achievement chips on the calendar (D55). The three GROUNDS measure
-# 1.01–1.06 against each other — pure hue, no luminance difference — so the
-# percentage printed on the chip is the signal and the colour is only the aid.
-BAND_UNDER_BG, BAND_UNDER_INK = "#fdeaec", "#9E1C28"
-BAND_NEAR_BG, BAND_NEAR_INK = "#fff2ef", "#6F4400"
-BAND_OVER_BG, BAND_OVER_INK = "#e8f2ec", "#145F38"
-# Daily-achievement chips on the calendar (D55). The three GROUNDS are ~1.0
-# against each other — pure hue — so the percentage on the chip is the signal
-# and the colour is only the aid.
-BAND_UNDER_BG, BAND_UNDER_INK = "#fdeaec", "#9E1C28"
-BAND_NEAR_BG,  BAND_NEAR_INK  = "#fff2ef", "#6F4400"
-BAND_OVER_BG,  BAND_OVER_INK  = "#e8f2ec", "#145F38"
+# Pale status grounds — the pills on the plan, master-data and import screens.
+# These carried the calendar's achievement chips until D56 replaced those with
+# a solid fill; the grounds stayed, because a status pill is not a measurement
+# and does not have to be scannable down a column.
+PILL_DANGER_BG, PILL_DANGER_INK = "#fdeaec", DANGER
+PILL_WARN_BG,   PILL_WARN_INK   = "#fff2ef", WARN
+PILL_OK_BG,     PILL_OK_INK     = "#e8f2ec", SUCCESS
+# The achievement badge's fourth state: no target, so no percentage (D57).
+BADGE_NONE_BG = "#eae7e7"
 
 CHECKS: list[tuple[str, str, str, dict]] = [
     ("text on bg",                TEXT, BG, {}),
@@ -172,6 +169,8 @@ CHECKS: list[tuple[str, str, str, dict]] = [
     ("info on paper",             INFO, PAPER, {}),
     ("bg on success fill",        BG, SUCCESS, {}),
     ("bg on danger fill",         BG, DANGER, {}),
+    ("bg on warn fill",           BG, WARN, {}),
+    ("ink on no-target badge",     TEXT, BADGE_NONE_BG, {}),
     ("Maxx Coffee on paper",      MAXX, PAPER, {}),
     ("Ruuma on paper",            RUUMA, PAPER, {}),
     ("Sunshine on paper",         SUN, PAPER, {}),
@@ -186,9 +185,9 @@ CHECKS: list[tuple[str, str, str, dict]] = [
     ("ink on non-working tint",   TEXT, NONWORKING, {}),
     ("muted on non-working tint", MUTED, NONWORKING, {}),
     ("danger on non-working tint", DANGER, NONWORKING, {}),
-    ("under-band ink on its chip", BAND_UNDER_INK, BAND_UNDER_BG, {}),
-    ("near-band ink on its chip", BAND_NEAR_INK, BAND_NEAR_BG, {}),
-    ("over-band ink on its chip", BAND_OVER_INK, BAND_OVER_BG, {}),
+    ("rejected-pill ink on its ground", PILL_DANGER_INK, PILL_DANGER_BG, {}),
+    ("pending-pill ink on its ground", PILL_WARN_INK, PILL_WARN_BG, {}),
+    ("released-pill ink on its ground", PILL_OK_INK, PILL_OK_BG, {}),
     # --- REJECTED: the guideline's own values, kept so they are not restored ---
     # The primary button is the most-used control in the product and its label
     # is 14px — too small to qualify as large text, so 3:1 does not apply.
@@ -228,6 +227,8 @@ RECORDED = {
     "info on paper": 7.23,
     "bg on success fill": 6.90,
     "bg on danger fill": 7.09,
+    "bg on warn fill": 7.51,
+    "ink on no-target badge": 13.51,
     "Maxx Coffee on paper": 9.19,
     "Ruuma on paper": 8.76,
     "Sunshine on paper": 7.40,
@@ -239,9 +240,9 @@ RECORDED = {
     "ink on non-working tint": 13.73,
     "muted on non-working tint": 4.80,
     "danger on non-working tint": 6.55,
-    "under-band ink on its chip": 6.85,
-    "near-band ink on its chip": 7.67,
-    "over-band ink on its chip": 6.73,
+    "rejected-pill ink on its ground": 6.85,
+    "pending-pill ink on its ground": 7.67,
+    "released-pill ink on its ground": 6.73,
     "guideline btn-primary #ec3013 (REJECTED as text)": 3.76,
     "guideline accent as link text (REJECTED)": 3.76,
     "guideline divider 40% (REJECTED)": 2.41,

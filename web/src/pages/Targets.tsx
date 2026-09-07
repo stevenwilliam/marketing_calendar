@@ -168,11 +168,17 @@ export default function Targets() {
                       <td className="text-right tnum">
                         {s.year === null ? <span className="text-muted">—</span> : rupiah(s.year)}
                       </td>
+                      {/* Deliberately NOT an achievement badge.
+                          BR-2.3: the months need not sum to the year, and this
+                          difference is a display value that is never an error.
+                          A strong red block here would assert a failure the
+                          rule explicitly says does not exist. Bolder, yes;
+                          judgemental, no. */}
                       <td className="text-right tnum">
                         {delta === null ? <span className="text-muted">—</span> : (
-                          <span className={delta === 0 ? '' : delta > 0 ? 'text-success' : 'text-warn'}>
+                          <span className={`font-extrabold ${delta === 0 ? '' : delta > 0 ? 'text-success' : 'text-warn'}`}>
                             {delta > 0 ? '+' : ''}{rupiah(delta)}
-                            {bps !== null && <span className="block text-[11px] text-muted">
+                            {bps !== null && <span className="block text-[11px] font-normal text-muted">
                               {percentFromBPS(bps)}
                             </span>}
                           </span>

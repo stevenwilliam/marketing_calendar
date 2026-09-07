@@ -449,6 +449,28 @@ Where there is no target, or no days, there is **no percentage** — rendered as
 an em dash, never as 0%. A percentage of nothing is undefined, and 0% would
 read as a total miss for a promotion nobody set a number on.
 
+**A day inside the promotion's period with no sales is 0%, and it bands
+`under`.** Every day of the period is reported, whether or not a transaction
+landed on it: a missing row means nothing was sold, which is a real and bad
+number, not an absent one. The em dash is reserved for the undefined case
+above, so the two never share a rendering. *(D57)*
+
+**BR-7.5b Zero is only a miss where selling was possible.** A promotion is
+banded on a day only when **the plan is `RELEASED`** and **the day is not in
+the future** (Asia/Jakarta). A draft, a plan still in the approval chain, a
+rejected or cancelled plan, and any day that has not happened yet have all
+taken exactly zero rupiah for reasons that are not failures, and a red 0%
+would accuse them of one. Those cases carry **no verdict** — a neutral mark
+that states its reason, distinct from both a band and the zero-target em dash.
+
+**A day that has real actuals is always reported, whatever the gates say.**
+The gates suppress an *inferred* zero, never a recorded number, so no rule
+here can hide sales that were actually taken.
+
+The same two gates apply to the **promotion report's** `capaian` column and to
+its CSV export, which carries the plan's status in its own column so a reader
+can see which of the two reasons applies. *(D58)*
+
 **BR-7.6 Actuals are attributed by `promo_id`**, not by date range. A
 transaction inside a promotion's dates but not tagged with its id is
 `normal` sales, and counting it as promo sales would flatter every report.

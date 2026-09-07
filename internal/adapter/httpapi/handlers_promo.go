@@ -170,8 +170,58 @@ func handleCalendar(d *app.Deps) gin.HandlerFunc {
 			j["daily_target_idr"] = int64(target)
 			j["has_daily_target"] = ok
 
-			perDay := make(map[string]gin.H, len(daily[r.PlanID]))
+			// An entry for every day the promotion HAS ALREADY RUN inside this
+			// window, not only the days that have rows.
+			//
+			// A day with no transactions is a day that sold NOTHING, which is
+			// 0% — not an unknown. The em dash is reserved for the one case
+			// where a percentage genuinely does not exist: no daily target.
+			// Emitting only the days that have rows made a shop that sold
+			// nothing look the same as a promotion nobody set a number on,
+			// and those are opposite facts (D57).
+			//
+			// The two gates matter as much as the rule (D58). A day that has
+			// not happened yet has sold nothing for the obvious reason, and a
+			// plan that was never released could not have taken a rupiah — a
+			// red 0% on either is an accusation about something that never
+			// had the chance to succeed. A day with real actuals is always
+			// reported regardless, by the loop below.
+			perDay := make(map[string]gin.H)
+			if ok {
+				lo, hi := r.Version.StartDate, r.Version.EndDate
+				if lo.Before(from) {
+					lo = from
+				}
+				if hi.After(to) {
+					hi = to
+				}
+				// Compared as Jakarta date KEYS, not as instants: a `date`
+				// column arrives as UTC midnight while `now` is Jakarta
+				// midnight, and the two are seven hours apart on the same
+				// calendar day. An instant comparison would drop today.
+				todayKey := calendar.Key(now)
+				for day := lo; !day.After(hi); day = day.AddDate(0, 0, 1) {
+					key := calendar.Key(day)
+					a, has := daily[r.PlanID][key] // absent: nothing was sold
+					// BR-7.5b, from the domain: a plan that was never
+					// released and a day nobody has lived through yet have
+					// no verdict, and must not read as a red 0%.
+					if promo.Verdict(r.Status, key, todayKey, has, ok) != promo.VerdictBanded {
+						continue
+					}
+					band, bps, _ := promo.BandFor(a.GrossIDR, target)
+					perDay[key] = gin.H{
+						"actual_idr":    int64(a.GrossIDR),
+						"receipt_count": a.ReceiptCount,
+						"band":          string(band),
+						"achieved_bps":  bps,
+					}
+				}
+			}
 			for day, a := range daily[r.PlanID] {
+				if _, already := perDay[day]; already {
+					continue
+				}
 				band, bps, defined := promo.BandFor(a.GrossIDR, target)
 				perDay[day] = gin.H{
 					"actual_idr":    int64(a.GrossIDR),
