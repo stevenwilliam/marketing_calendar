@@ -140,6 +140,10 @@ type Holiday struct {
 	Name      string    `json:"holiday_name"`
 	Country   string    `json:"country"`
 	IsActive  bool      `json:"is_active"`
+	// IsProvisional marks a date that has NOT been confirmed against the
+	// official joint decree. It still drives the lead time, so it is shown in
+	// the UI rather than buried (D49).
+	IsProvisional bool `json:"is_provisional"`
 }
 
 type MasterRepo interface {
@@ -329,6 +333,7 @@ type FactRepo interface {
 	// LoadTargets is the same contract for a target file: one transaction, the
 	// run row last, rejections kept.
 	LoadTargets(ctx context.Context, run ImportRun, rows []TargetRow, rejects []Rejection, actor *uuid.UUID) (ImportRun, error)
+	LoadHolidays(ctx context.Context, run ImportRun, rows []Holiday, rejects []Rejection, actor *uuid.UUID) (ImportRun, error)
 	Runs(ctx context.Context, limit, offset int) ([]ImportRun, int, error)
 	Rejections(ctx context.Context, runID uuid.UUID) ([]Rejection, error)
 	PromoActuals(ctx context.Context, planIDs []uuid.UUID) (map[uuid.UUID]Actual, error)

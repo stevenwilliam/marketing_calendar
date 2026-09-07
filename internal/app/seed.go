@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -295,13 +296,18 @@ func seedParameters(tx *gorm.DB) (int, error) {
 	return len(params), nil
 }
 
-// Indonesian public holidays for the current and next year (D22).
+// seedHolidays loads five years of Indonesian public holidays (D22, D49).
 //
-// These are the fixed-date and announced dates for 2026 and 2027. Idul Fitri
-// and the other lunar dates move each year and are the reason this table is
-// administrator-maintained rather than computed.
+// The officially decreed dates for 2026 and 2027 are listed explicitly and are
+// NOT provisional. Everything from 2028 onward is generated: the fixed and
+// Easter-derived dates are exact, and every lunar-calendar date is marked
+// provisional because it is an estimate until the joint decree names it.
+//
+// The seed never downgrades a confirmed date to a provisional one. Re-running
+// it after an administrator has entered the real decree must not quietly put
+// the estimate back.
 func seedHolidays(tx *gorm.DB) (int, error) {
-	holidays := map[string]string{
+	confirmed := map[string]string{
 		"2026-01-01": "Tahun Baru Masehi",
 		"2026-01-17": "Isra Mikraj Nabi Muhammad SAW",
 		"2026-02-17": "Tahun Baru Imlek 2577",
@@ -338,20 +344,83 @@ func seedHolidays(tx *gorm.DB) (int, error) {
 		"2027-08-17": "Hari Kemerdekaan Republik Indonesia",
 		"2027-12-25": "Hari Raya Natal",
 	}
-	for d, name := range holidays {
+
+	type entry struct {
+		date        time.Time
+		name        string
+		provisional bool
+	}
+	var all []entry
+	for d, name := range confirmed {
 		day, err := calendar.ParseDate(d)
 		if err != nil {
 			return 0, err
 		}
-		if err := tx.Exec(`
-			INSERT INTO holiday (holiday_id, holiday_date, holiday_name, country)
-			VALUES (?, ?, ?, 'ID')
-			ON CONFLICT (country, holiday_date) DO UPDATE SET holiday_name = EXCLUDED.holiday_name`,
-			id.New(), day, name).Error; err != nil {
+		all = append(all, entry{day, name, false})
+	}
+
+	// Five years forward from the current one.
+	//
+	// A generated date is skipped when the same DATE is confirmed, and also
+	// when the same HOLIDAY is already confirmed that year on a different
+	// date. The second test is the one that matters: the decree put Maulid
+	// 2026 on 25 August and the tabular arithmetic computes 26 August, so
+	// without it both appeared and the calendar showed "Maulid" twice — two
+	// non-working days where there is one, quietly lengthening every lead time
+	// that crossed them.
+	confirmedNames := map[int][]string{}
+	for d, name := range confirmed {
+		day, err := calendar.ParseDate(d)
+		if err != nil {
 			return 0, err
 		}
+		confirmedNames[day.Year()] = append(confirmedNames[day.Year()], name)
 	}
-	return len(holidays), nil
+	sameHoliday := func(a, b string) bool {
+		// "Idul Fitri" against "Idul Fitri 1447 H": the decree adds a Hijri
+		// year the generator does not know, so one name prefixes the other.
+		return strings.HasPrefix(a, b) || strings.HasPrefix(b, a)
+	}
+
+	thisYear := calendar.Today(time.Now()).Year()
+	for y := thisYear; y < thisYear+5; y++ {
+		for _, h := range calendar.Generate(y) {
+			if _, already := confirmed[h.Date.Format("2006-01-02")]; already {
+				continue
+			}
+			clash := false
+			for _, name := range confirmedNames[y] {
+				if sameHoliday(name, h.Name) {
+					clash = true
+					break
+				}
+			}
+			if clash {
+				continue
+			}
+			all = append(all, entry{h.Date, h.Name, h.Provisional})
+		}
+	}
+
+	n := 0
+	for _, e := range all {
+		// DO NOT overwrite a confirmed date with a provisional one. An
+		// administrator who has entered the real decree must not have it
+		// undone by the next `mc seed`.
+		err := tx.Exec(`
+			INSERT INTO holiday (holiday_id, holiday_date, holiday_name, country, is_provisional)
+			VALUES (?, ?, ?, 'ID', ?)
+			ON CONFLICT (country, holiday_date) DO UPDATE
+			   SET holiday_name   = CASE WHEN holiday.is_provisional THEN EXCLUDED.holiday_name
+			                             ELSE holiday.holiday_name END,
+			       is_provisional = holiday.is_provisional AND EXCLUDED.is_provisional`,
+			id.New(), e.date, e.name, e.provisional).Error
+		if err != nil {
+			return 0, err
+		}
+		n++
+	}
+	return n, nil
 }
 
 type seedUser struct {

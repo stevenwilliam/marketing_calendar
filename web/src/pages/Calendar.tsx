@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, type Plan } from '../lib/api'
+import { api, type Holiday, type Plan } from '../lib/api'
 import { formatDate, monthName, rp } from '../lib/format'
 import { SearchBox, StatusPill, Loading, Empty } from '../components/ui'
 
@@ -11,6 +11,7 @@ export default function Calendar() {
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [rows, setRows] = useState<Plan[]>([])
+  const [holidays, setHolidays] = useState<Holiday[]>([])
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -24,6 +25,28 @@ export default function Calendar() {
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [year, month, q])
+
+  // Holidays are fetched per YEAR, not per month, because the calendar only
+  // moves a month at a time and refetching the same year on every step would
+  // be a request per click for data that did not change.
+  useEffect(() => {
+    let cancelled = false
+    api<{ data: Holiday[] }>(`/holidays?year=${year}`)
+      .then((r) => { if (!cancelled) setHolidays(r.data ?? []) })
+      .catch(() => { if (!cancelled) setHolidays([]) })
+    return () => { cancelled = true }
+  }, [year])
+
+  // Keyed by yyyy-mm-dd. The API returns a timestamp, so it is sliced rather
+  // than passed through Date(), which would reinterpret it in the browser's
+  // zone and move a holiday across midnight.
+  const holidayOn = useMemo(() => {
+    const m = new Map<string, Holiday>()
+    for (const h of holidays) {
+      if (h.is_active !== false) m.set(String(h.holiday_date).slice(0, 10), h)
+    }
+    return m
+  }, [holidays])
 
   // The grid starts on Monday, which is how an Indonesian working week reads.
   const cells = useMemo(() => {
@@ -80,13 +103,36 @@ export default function Calendar() {
               <div className="grid grid-cols-7">
                 {cells.map((c, i) => {
                   const running = c.iso ? runningOn(c.iso) : []
+                  const holiday = c.iso ? holidayOn.get(c.iso) : undefined
                   return (
                     <div key={i}
                          className="border-r border-b border-divider min-h-[118px] p-1.5 bg-paper"
-                         style={c.day === null ? { background: '#f3f2f2' } : undefined}>
+                         style={
+                           c.day === null ? { background: '#f3f2f2' }
+                           // The holiday tint. Measured against everything the
+                           // cell draws on top of it: ink 13.73, muted 4.80,
+                           // danger 6.55.
+                           : holiday ? { background: '#fbe4e8' }
+                           : undefined
+                         }>
                       {c.day !== null && (
                         <>
-                          <div className="text-xs text-muted tnum mb-1">{c.day}</div>
+                          <div className="flex items-baseline gap-1 mb-1">
+                            <span className="text-xs text-muted tnum">{c.day}</span>
+                            {holiday && (
+                              // The tint is only 1.21 against the white cell
+                              // beside it, so it cannot be the only signal:
+                              // the name is the signal, the colour is the aid.
+                              <span className="text-[10px] leading-tight text-danger font-semibold truncate"
+                                    title={holiday.holiday_name +
+                                      (holiday.is_provisional ? ' (perkiraan, belum dikonfirmasi SKB)' : '')}>
+                                {holiday.holiday_name}
+                                {holiday.is_provisional && (
+                                  <span aria-label="perkiraan" title="perkiraan"> ~</span>
+                                )}
+                              </span>
+                            )}
+                          </div>
                           {running.slice(0, 3).map((p) => (
                             <Link key={p.plan_id} to={`/promo/${p.plan_id}`}
                                   title={`${p.plan_code} · ${p.company_name} · ${rp(p.version.target_sales_idr)}`}
@@ -109,6 +155,21 @@ export default function Calendar() {
                 })}
               </div>
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5">
+              <span aria-hidden="true" className="inline-block w-3.5 h-3.5 border border-divider"
+                    style={{ background: '#fbe4e8' }} />
+              Hari libur nasional
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span aria-hidden="true">~</span>
+              Perkiraan, belum dikonfirmasi surat keputusan bersama
+            </span>
+            <span>
+              Hari libur ikut diperhitungkan dalam masa tenggang promo.
+            </span>
           </div>
 
           {rows.length === 0 ? (

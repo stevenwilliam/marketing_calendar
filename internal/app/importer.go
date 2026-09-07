@@ -30,6 +30,7 @@ const (
 	KindTransactions ImportKind = "transactions"
 	KindTargetYear   ImportKind = "target_year"
 	KindTargetMonth  ImportKind = "target_month"
+	KindHoliday      ImportKind = "holiday"
 )
 
 // The CSV contracts of 06-domain-operations.md §3.0 (D30, extended by D47).
@@ -41,6 +42,7 @@ var importColumns = map[ImportKind][]string{
 	},
 	KindTargetYear:  {"site_code", "year", "sales_type", "target_amount_idr"},
 	KindTargetMonth: {"site_code", "year", "month", "sales_type", "target_amount_idr"},
+	KindHoliday:     {"holiday_date", "holiday_name", "is_provisional"},
 }
 
 // KindLabel is what the reconciliation screen calls each kind.
@@ -48,6 +50,7 @@ var KindLabel = map[ImportKind]string{
 	KindTransactions: "Transaksi",
 	KindTargetYear:   "Target tahunan",
 	KindTargetMonth:  "Target bulanan",
+	KindHoliday:      "Hari libur",
 }
 
 // detectKind reads the header. The three contracts are distinguishable by the
@@ -67,6 +70,8 @@ func detectKind(header map[string]int) (ImportKind, error) {
 		return true
 	}
 	switch {
+	case has("holiday_date", "holiday_name"):
+		return KindHoliday, nil
 	case has("pos_receipt_no", "business_date"):
 		return KindTransactions, nil
 	case has("month", "year", "target_amount_idr"):
@@ -76,7 +81,8 @@ func detectKind(header map[string]int) (ImportKind, error) {
 	default:
 		return "", errors.New(
 			"berkas tidak cocok dengan kontrak mana pun: butuh pos_receipt_no (transaksi), " +
-				"atau year + target_amount_idr (target tahunan), atau year + month + target_amount_idr (target bulanan)")
+				"year + target_amount_idr (target tahunan), year + month + target_amount_idr " +
+				"(target bulanan), atau holiday_date + holiday_name (hari libur)")
 	}
 }
 
@@ -98,6 +104,13 @@ func Template(kind ImportKind) (filename, body string) {
 				"MXX-001|2026|1|promo|85000000\n" +
 				"MXX-001|2026|2|normal|850000000\n" +
 				"#TOTAL|3|1785000000\n"
+	case KindHoliday:
+		return "template_hari_libur.csv",
+			"holiday_date|holiday_name|is_provisional\n" +
+				"2028-01-01|Tahun Baru Masehi|false\n" +
+				"2028-08-17|Hari Kemerdekaan Republik Indonesia|false\n" +
+				"2028-12-25|Hari Raya Natal|false\n" +
+				"#TOTAL|3\n"
 	default:
 		return "template_transaksi.csv",
 			"site_code|business_date|pos_receipt_no|sales_type|promo_code|order_mode|gross_amount_idr\n" +
@@ -121,6 +134,8 @@ const (
 	reasonBadYear           = "BAD_YEAR"
 	reasonBadMonth          = "BAD_MONTH"
 	reasonDuplicateTarget   = "DUPLICATE_IN_FILE"
+	reasonBlankName         = "BLANK_NAME"
+	reasonBadBool           = "BAD_BOOLEAN"
 )
 
 type ImportResult struct {
@@ -213,9 +228,14 @@ func (d *Deps) ImportFile(ctx context.Context, path string, actor *uuid.UUID) (*
 	}
 
 	var saved ImportRun
-	if parsed.Kind == KindTransactions {
+	switch parsed.Kind {
+	case KindTransactions:
 		saved, err = d.Facts.LoadFile(ctx, run, parsed.Txns, rejects, actor)
-	} else {
+	case KindHoliday:
+		// Holidays upsert on (country, date). Re-importing a corrected decree
+		// overwrites the estimate it replaces, which is the whole point.
+		saved, err = d.Facts.LoadHolidays(ctx, run, parsed.Holidays, rejects, actor)
+	default:
 		// Targets are upserted by the (site, period, sales_type) unique index,
 		// so re-importing a corrected target file overwrites rather than
 		// duplicating — the same idempotency the transaction path gets from
@@ -240,6 +260,7 @@ type parsedFile struct {
 	Kind         ImportKind
 	Txns         []TxnRow
 	Targets      []TargetRow
+	Holidays     []Holiday
 	Rejections   []Rejection
 	TrailerRows  *int
 	TrailerTotal *money.IDR
@@ -249,7 +270,7 @@ type parsedFile struct {
 // trailer's row count is compared against, because a truncated file is short
 // regardless of how many of its rows were any good.
 func (p parsedFile) RowsRead() int {
-	return len(p.Txns) + len(p.Targets) + len(p.Rejections)
+	return len(p.Txns) + len(p.Targets) + len(p.Holidays) + len(p.Rejections)
 }
 
 // Sum is the rupiah total of the rows that parsed, for the trailer's second
@@ -289,11 +310,16 @@ func parseFile(r io.Reader, sites map[string]Site, promos map[string]uuid.UUID) 
 			continue
 		}
 		if strings.HasPrefix(line, "#TOTAL") {
+			// `#TOTAL|<rows>` or `#TOTAL|<rows>|<rupiah>`. The rupiah half is
+			// optional because a holiday file has no money in it, and
+			// demanding a "0" there would be a column that means nothing.
 			parts := strings.Split(line, "|")
-			if len(parts) >= 3 {
+			if len(parts) >= 2 {
 				if n, err := strconv.Atoi(strings.TrimSpace(parts[1])); err == nil {
 					out.TrailerRows = &n
 				}
+			}
+			if len(parts) >= 3 {
 				if v, err := money.Parse(strings.TrimSpace(parts[2])); err == nil {
 					out.TrailerTotal = &v
 				}
@@ -343,6 +369,24 @@ func parseFile(r io.Reader, sites map[string]Site, promos map[string]uuid.UUID) 
 			continue
 		}
 
+		if kind == KindHoliday {
+			h, reason := parseHolidayRow(fields, index)
+			if reason == "" {
+				key := calendar.Key(h.Date)
+				if first, dup := seen[key]; dup {
+					reason = fmt.Sprintf("%s (baris %d)", reasonDuplicateTarget, first)
+				} else {
+					seen[key] = lineNo
+				}
+			}
+			if reason != "" {
+				out.Rejections = append(out.Rejections, Rejection{LineNo: lineNo, Reason: reason, Original: line})
+				continue
+			}
+			out.Holidays = append(out.Holidays, h)
+			continue
+		}
+
 		row, reason := parseTargetRow(fields, index, sites, kind)
 		if reason == "" {
 			key := row.SiteID.String() + row.PeriodKind + strconv.Itoa(row.Year) +
@@ -366,6 +410,38 @@ func parseFile(r io.Reader, sites map[string]Site, promos map[string]uuid.UUID) 
 		return out, errors.New("berkas kosong atau tanpa baris header")
 	}
 	return out, nil
+}
+
+// parseHolidayRow reads a holiday line.
+//
+// is_provisional is REQUIRED, not optional with a default. A date that drives
+// the promotion lead time must say out loud whether it has been confirmed
+// against the official decree; letting the column be omitted would make
+// "certain" the silent default for exactly the dates most likely to be guesses.
+func parseHolidayRow(f []string, index map[string]int) (Holiday, string) {
+	get := func(name string) string {
+		i, ok := index[name]
+		if !ok || i >= len(f) {
+			return ""
+		}
+		return strings.TrimSpace(f[i])
+	}
+	if len(f) < len(importColumns[KindHoliday]) {
+		return Holiday{}, reasonShortRow
+	}
+	date, err := calendar.ParseDate(get("holiday_date"))
+	if err != nil {
+		return Holiday{}, reasonBadDate
+	}
+	name, err := sanitize.Text(get("holiday_name"), 200)
+	if err != nil {
+		return Holiday{}, reasonBlankName
+	}
+	prov, err := strconv.ParseBool(strings.ToLower(get("is_provisional")))
+	if err != nil {
+		return Holiday{}, reasonBadBool
+	}
+	return Holiday{Date: date, Name: name, Country: "ID", IsActive: true, IsProvisional: prov}, ""
 }
 
 // parseTargetRow reads a yearly or monthly target line.

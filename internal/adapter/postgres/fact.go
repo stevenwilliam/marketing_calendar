@@ -147,6 +147,58 @@ func (r *FactRepo) LoadTargets(ctx context.Context, run app.ImportRun, rows []ap
 	return run, err
 }
 
+// LoadHolidays writes a holiday import in one transaction, the run row last.
+//
+// Holidays upsert on (country, date), so re-importing a corrected file
+// overwrites — which is exactly how a provisional estimate is replaced by the
+// date the official decree finally names.
+func (r *FactRepo) LoadHolidays(ctx context.Context, run app.ImportRun, rows []app.Holiday, rejects []app.Rejection, actor *uuid.UUID) (app.ImportRun, error) {
+	run.ImportRunID = id.New()
+	run.StartedAt = time.Now().UTC()
+
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var written int
+		for _, h := range rows {
+			country := h.Country
+			if country == "" {
+				country = "ID"
+			}
+			res := tx.Exec(`
+				INSERT INTO holiday (holiday_id, holiday_date, holiday_name, country,
+				                     is_active, is_provisional)
+				VALUES (?, ?, ?, ?, ?, ?)
+				ON CONFLICT (country, holiday_date)
+				DO UPDATE SET holiday_name = EXCLUDED.holiday_name,
+				              is_active = EXCLUDED.is_active,
+				              is_provisional = EXCLUDED.is_provisional`,
+				id.New(), h.Date, h.Name, country, h.IsActive, h.IsProvisional)
+			if res.Error != nil {
+				return res.Error
+			}
+			written += int(res.RowsAffected)
+		}
+		run.RowsInserted = written
+		run.RowsSkipped = len(rows) - written
+		run.RowsRejected = len(rejects)
+
+		fin := time.Now().UTC()
+		run.FinishedAt = &fin
+		if err := insertRun(tx, run, actor, fin); err != nil {
+			return err
+		}
+		for _, rj := range rejects {
+			if err := tx.Exec(`
+				INSERT INTO import_rejection (rejection_id, import_run_id, line_no, reason, original_line)
+				VALUES (?, ?, ?, ?, ?)`,
+				id.New(), run.ImportRunID, rj.LineNo, rj.Reason, rj.Original).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return run, err
+}
+
 // insertRun is the one place a run row is written, so the two loaders cannot
 // drift in what they record.
 func insertRun(tx *gorm.DB, run app.ImportRun, actor *uuid.UUID, fin time.Time) error {

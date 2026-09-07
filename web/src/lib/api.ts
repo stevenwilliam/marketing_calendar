@@ -164,6 +164,15 @@ export interface Plan {
   }
 }
 
+export interface Holiday {
+  holiday_id: string
+  holiday_date: string
+  holiday_name: string
+  country: string
+  is_active: boolean
+  is_provisional: boolean
+}
+
 export interface Company { company_id: string; company_code: string; company_name: string; is_active: boolean }
 export interface Site { site_id: string; company_id: string; site_code: string; site_name: string; site_type: string; is_active: boolean }
 export interface SiteGroup { site_group_id: string; company_id: string; site_group_name: string; is_system: boolean; member_count: number; site_ids?: string[] }

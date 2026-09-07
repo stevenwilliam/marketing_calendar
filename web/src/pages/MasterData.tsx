@@ -297,7 +297,10 @@ function Groups() {
   )
 }
 
-interface Holiday { holiday_id: string; holiday_date: string; holiday_name: string; is_active: boolean }
+interface Holiday {
+  holiday_id: string; holiday_date: string; holiday_name: string
+  is_active: boolean; is_provisional: boolean
+}
 
 function Holidays() {
   const [rows, setRows] = useState<Holiday[]>([])
@@ -346,7 +349,14 @@ function Holidays() {
           Tanpa hari libur, "7 hari kerja" dihitung dari hari kerja saja dan
           memberi tanggal yang tidak pernah sah di sekitar Idul Fitri, Natal dan
           Nyepi — dan kesalahannya tidak terlihat, karena angkanya tetap tujuh.
-          Muat hari libur tahun berikutnya setiap Desember.
+          Lima tahun sudah dimuat. Tanggal <b>tetap</b> (1 Jan, 1 Mei, 1 Jun,
+          17 Agu, 25 Des) dan yang <b>diturunkan dari Paskah</b> (Wafat dan
+          Kenaikan Isa Almasih) dihitung persis. Tanggal <b>kalender lunar</b> —
+          Idul Fitri, Idul Adha, Nyepi, Waisak, Imlek, Maulid, Isra Mikraj dan
+          seluruh cuti bersama — ditandai <b>Perkiraan</b>: ditetapkan surat
+          keputusan bersama, biasanya setahun sebelumnya, dan tidak dapat
+          dihitung. Ganti dengan tanggal resminya begitu terbit; mengimpor ulang
+          menimpa perkiraan, dan tidak pernah menimpa yang sudah dikonfirmasi.
         </p>
       </div>
       {loading ? <Loading /> : shown.length === 0 ? (
@@ -355,12 +365,24 @@ function Holidays() {
       ) : (
         <TableWrap>
           <table className="table">
-            <thead><tr><th>Tanggal</th><th>Nama</th><th>Aktif</th></tr></thead>
+            <thead><tr><th>Tanggal</th><th>Nama</th><th>Sumber</th><th>Aktif</th></tr></thead>
             <tbody>
               {shown.map((h) => (
                 <tr key={h.holiday_id}>
                   <td className="tnum whitespace-nowrap">{h.holiday_date.slice(0, 10)}</td>
                   <td>{h.holiday_name}</td>
+                  <td>
+                    {h.is_provisional ? (
+                      <span className="pill bg-[#fff2ef] text-warn"
+                            title="Perkiraan yang dihitung sistem. Belum dikonfirmasi terhadap surat keputusan bersama.">
+                        <span aria-hidden="true">~</span> Perkiraan
+                      </span>
+                    ) : (
+                      <span className="pill bg-[#e8f2ec] text-success">
+                        <span aria-hidden="true">✓</span> Dikonfirmasi
+                      </span>
+                    )}
+                  </td>
                   <td>{h.is_active ? 'Ya' : 'Tidak'}</td>
                 </tr>
               ))}
