@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, download } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatDate, rp, count, monthName } from '../lib/format'
-import { SearchBox, ExportButton, TableWrap, Loading, Empty, StatusPill, AchievementBadge } from '../components/ui'
+import { SearchBox, ExportButton, TableWrap, Loading, Empty, StatusPill, AchievementBadge, DEFAULT_GREEN_BPS } from '../components/ui'
 
 interface PromoReportRow {
   plan_id: string; plan_code: string; promo_name: string
@@ -50,6 +50,7 @@ export default function Reports() {
 
 function PromoReport({ canExport }: { canExport: boolean }) {
   const [rows, setRows] = useState<PromoReportRow[]>([])
+  const [greenBPS, setGreenBPS] = useState(DEFAULT_GREEN_BPS)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
@@ -62,8 +63,13 @@ function PromoReport({ canExport }: { canExport: boolean }) {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    api<{ data: PromoReportRow[] }>(`/reports/promotions${qs ? '?' + qs : ''}`)
-      .then((r) => { if (!cancelled) setRows(r.data ?? []) })
+    api<{ data: PromoReportRow[]; achievement_green_bps?: number }>(
+      `/reports/promotions${qs ? '?' + qs : ''}`)
+      .then((r) => {
+        if (cancelled) return
+        setRows(r.data ?? [])
+        if (r.achievement_green_bps) setGreenBPS(r.achievement_green_bps)
+      })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [qs])
@@ -129,7 +135,7 @@ function PromoReport({ canExport }: { canExport: boolean }) {
                     {/* A percentage of a zero TARGET is undefined — an em dash.
                         Zero SALES against a real target is 0%, and red. Those
                         are opposite facts and must not share a rendering. */}
-                    <AchievementBadge bps={r.achieved_bps}
+                    <AchievementBadge bps={r.achieved_bps} greenBPS={greenBPS}
                       title={r.achieved_note ? `Tidak ada capaian — ${r.achieved_note}` : undefined} />
                   </td>
                   <td className="text-right tnum">{count(r.target_receipts)}</td>
@@ -152,6 +158,7 @@ function PromoReport({ canExport }: { canExport: boolean }) {
 
 function TargetReport({ canExport }: { canExport: boolean }) {
   const [rows, setRows] = useState<TargetReportRow[]>([])
+  const [greenBPS, setGreenBPS] = useState(DEFAULT_GREEN_BPS)
   const [year, setYear] = useState(new Date().getFullYear())
   const [month, setMonth] = useState(0)
   const [q, setQ] = useState('')
@@ -165,8 +172,12 @@ function TargetReport({ canExport }: { canExport: boolean }) {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    api<{ data: TargetReportRow[] }>(`/reports/targets?${qs}`)
-      .then((r) => { if (!cancelled) setRows(r.data ?? []) })
+    api<{ data: TargetReportRow[]; achievement_green_bps?: number }>(`/reports/targets?${qs}`)
+      .then((r) => {
+        if (cancelled) return
+        setRows(r.data ?? [])
+        if (r.achievement_green_bps) setGreenBPS(r.achievement_green_bps)
+      })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [qs])
@@ -229,7 +240,7 @@ function TargetReport({ canExport }: { canExport: boolean }) {
                     {r.delta_idr > 0 ? '+' : ''}{rp(r.delta_idr)}
                   </td>
                   <td className="text-right">
-                    <AchievementBadge bps={r.achieved_bps}
+                    <AchievementBadge bps={r.achieved_bps} greenBPS={greenBPS}
                       title={r.achieved_bps === null ? 'Target nol: capaian tidak terdefinisi' : undefined} />
                   </td>
                   <td className="text-right tnum">{count(r.receipt_count)}</td>

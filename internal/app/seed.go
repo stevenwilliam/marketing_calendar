@@ -272,6 +272,8 @@ func seedParameters(tx *gorm.DB) (int, error) {
 		{ParamLeadTimeDays, "7", "int", "Masa tenggang minimum promo, dalam hari kerja (BR-3.3)", false},
 		{ParamAutoCancelDays, "5", "int", "Hari sebelum mulai saat rencana tanpa persetujuan lengkap dibatalkan (BR-4.6)", false},
 		{ParamOverlapWarning, "true", "bool", "Aktifkan peringatan promo tumpang tindih (BR-3.6)", false},
+		{ParamAchievementGreen, "8000", "int",
+			"Batas capaian harian yang dihitung tercapai, dalam basis poin. 8000 = 80%. Di bawahnya merah, pada atau di atasnya hijau (BR-7.5a)", false},
 		{ParamReleaseRecipients, "marketing@sfg.local,operasional@sfg.local", "list",
 			"Daftar tetap penerima surel rilis. Ini adalah SATU-SATUNYA penerima; aktor rantai tidak ditambahkan otomatis (D32)", false},
 		{ParamImportDropPath, "/srv/marketing_calendar/import", "string", "Direktori berkas impor nightly", false},

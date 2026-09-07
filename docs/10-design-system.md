@@ -165,25 +165,27 @@ class, so what is typed is what is shown.
 
 Target versus realisation, everywhere it appears — the calendar's daily chips,
 the promotion report's *Capaian* column, the target-vs-actual report — is one
-component: a **solid fill in danger / warn / success carrying `--color-bg` as
-its ink at weight 800**, measured at 7.09 / 7.51 / 6.90.
+component: a **solid fill in danger or success carrying `--color-bg` as its
+ink at weight 800**, measured at 7.09 and 6.90.
 
 Solid was asked for and solid is right for a column of numbers, but the
-measurement is worth keeping in view: **the three fills separate from each
-other by 1.03–1.09**, the same as the pale chips they replaced, because the
-difference between them was always hue and never luminance. The badge is
-louder; it is not more distinguishable. The **percentage is the signal**, the
-glyph (▼ ◆ ▲) backs it, and the colour is the aid.
-
-Four states, and the fourth is the one that matters:
+measurement is worth keeping in view: **the two fills separate from each other
+by 1.03**, the same as the pale chips they replaced, because the difference
+between them was always hue and never luminance. The badge is louder; it is
+not more distinguishable. The **percentage is the signal**, the glyph (▼ ▲)
+backs it, and the colour is the aid.
 
 | State | Rendering |
 |---|---|
-| under `<70%` | danger fill, ▼, the percentage |
-| near `70–100%` | warn fill, ◆, the percentage |
-| over `≥100%` | success fill, ▲, the percentage |
+| under, below the line | danger fill, ▼, the percentage |
+| over, at the line or above | success fill, ▲, the percentage |
 | **no target** | grey `#eae7e7`, `·`, an **em dash** |
 | **no verdict** | grey `#eae7e7`, `·`, and the reason in words |
+
+**The line is a parameter** — `promo.achievement_green_bps`, 80% by default
+(D59). It arrives with the data on every response, and every label is built
+from it, so the legend, the tooltip and the fill always describe the same
+number. Nothing in the frontend holds a second copy of the threshold.
 
 > **Zero sales is 0% and red; a zero target is an em dash (D57).** Selling
 > nothing is a real number and a total miss. Having no target set is the

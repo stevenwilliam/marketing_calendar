@@ -12,6 +12,7 @@ import (
 	"github.com/stevenwilliam/marketing_calendar/internal/app"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/approval"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/money"
+	"github.com/stevenwilliam/marketing_calendar/internal/domain/promo"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/target"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/apierror"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/sanitize"
@@ -359,7 +360,11 @@ func handlePromoReport(d *app.Deps) gin.HandlerFunc {
 				"target_receipts": r.TargetReceipts, "actual_receipts": r.ActualReceipts,
 				"receipt_delta": r.ReceiptDelta})
 		}
-		c.JSON(http.StatusOK, gin.H{"data": out})
+		// The green line travels with the data so the badge and the
+		// legend can never disagree about where it sits (D59).
+		c.JSON(http.StatusOK, gin.H{"data": out,
+			"achievement_green_bps": d.Params.Int(c.Request.Context(),
+				app.ParamAchievementGreen, int(promo.DefaultAchievementGreenBPS))})
 	}
 }
 
@@ -395,7 +400,11 @@ func handleTargetReport(d *app.Deps) gin.HandlerFunc {
 				"delta_idr": int64(ach.DeltaIDR), "achieved_bps": achieved,
 				"receipt_count": r.ReceiptCount})
 		}
-		c.JSON(http.StatusOK, gin.H{"data": out})
+		// The green line travels with the data so the badge and the
+		// legend can never disagree about where it sits (D59).
+		c.JSON(http.StatusOK, gin.H{"data": out,
+			"achievement_green_bps": d.Params.Int(c.Request.Context(),
+				app.ParamAchievementGreen, int(promo.DefaultAchievementGreenBPS))})
 	}
 }
 

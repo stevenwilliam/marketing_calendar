@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, type Holiday, type Plan } from '../lib/api'
 import { formatDate, monthName, rp, percentFromBPS } from '../lib/format'
-import { SearchBox, StatusPill, Loading, Empty, ACHIEVEMENT } from '../components/ui'
+import { SearchBox, StatusPill, Loading, Empty, ACHIEVEMENT, bandLabel, greenLabel, DEFAULT_GREEN_BPS } from '../components/ui'
 
 const DAY_LABELS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 
 interface DayAchievement {
   actual_idr: number
   receipt_count: number
-  band: 'under' | 'near' | 'over' | 'none'
+  band: 'under' | 'over' | 'none'
   achieved_bps: number | null
 }
 
@@ -44,14 +44,21 @@ export default function Calendar() {
   const [holidays, setHolidays] = useState<Holiday[]>([])
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
+  const [greenBPS, setGreenBPS] = useState(DEFAULT_GREEN_BPS)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     const p = new URLSearchParams({ year: String(year), month: String(month) })
     if (q) p.set('q', q)
-    api<{ data: CalendarPlan[] }>(`/promotions/calendar?${p}`)
-      .then((res) => { if (!cancelled) setRows(res.data ?? []) })
+    api<{ data: CalendarPlan[]; achievement_green_bps?: number }>(`/promotions/calendar?${p}`)
+      .then((res) => {
+        if (cancelled) return
+        setRows(res.data ?? [])
+        // The threshold travels with the data. Holding a second copy here is
+        // how a legend ends up disagreeing with the chips beside it (D59).
+        if (res.achievement_green_bps) setGreenBPS(res.achievement_green_bps)
+      })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [year, month, q])
@@ -199,7 +206,7 @@ export default function Calendar() {
                                       `Target harian ${rp(p.daily_target_idr ?? 0)}\n` +
                                       (why ? why
                                         : `Aktual ${rp(a?.actual_idr ?? 0)}` +
-                                          (pct ? ` · ${pct} — ${band.label}` : ' · belum ada target harian'))}
+                                          (pct ? ` · ${pct} — ${bandLabel(a!.band, greenBPS)}` : ' · belum ada target harian'))}
                                     className="flex items-baseline gap-1 text-[10.5px] font-extrabold leading-[1.35] px-1.5 py-0.5 mb-0.5"
                                     style={{
                                       background: band.bg,
@@ -246,14 +253,14 @@ export default function Calendar() {
 
           <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
             <span className="font-semibold text-ink">Capaian harian:</span>
-            {(['under', 'near', 'over'] as const).map((k) => (
+            {(['under', 'over'] as const).map((k) => (
               <span key={k} className="inline-flex items-center gap-1.5">
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10.5px] font-extrabold"
                       style={{ background: BAND[k].bg, color: BAND[k].ink }}>
                   <span aria-hidden="true">{BAND[k].glyph}</span>
-                  {k === 'under' ? '<70%' : k === 'near' ? '70–100%' : '≥100%'}
+                  {k === 'under' ? `<${greenLabel(greenBPS)}` : `≥${greenLabel(greenBPS)}`}
                 </span>
-                {BAND[k].label}
+                {bandLabel(k, greenBPS)}
               </span>
             ))}
             {/* The fourth state is not a band and must not look like one: it

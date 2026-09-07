@@ -433,41 +433,61 @@ func TestNoDailyTargetWhenThereIsNoTarget(t *testing.T) {
 	if _, _, ok := v.DailyTarget(); ok {
 		t.Fatal("a zero total must not produce a daily target")
 	}
-	if band, _, ok := BandFor(500_000, 0); ok || band != BandNone {
+	if band, _, ok := BandFor(500_000, 0, DefaultAchievementGreenBPS); ok || band != BandNone {
 		t.Fatalf("band = %s, ok = %v; a percentage of zero is undefined", band, ok)
 	}
 }
 
-// The boundaries are closed at the bottom. A day that hit its number exactly
-// is not "nearly there".
+// D59: two bands, split at the green line, closed at the bottom. A day that
+// hit its number exactly is green, not red.
 func TestBandBoundaries(t *testing.T) {
 	const daily = money.IDR(1_000_000)
+	const green = DefaultAchievementGreenBPS // 80%
 	cases := []struct {
 		actual money.IDR
 		want   Band
 		note   string
 	}{
 		{0, BandUnder, "nothing sold"},
-		{699_000, BandUnder, "69,90% is under"},
-		{700_000, BandNear, "exactly 70% is near, not under"},
-		{999_000, BandNear, "99,90% is near"},
-		{1_000_000, BandOver, "exactly 100% is over, not near"},
+		{799_000, BandUnder, "79,90% is under"},
+		{800_000, BandOver, "exactly 80% is over, not under"},
+		{999_000, BandOver, "99,90% is over — there is no middle band any more"},
+		{1_000_000, BandOver, "exactly 100%"},
 		{2_500_000, BandOver, "well past"},
 	}
 	// The band follows the DISPLAYED percentage, so a chip can never show a
-	// number that contradicts its colour. 699.999 rounds to 70,00% and is
-	// therefore `near`, not `under`.
-	if band, bps, _ := BandFor(699_999, daily); band != BandNear || bps != 7000 {
-		t.Fatalf("699999 of 1000000 rounds to %d bps and banded %s; the colour must follow the number shown", bps, band)
+	// number that contradicts its colour. 799.999 rounds to 80,00% and is
+	// therefore green, not red.
+	if band, bps, _ := BandFor(799_999, daily, green); band != BandOver || bps != 8000 {
+		t.Fatalf("799999 of 1000000 rounds to %d bps and banded %s; the colour must follow the number shown", bps, band)
 	}
 	for _, c := range cases {
-		got, bps, ok := BandFor(c.actual, daily)
+		got, bps, ok := BandFor(c.actual, daily, green)
 		if !ok {
 			t.Fatalf("%s: no band", c.note)
 		}
 		if got != c.want {
 			t.Fatalf("%s: actual %d of %d = %d bps -> %s, want %s",
 				c.note, c.actual, daily, bps, got, c.want)
+		}
+	}
+}
+
+// The green line is a parameter (D59, CLAUDE.md §7). Moving it must move the
+// band, and an unreadable value must not turn the whole calendar green.
+func TestBandGreenLineIsConfigurable(t *testing.T) {
+	const daily = money.IDR(1_000_000)
+	if band, _, _ := BandFor(750_000, daily, 7000); band != BandOver {
+		t.Fatalf("75%% against a 70%% line = %s, want over", band)
+	}
+	if band, _, _ := BandFor(750_000, daily, 8000); band != BandUnder {
+		t.Fatalf("75%% against an 80%% line = %s, want under", band)
+	}
+	// A missing or nonsensical parameter falls back rather than banding
+	// everything green, which would silently report a perfect month.
+	for _, bad := range []int64{0, -1} {
+		if band, _, _ := BandFor(750_000, daily, bad); band != BandUnder {
+			t.Fatalf("greenBPS %d must fall back to the default; got %s", bad, band)
 		}
 	}
 }

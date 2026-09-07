@@ -156,6 +156,11 @@ func handleCalendar(d *app.Deps) gin.HandlerFunc {
 		for _, r := range rows {
 			ids = append(ids, r.PlanID)
 		}
+		// The green line is a parameter, not a constant (D59): Steven has
+		// retuned it twice and will again.
+		greenBPS := int64(d.Params.Int(c.Request.Context(), app.ParamAchievementGreen,
+			int(promo.DefaultAchievementGreenBPS)))
+
 		daily, err := d.Facts.PromoDailyActuals(c.Request.Context(), ids, from, to)
 		if err != nil {
 			fail(c, err)
@@ -209,7 +214,7 @@ func handleCalendar(d *app.Deps) gin.HandlerFunc {
 					if promo.Verdict(r.Status, key, todayKey, has, ok) != promo.VerdictBanded {
 						continue
 					}
-					band, bps, _ := promo.BandFor(a.GrossIDR, target)
+					band, bps, _ := promo.BandFor(a.GrossIDR, target, greenBPS)
 					perDay[key] = gin.H{
 						"actual_idr":    int64(a.GrossIDR),
 						"receipt_count": a.ReceiptCount,
@@ -222,7 +227,7 @@ func handleCalendar(d *app.Deps) gin.HandlerFunc {
 				if _, already := perDay[day]; already {
 					continue
 				}
-				band, bps, defined := promo.BandFor(a.GrossIDR, target)
+				band, bps, defined := promo.BandFor(a.GrossIDR, target, greenBPS)
 				perDay[day] = gin.H{
 					"actual_idr":    int64(a.GrossIDR),
 					"receipt_count": a.ReceiptCount,
@@ -243,7 +248,10 @@ func handleCalendar(d *app.Deps) gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, gin.H{
 			"data": out, "year": year, "month": month,
-			"from": from.Format("2006-01-02"), "to": to.Format("2006-01-02")})
+			"from": from.Format("2006-01-02"), "to": to.Format("2006-01-02"),
+			// The UI must not hold its own copy of the threshold: a legend
+			// reading "≥80%" beside chips banded at 70% is worse than either.
+			"achievement_green_bps": greenBPS})
 	}
 }
 

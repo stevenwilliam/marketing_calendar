@@ -53,7 +53,10 @@ Menu **Kalender** menampilkan satu bulan, lintas merek.
 
 **Setiap promo menampilkan capaian hariannya.** Target harian adalah target
 penjualan promo dibagi jumlah hari periodenya. Setiap hari diberi warna: merah
-▼ di bawah 70%, kuning ◆ antara 70% dan 100%, hijau ▲ pada 100% atau lebih.
+▼ di bawah batas, hijau ▲ pada batas atau di atasnya. **Batasnya 80%**, dan
+angka itu dapat diubah di **Pengaturan** (`promo.achievement_green_bps`) tanpa
+perlu memasang ulang aplikasi — keterangan di bawah kalender selalu mengikuti
+nilai yang berlaku.
 Angka persennya selalu ditulis — warnanya hanya membantu, bukan satu-satunya
 penanda.
 

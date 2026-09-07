@@ -45,9 +45,11 @@ type Deps struct {
 // Parameter keys. Every operational timing is one of these (BR-1.6, and
 // CLAUDE.md §7: "operational timings are parameters too").
 const (
-	ParamLeadTimeDays      = "promo.lead_time_working_days"
-	ParamAutoCancelDays    = "promo.auto_cancel_days_before"
-	ParamOverlapWarning    = "promo.overlap_warning_enabled"
+	ParamLeadTimeDays   = "promo.lead_time_working_days"
+	ParamAutoCancelDays = "promo.auto_cancel_days_before"
+	ParamOverlapWarning = "promo.overlap_warning_enabled"
+	// The green line for daily achievement, in basis points (D59).
+	ParamAchievementGreen  = "promo.achievement_green_bps"
 	ParamReleaseRecipients = "notify.release_recipients"
 	ParamImportDropPath    = "import.drop_path"
 	ParamMaxExportRows     = "report.max_export_rows"

@@ -154,10 +154,15 @@ actual report. A **solid fill carrying `--color-bg` as its ink**:
 
 | Band | Fill | Ink | Ratio | |
 | --- | --- | --- | ---: | --- |
-| under, `<70%` | `#9E1C28` danger | `#f3f2f2` | 7.09 | AAA |
-| near, `70–100%` | `#6F4400` warn | `#f3f2f2` | 7.51 | AAA |
-| over, `≥100%` | `#145F38` success | `#f3f2f2` | 6.90 | AA |
-| no target | `#eae7e7` | `#201e1d` | 13.51 | AAA |
+| under, below the line | `#9E1C28` danger | `#f3f2f2` | 7.09 | AAA |
+| over, at the line or above | `#145F38` success | `#f3f2f2` | 6.90 | AA |
+| no target, no verdict | `#eae7e7` | `#201e1d` | 13.51 | AAA |
+
+**Two bands, and the line is a parameter** (`promo.achievement_green_bps`,
+80% by default — D59). Steven retuned it twice inside one session, which is
+the signal that it is a row and not a constant. The API sends the live value
+with the data, so the legend and the chips cannot disagree; nothing on the
+frontend holds a second copy.
 
 The pale grounds these replaced are still in the product and still measured —
 they are the **status** pills on the plan, master-data and import screens. A
@@ -169,13 +174,13 @@ status is not a measurement: it is read once, not scanned down a column.
 | pending / partial | `#fff2ef` | `#6F4400` | 7.67 | AAA |
 | released / ok | `#e8f2ec` | `#145F38` | 6.73 | AA |
 
-> **The three fills measure 1.03–1.09 against EACH OTHER.** Pure hue, no
-> luminance difference whatsoever — so to anyone who cannot separate red from
-> green, roughly one person in twelve, the three badges are the same badge.
-> Going solid made them louder, not more distinguishable, and it would be easy
-> to mistake the new weight for new information. The **percentage printed on
-> the badge is the signal**; the colour is the aid, and a glyph (▼ ◆ ▲) backs
-> both. This is rule 1 at its sharpest.
+> **The two fills measure 1.03 against EACH OTHER.** Red and green, pure hue,
+> no luminance difference whatsoever — so to anyone who cannot separate the
+> two, roughly one person in twelve, they are the same badge. Red and green
+> is the single worst pairing available and it is the one the business asked
+> for, so everything else has to carry the meaning: the **percentage printed
+> on the badge is the signal**, and a glyph (▼ ▲) backs it. This is rule 1 at
+> its sharpest — here the colour genuinely carries nothing on its own.
 
 > **Zero sales is 0%, and it is red (D57).** A day with no takings is a total
 > miss, not missing data. The em dash `—` is reserved for the one case where a

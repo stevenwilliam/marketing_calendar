@@ -292,27 +292,40 @@ func (v Version) DailyTarget() (amount money.IDR, days int, ok bool) {
 	return v.TargetSalesIDR / money.IDR(days), days, true
 }
 
-// Achievement bands for a day against its daily target (D55).
+// Achievement bands for a day against its daily target (D55, D59).
 type Band string
 
 const (
-	BandUnder Band = "under" // below 70%
-	BandNear  Band = "near"  // 70% up to but not including 100%
-	BandOver  Band = "over"  // 100% and above
+	BandUnder Band = "under" // below the green line
+	BandOver  Band = "over"  // at the green line or above
 	BandNone  Band = "none"  // no daily target, so no percentage exists
 )
 
-// BandFor classifies a day's actual against its daily target.
+// DefaultAchievementGreenBPS is the fallback when the parameter is unreadable:
+// 80%, in basis points. The live value is `promo.achievement_green_bps`.
+const DefaultAchievementGreenBPS int64 = 8000
+
+// BandFor classifies a day's actual against its daily target. Two bands, split
+// at greenBPS — below it is a miss, at it or above is a hit (D59).
 //
-// The boundaries are closed at the bottom: exactly 70% is `near`, exactly 100%
-// is `over`. A day that hit its number exactly is not "nearly there".
+// The boundary is CLOSED AT THE BOTTOM: exactly the threshold is green. A day
+// that hit its number is not "nearly there".
 //
 // The band is computed from the SAME ROUNDED percentage that gets displayed,
-// not from the raw ratio. 699.999 against a target of 1.000.000 is 69,9999%
-// and rounds to 70,00% for display; classifying it on the raw value would put
-// a chip reading "70%" in the red band, and a colour that contradicts the
+// not from the raw ratio. 799.999 against a target of 1.000.000 is 79,9999%
+// and rounds to 80,00% for display; classifying it on the raw value would put
+// a chip reading "80%" in the red band, and a colour that contradicts the
 // number beside it is worse than either alone.
-func BandFor(actual, dailyTarget money.IDR) (Band, int64, bool) {
+//
+// greenBPS is passed in rather than fixed because Steven has retuned this line
+// twice already — 70/100 to a single 80 — and CLAUDE.md §7 is explicit that a
+// threshold which can change without a code change is a row in
+// `sys_parameters`. A non-positive value falls back to the default rather than
+// making every day green.
+func BandFor(actual, dailyTarget money.IDR, greenBPS int64) (Band, int64, bool) {
+	if greenBPS <= 0 {
+		greenBPS = DefaultAchievementGreenBPS
+	}
 	if dailyTarget <= 0 {
 		return BandNone, 0, false
 	}
@@ -320,14 +333,10 @@ func BandFor(actual, dailyTarget money.IDR) (Band, int64, bool) {
 	if !ok {
 		return BandNone, 0, false
 	}
-	switch {
-	case bps >= 10000:
+	if bps >= greenBPS {
 		return BandOver, bps, true
-	case bps >= 7000:
-		return BandNear, bps, true
-	default:
-		return BandUnder, bps, true
 	}
+	return BandUnder, bps, true
 }
 
 // DaysUntilAutoCancel is negative once the plan is past its cancellation date.

@@ -140,7 +140,7 @@ NONWORKING = "#fbe4e8" # calendar tint: weekend OR public holiday (D49, D51)
 PILL_DANGER_BG, PILL_DANGER_INK = "#fdeaec", DANGER
 PILL_WARN_BG,   PILL_WARN_INK   = "#fff2ef", WARN
 PILL_OK_BG,     PILL_OK_INK     = "#e8f2ec", SUCCESS
-# The achievement badge's fourth state: no target, so no percentage (D57).
+# The achievement badge's neutral state: no target, or no verdict (D57, D58).
 BADGE_NONE_BG = "#eae7e7"
 
 CHECKS: list[tuple[str, str, str, dict]] = [
@@ -169,7 +169,6 @@ CHECKS: list[tuple[str, str, str, dict]] = [
     ("info on paper",             INFO, PAPER, {}),
     ("bg on success fill",        BG, SUCCESS, {}),
     ("bg on danger fill",         BG, DANGER, {}),
-    ("bg on warn fill",           BG, WARN, {}),
     ("ink on no-target badge",     TEXT, BADGE_NONE_BG, {}),
     ("Maxx Coffee on paper",      MAXX, PAPER, {}),
     ("Ruuma on paper",            RUUMA, PAPER, {}),
@@ -227,7 +226,6 @@ RECORDED = {
     "info on paper": 7.23,
     "bg on success fill": 6.90,
     "bg on danger fill": 7.09,
-    "bg on warn fill": 7.51,
     "ink on no-target badge": 13.51,
     "Maxx Coffee on paper": 9.19,
     "Ruuma on paper": 8.76,

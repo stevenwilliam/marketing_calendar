@@ -38,7 +38,7 @@ yet run.
 |---|---|---|---|
 | M0 | Documents | ✅ | Set complete, D28–D43 recorded |
 | M1 | Environment & config | ✅ | Boots from `/etc/marketing_calendar/…env`; secrets verified masked in the startup line |
-| M2 | Schema | ✅ | 9 migrations on a real PostgreSQL; constraints proven to **refuse** bad writes |
+| M2 | Schema | ✅ | 15 migrations on a real PostgreSQL; constraints proven to **refuse** bad writes, `TRUNCATE` included |
 | M3 | Domain | ✅ | 5 packages, pure, no I/O; every test names its `BR-x.y` |
 | M4 | Identity & RBAC | ✅ | argon2id, rotating refresh, TOTP **available but off by default** (D46); matrix tested in both directions for all 8 roles, and login tested with the factor both on and off |
 | M5 | Master data | ✅ | Site creates its system group in one transaction; cross-brand member refused by the database |
@@ -47,7 +47,7 @@ yet run.
 | M8 | Promotions | ✅ | Lead time correct across Idul Fitri; overlap detected across groups sharing a site |
 | M9 | Auto-cancel job | ✅ | Ran live; cancelled a due plan; event carries `actor=NULL` |
 | M10 | Importer | ✅ | Ran live; idempotent by checksum; rejections kept with reasons; truncation caught |
-| M11 | Reports | ✅ | Promo and target-vs-actual, pipe CSV, export matches the screen |
+| M11 | Reports | ✅ | Promo and target-vs-actual, pipe CSV, export matches the screen; achievement is one measured badge (D56) and a zero is only a miss where selling was possible (BR-7.5b, D58, `promo.Verdict` unit-tested over all ten cases); the green line is `promo.achievement_green_bps` and moving it live was **watched flipping the badges and their labels together** (D59) |
 | M12 | Notifications | ✅ | Queued not blocking; release goes to the fixed list only |
 | M13 | Web UI | ✅ | 11 screens; verified in a real browser and **measured**, not eyeballed |
 | M14 | Security hardening | ✅ | Controls built and tested, including site scoping (BR-5.5) and the export cap, both of which were written down as gaps and then closed rather than left as prose |
@@ -118,13 +118,13 @@ Be specific rather than reassuring.
 | # | Item | Effect |
 |---|---|---|
 | 1 | **Confirm or amend D2–D22** | The build was made against these defaults |
-| 2 | **The nginx allowlist ranges** | `deploy/nginx-…conf` allows `127.0.0.1` and `192.168.88.0/24` only. The VPN range is commented out because nobody has said what it is |
+| 2 | **The nginx allowlist ranges** | `deploy/nginx-…conf` allows `127.0.0.1`, `192.168.88.0/24` (dev LAN) and `172.16.0.0/24` — the range Steven's laptop actually arrives from, added once a 403 proved the guess wrong. Any other office or VPN range still has to be named |
 | 3 | **Ports 8093/8094 acceptable?** | 8093 is the Go service (loopback); 8094 is nginx's LAN door. 8081/8082/8090/8091 are taken by other projects (D43, D44) |
 | 4 | **The real release-recipient list** | Seeded with placeholders `marketing@sfg.local`, `operasional@sfg.local` |
 | 5 | **The demo accounts** | Nine seeded accounts share one password. Delete them before real data. `steven.william@maxx-coffee.id` is a real account and is **not** one of them |
-| 8 | **`auth.password_min_length` is 8 and `auth.totp_required` is false** | Both on request (D45, D46). D45's argument rested on three controls and D46 removed one of them, so what now protects an account is lockout plus the nginx allowlist. Both are parameters — raise either in **Pengaturan**, no deploy |
 | 6 | R1 — is Business Analyst step 2 (taken) or step 1? | A chain edit either way |
 | 7 | **The design canvas** | `claude.ai/design/p/…` is unreachable from the dev server (403). Built to the artifact `f896dbfe` instead, which was reachable |
+| 8 | **`auth.password_min_length` is 8 and `auth.totp_required` is false** | Both on request (D45, D46). D45's argument rested on three controls and D46 removed one of them, so what now protects an account is lockout plus the nginx allowlist. Both are parameters — raise either in **Pengaturan**, no deploy |
 
 ---
 
@@ -137,4 +137,4 @@ code exists:
 |---|---|
 | **D6** — `history_txn` is per receipt | 2,800 rows loaded; changing the grain means reloading |
 | **D12** — approval locks the plan | Structural in the schema and the domain |
-| **D18** — TOTP mandatory | Nine accounts enrolled; relaxing is easy, imposing later is not |
+| **D18** — TOTP mandatory | ~~Nine accounts enrolled; relaxing is easy, imposing later is not~~ — **superseded by D46**, which switched the factor off at Steven's request. The enrolment flow and `user_totp` remain, so re-imposing it is a parameter change |

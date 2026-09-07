@@ -205,29 +205,52 @@ export function BrandTag({ code, name }: { code: string; name: string }) {
    the PERCENTAGE remains the signal and the glyph backs it up; the colour is
    what makes a column scannable, not what carries the meaning. */
 
+// D59: two bands, not three. The middle band is gone and the line is a
+// parameter, so the LABELS are built from the live threshold — a legend
+// reading "80%" beside chips banded at 70% is worse than no legend at all.
 export const ACHIEVEMENT = {
-  under: { bg: '#9E1C28', ink: '#f3f2f2', glyph: '▼', label: 'di bawah 70% target' },
-  near:  { bg: '#6F4400', ink: '#f3f2f2', glyph: '◆', label: '70–100% target' },
-  over:  { bg: '#145F38', ink: '#f3f2f2', glyph: '▲', label: '100% target atau lebih' },
+  under: { bg: '#9E1C28', ink: '#f3f2f2', glyph: '▼', label: 'di bawah target' },
+  over:  { bg: '#145F38', ink: '#f3f2f2', glyph: '▲', label: 'target tercapai' },
   none:  { bg: '#eae7e7', ink: '#201e1d', glyph: '·', label: 'tidak ada target' },
 } as const
+
+/** 8000 bps = 80%. Only a fallback; the live value comes from the API. */
+export const DEFAULT_GREEN_BPS = 8000
+
+/** "80%" — the threshold as the screen says it, with no trailing zeroes. */
+export function greenLabel(greenBPS: number): string {
+  return `${(greenBPS / 100).toFixed(2).replace(/[.,]?0+$/, '').replace('.', ',')}%`
+}
+
+export function bandLabel(band: AchievementBand, greenBPS: number): string {
+  if (band === 'under') return `di bawah ${greenLabel(greenBPS)} target`
+  if (band === 'over') return `${greenLabel(greenBPS)} target atau lebih`
+  return ACHIEVEMENT.none.label
+}
 
 export type AchievementBand = keyof typeof ACHIEVEMENT
 
 /** Band a basis-point achievement. Boundaries closed at the bottom, and it
  *  follows the ROUNDED value so a badge never shows a number its colour
  *  contradicts — the same rule the server applies. */
-export function bandOf(bps: number | null | undefined): AchievementBand {
+export function bandOf(
+  bps: number | null | undefined,
+  greenBPS: number = DEFAULT_GREEN_BPS,
+): AchievementBand {
   if (bps === null || bps === undefined) return 'none'
-  if (bps >= 10000) return 'over'
-  if (bps >= 7000) return 'near'
-  return 'under'
+  // Closed at the bottom: exactly the threshold is green (BR-7.5a).
+  return bps >= greenBPS ? 'over' : 'under'
 }
 
 export function AchievementBadge({
-  bps, size = 'md', title,
-}: { bps: number | null | undefined; size?: 'sm' | 'md'; title?: string }) {
-  const band = bandOf(bps)
+  bps, size = 'md', title, greenBPS = DEFAULT_GREEN_BPS,
+}: {
+  bps: number | null | undefined
+  size?: 'sm' | 'md'
+  title?: string
+  greenBPS?: number
+}) {
+  const band = bandOf(bps, greenBPS)
   const c = ACHIEVEMENT[band]
   // A zero TARGET has no percentage — the arithmetic is undefined. Zero SALES
   // against a real target is 0%, and reads red like any other miss (D57).
@@ -235,7 +258,7 @@ export function AchievementBadge({
     bps === null || bps === undefined
       ? '—'
       : `${(bps / 100).toFixed(2).replace('.', ',')}%`
-  const label = title ?? c.label
+  const label = title ?? bandLabel(band, greenBPS)
   const undef = bps === null || bps === undefined
   return (
     <span

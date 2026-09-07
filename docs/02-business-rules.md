@@ -438,9 +438,17 @@ both ends. Integer division, so it truncates — this product has no fractional
 rupiah (BR-1.1), and the promotion's own variance is always computed against
 the real total, never against the daily figure multiplied back up. *(D55)*
 
-A day is banded against that target: **under** below 70%, **near** from 70% up
-to but not including 100%, **over** at 100% and above. The boundaries are
-closed at the bottom — a day that hit its number exactly is not "nearly there".
+A day is banded against that target in **two** bands split at a single green
+line: **under** (red) below the line, **over** (green) at the line or above.
+The boundary is closed at the bottom — a day that hit its number is not a
+miss. *(D59, replacing the three-band 70/100 split of D55.)*
+
+**The line is `promo.achievement_green_bps`, 80% by default**, and it is a
+parameter rather than a constant because it is exactly the kind of value that
+changes without a code change (CLAUDE.md §7). The API sends the live value
+alongside the data so a legend can never disagree with the chips beside it,
+and a missing or non-positive value falls back to 80% rather than banding
+every day green.
 
 The band is computed from the **same rounded percentage that is displayed**, so
 a chip can never show a number its colour contradicts.
