@@ -49,6 +49,12 @@ export default function Calendar() {
   }, [holidays])
 
   // The grid starts on Monday, which is how an Indonesian working week reads.
+  // The grid is laid out Monday-first, so columns 5 and 6 are Saturday and
+  // Sunday. Deriving it from the POSITION rather than from a Date avoids
+  // parsing the cell's iso string in the browser's zone, which would put a
+  // Jakarta Saturday in Friday for anyone west of here.
+  const isWeekendColumn = (i: number) => i % 7 >= 5
+
   const cells = useMemo(() => {
     const first = new Date(Date.UTC(year, month - 1, 1))
     const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
@@ -96,23 +102,31 @@ export default function Calendar() {
           <div className="overflow-x-auto">
             <div className="min-w-[720px] border-t border-l border-divider">
               <div className="grid grid-cols-7">
-                {DAY_LABELS.map((d) => (
-                  <div key={d} className="kicker p-2 border-r border-b border-divider bg-surface">{d}</div>
+                {DAY_LABELS.map((d, i) => (
+                  <div key={d}
+                       className="kicker p-2 border-r border-b border-divider"
+                       style={{ background: isWeekendColumn(i) ? '#fbe4e8' : '#eae9e9' }}>
+                    {d}
+                  </div>
                 ))}
               </div>
               <div className="grid grid-cols-7">
                 {cells.map((c, i) => {
                   const running = c.iso ? runningOn(c.iso) : []
                   const holiday = c.iso ? holidayOn.get(c.iso) : undefined
+                  // One tint, one meaning: this day does not count toward the
+                  // promotion lead time. A weekend and a public holiday are
+                  // the same thing to BR-3.3, and colouring them differently
+                  // would invent a distinction the rule does not make.
+                  const nonWorking = c.day !== null && (isWeekendColumn(i) || Boolean(holiday))
                   return (
                     <div key={i}
                          className="border-r border-b border-divider min-h-[118px] p-1.5 bg-paper"
                          style={
                            c.day === null ? { background: '#f3f2f2' }
-                           // The holiday tint. Measured against everything the
-                           // cell draws on top of it: ink 13.73, muted 4.80,
-                           // danger 6.55.
-                           : holiday ? { background: '#fbe4e8' }
+                           // Measured against everything the cell draws on top
+                           // of it: ink 13.73, muted 4.80, danger 6.55.
+                           : nonWorking ? { background: '#fbe4e8' }
                            : undefined
                          }>
                       {c.day !== null && (
@@ -161,14 +175,14 @@ export default function Calendar() {
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden="true" className="inline-block w-3.5 h-3.5 border border-divider"
                     style={{ background: '#fbe4e8' }} />
-              Hari libur nasional
+              <b>Bukan hari kerja</b> — akhir pekan dan hari libur nasional
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span aria-hidden="true">~</span>
-              Perkiraan, belum dikonfirmasi surat keputusan bersama
+              Hari libur perkiraan, belum dikonfirmasi surat keputusan bersama
             </span>
             <span>
-              Hari libur ikut diperhitungkan dalam masa tenggang promo.
+              Hari bertanda ini <b>tidak dihitung</b> dalam masa tenggang promo.
             </span>
           </div>
 

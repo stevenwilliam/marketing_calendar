@@ -153,8 +153,9 @@ Log in as **`it.support@sfg.local`** → **Impor**.
 
 | # | Do this | Expected |
 |---|---|---|
-| G1 | **Kalender**, move to **August 2026** | 17 August is tinted **pink** and shows *Hari Kemerdekaan Republik Indonesia*. The name is there as well as the colour |
-| G2 | Read the legend under the calendar | Explains the tint, the `~` marker, and that holidays count toward the promo lead time |
+| G1 | **Kalender**, move to **August 2026** | Every **Saturday and Sunday** is tinted pink, and so is **17 August**, which also shows *Hari Kemerdekaan Republik Indonesia*. The Sab and Min column headers are tinted too |
+| G1b | Count the pink cells | Ten weekend days plus two holidays (17 and 25 August) = twelve. **No weekday is pink unless it is a holiday, and no weekend is left plain** |
+| G2 | Read the legend under the calendar | One tint, one meaning: *bukan hari kerja*. It explains the `~` marker and says these days are **not counted** in the promo lead time |
 | G3 | Move to a year from **2028 onward** | Some holidays carry `~`. These are **estimates** — the lunar dates are set by decree and cannot be computed |
 | G4 | **Master data → Hari libur**, set the year to 2029 | Each row is marked **Dikonfirmasi** or **Perkiraan** |
 | G5 | Change a 2029 estimate to the real decreed date and mark it confirmed | Saved. It is now Dikonfirmasi |

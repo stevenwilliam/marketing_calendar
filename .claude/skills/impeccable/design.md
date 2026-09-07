@@ -68,7 +68,7 @@ originals are in `scripts/contrast.py` so they cannot drift back in.
 | `--color-warn` | `#6F4400` | pending, near a deadline |
 | `--color-danger` | `#9E1C28` | rejected, cancelled |
 | `--color-info` | `#0F5F73` | informational, force-released |
-| `--color-holiday` | `#fbe4e8` | calendar cell tint for a public holiday |
+| `--color-nonworking` | `#fbe4e8` | calendar tint: **weekend or public holiday** |
 | `--brand-maxx` | `#6B3B2A` | Maxx Coffee |
 | `--brand-ruuma` | `#7A2E63` | Ruuma |
 | `--brand-sunshine` | `#7C4A00` | Sunshine |
@@ -127,8 +127,8 @@ Steven's tonal ramps (`--color-neutral-*`, `--color-accent-*`,
 | `#145F38` success | 6.90 | 7.71 | AA / AAA |
 | `#0F5F73` info | 6.47 | 7.23 | AA / AAA |
 
-**The holiday tint** — a public holiday cell is `#fbe4e8` behind ordinary cell
-content, so everything the cell already draws has to survive it:
+**The non-working tint** — a weekend or public-holiday cell is `#fbe4e8`
+behind ordinary cell content, so everything the cell draws has to survive it:
 
 | Ink on `#fbe4e8` | Ratio | |
 | --- | ---: | --- |
@@ -136,10 +136,16 @@ content, so everything the cell already draws has to survive it:
 | `rgba(32,30,29,.65)` muted | 4.80 | AA |
 | `#9E1C28` danger | 6.55 | AA |
 
+> **One tint, one meaning: this day does not count toward the lead time.** A
+> weekend and a public holiday are the same thing to BR-3.3, so they get the
+> same colour — giving them two would invent a distinction the rule does not
+> make, and leave the reader deciding which pink mattered.
+
 > The tint is only **1.21** against the white cell beside it, and that is
 > deliberate: a background strong enough to be unmissable would fight the
 > promotion chips sitting on top of it. So it **cannot be the only signal** —
-> a holiday cell also carries the holiday's name. Rule 1, applied to a
+> the weekend columns are labelled Sab and Min and are tinted in the header
+> too, and a holiday cell carries the holiday's name. Rule 1, applied to a
 > background rather than to a pill.
 
 **Brand accents**, on the white of a table row:

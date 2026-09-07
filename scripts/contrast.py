@@ -132,7 +132,7 @@ INFO    = "#0F5F73"
 MAXX    = "#6B3B2A"   # Maxx Coffee
 RUUMA   = "#7A2E63"   # Ruuma
 SUN     = "#7C4A00"   # Sunshine
-HOLIDAY = "#fbe4e8"   # calendar cell tint for a public holiday (D49)
+NONWORKING = "#fbe4e8" # calendar tint: weekend OR public holiday (D49, D51)
 
 CHECKS: list[tuple[str, str, str, dict]] = [
     ("text on bg",                TEXT, BG, {}),
@@ -169,11 +169,11 @@ CHECKS: list[tuple[str, str, str, dict]] = [
     ("divider on paper",          DIVIDER, PAPER, {"non_text": True}),
     ("accent rule/ring on bg",    ACCENT, BG, {"non_text": True}),
     ("accent rule/ring on paper", ACCENT, PAPER, {"non_text": True}),
-    # A holiday cell is a TINT behind ordinary cell content, so everything the
-    # cell already draws has to survive it.
-    ("ink on holiday tint",       TEXT, HOLIDAY, {}),
-    ("muted on holiday tint",     MUTED, HOLIDAY, {}),
-    ("danger on holiday tint",    DANGER, HOLIDAY, {}),
+    # A non-working cell — weekend or public holiday — is a TINT behind
+    # ordinary cell content, so everything the cell draws has to survive it.
+    ("ink on non-working tint",   TEXT, NONWORKING, {}),
+    ("muted on non-working tint", MUTED, NONWORKING, {}),
+    ("danger on non-working tint", DANGER, NONWORKING, {}),
     # --- REJECTED: the guideline's own values, kept so they are not restored ---
     # The primary button is the most-used control in the product and its label
     # is 14px — too small to qualify as large text, so 3:1 does not apply.
@@ -221,9 +221,9 @@ RECORDED = {
     "divider on paper": 3.78,
     "accent rule/ring on bg": 3.76,
     "accent rule/ring on paper": 4.20,
-    "ink on holiday tint": 13.73,
-    "muted on holiday tint": 4.80,
-    "danger on holiday tint": 6.55,
+    "ink on non-working tint": 13.73,
+    "muted on non-working tint": 4.80,
+    "danger on non-working tint": 6.55,
     "guideline btn-primary #ec3013 (REJECTED as text)": 3.76,
     "guideline accent as link text (REJECTED)": 3.76,
     "guideline divider 40% (REJECTED)": 2.41,

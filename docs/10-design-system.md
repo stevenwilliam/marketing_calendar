@@ -47,6 +47,7 @@ numbers are honest. Full table and the rejected originals: `design.md` §2–§3
 | `--color-warn` | `#6F4400` | 7.51 |
 | `--color-danger` | `#9E1C28` | 7.09 |
 | `--color-info` | `#0F5F73` | 6.47 |
+| `--color-nonworking` | `#fbe4e8` | calendar tint: weekend or holiday — ink 13.73, muted 4.80 |
 | `--brand-maxx` | `#6B3B2A` | Maxx Coffee, 9.19 |
 | `--brand-ruuma` | `#7A2E63` | Ruuma, 8.76 |
 | `--brand-sunshine` | `#7C4A00` | Sunshine, 7.40 |
@@ -71,6 +72,13 @@ numbers are honest. Full table and the rejected originals: `design.md` §2–§3
 > a focus ring, and a fail as text at the 14px the buttons actually use. The
 > vivid red stays everywhere it does not have to be read: the 2px rules, the
 > active nav bar, focus rings, the chip's left border.
+
+> **One tint, one meaning, on the calendar.** `#fbe4e8` marks a day that does
+> not count toward the promotion lead time — a weekend *or* a public holiday.
+> They are the same thing to BR-3.3, so giving them two colours would invent a
+> distinction the rule does not make. At **1.21** against a plain cell the tint
+> is deliberately quiet, so it is never the only signal: the weekend columns
+> are labelled and tinted in the header, and a holiday cell carries its name.
 
 > **Danger and the brand are both red.** Unavoidable in a red-branded product,
 > and mitigated as the rules already require — every status carries a glyph and

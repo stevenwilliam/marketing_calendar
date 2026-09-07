@@ -49,7 +49,12 @@ melainkan tidak pernah dimuat sama sekali.
 
 ## 3. Kalender
 
-Menu **Kalender** menampilkan satu bulan, lintas merek. Setiap promo muncul di
+Menu **Kalender** menampilkan satu bulan, lintas merek.
+
+**Kotak berwarna merah muda adalah hari yang bukan hari kerja** — akhir pekan
+dan hari libur nasional. Warnanya sama karena artinya sama: hari-hari itu
+**tidak dihitung** dalam masa tenggang promo. Hari libur juga menampilkan
+namanya, dan tanda `~` berarti tanggalnya masih perkiraan. Setiap promo muncul di
 setiap hari ia berjalan, dengan garis kiri berwarna merek dan namanya.
 Di bawahnya ada daftar semua promo yang berjalan bulan itu.
 
