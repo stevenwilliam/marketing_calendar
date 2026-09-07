@@ -263,7 +263,10 @@ func (d *Deps) notifyRelease(ctx context.Context, planID uuid.UUID) {
 		row.PlanCode, row.Version.PromoName, row.CompanyName,
 		row.Version.StartDate.Format("2006-01-02"), row.Version.EndDate.Format("2006-01-02"),
 		row.SiteGroupName, row.Version.OrderMode,
-		row.Version.TargetSalesIDR.Format(), row.Version.TargetReceiptCount, row.Version.PromoRule)
+		row.Version.TargetSalesIDR.Format(), row.Version.TargetReceiptCount,
+		// Plain text: an email client showing raw tags is worse than one
+		// showing no formatting.
+		sanitize.HTMLToText(row.Version.PromoRule))
 	_ = d.Notify.Queue(ctx, recipients, subject, body, "promotion_plan", &planID)
 }
 

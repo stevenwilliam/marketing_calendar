@@ -147,6 +147,14 @@ feedback; the backend validates because the frontend can be bypassed with
 - Allow-list enums; deny by default.
 - Encode on the way **out** for the destination context: HTML, attribute, URL,
   **CSV cell**, log line, filename.
+- **The one rich-text field is sanitised on the way IN** (D52). `promo_rule`
+  is HTML against an allow-list of nine tags and **zero attributes**; a
+  `<script>`, an `onerror`, a `javascript:` href, an `<iframe>` and a `style`
+  are all removed before the row is written. Stored-safe rather than
+  escaped-on-render, so a reader added later cannot forget. The CSV and the
+  release email get the flattened text, because markup in a spreadsheet cell
+  is noise — and the formula-injection guard still applies to what comes out.
+  Proven by `sanitize/html_test.go` and against the live service.
 - Request bodies capped; uploads type-sniffed **from the bytes**, never from
   the client's `Content-Type`.
 

@@ -63,6 +63,31 @@ func planJSON(r app.PlanRow) gin.H {
 	}
 }
 
+// handleLeadTime tells the date picker where the lead time actually starts.
+//
+// The rule is evaluated server-side at submit either way (BR-3.3); this exists
+// so the picker can DISABLE the impossible dates and say why, rather than
+// letting someone choose one and be refused afterwards. Computing it in the
+// browser would mean two implementations of the working-day arithmetic, and
+// the browser's would be the one without the holiday table.
+func handleLeadTime(d *app.Deps) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		days := d.Params.Int(c.Request.Context(), app.ParamLeadTimeDays, 7)
+		holidays, err := d.Master.HolidaySet(c.Request.Context())
+		if err != nil {
+			fail(c, err)
+			return
+		}
+		earliest := holidays.EarliestStart(d.Now(), days)
+		c.JSON(http.StatusOK, gin.H{
+			"earliest_start":          earliest.Format("2006-01-02"),
+			"lead_time_working_days":  days,
+			"today":                   calendar.Today(d.Now()).Format("2006-01-02"),
+			"auto_cancel_days_before": d.Params.Int(c.Request.Context(), app.ParamAutoCancelDays, 5),
+		})
+	}
+}
+
 func handlePlans(d *app.Deps) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		p := principal(c)

@@ -132,3 +132,29 @@
            tracking-[0.02em] font-semibold;
   }
 }
+
+@layer components {
+  /* The promotion rule, in the editor and on the detail screen. The two share
+     one class so what is typed is what is shown -- an editor styled
+     differently from its output teaches the wrong lesson about the result. */
+  .prose-rule { font-size: 14px; line-height: 1.6; }
+  .prose-rule p { margin: 0 0 0.5em; }
+  .prose-rule p:last-child { margin-bottom: 0; }
+  .prose-rule ul, .prose-rule ol { margin: 0 0 0.5em; padding-left: 1.4em; }
+  .prose-rule ul { list-style: disc; }
+  .prose-rule ol { list-style: decimal; }
+  .prose-rule li { margin: 0.15em 0; }
+  .prose-rule h3, .prose-rule h4 { font-size: 15px; margin: 0.6em 0 0.3em; }
+  .prose-rule blockquote {
+    margin: 0 0 0.5em; padding-left: 0.8em;
+    border-left: 3px solid var(--color-divider);
+  }
+  .prose-rule strong, .prose-rule b { font-weight: 800; }
+
+  /* An empty contenteditable is a blank box with no hint of what goes in it. */
+  [contenteditable][data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(32, 30, 29, 0.65);
+    pointer-events: none;
+  }
+}

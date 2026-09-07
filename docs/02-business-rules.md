@@ -81,8 +81,15 @@ the target was amended after the period ended.
 
 **BR-3.1 Required fields.** A promotion plan has: a name, a **site group**, a
 **start date**, an **end date**, a **target sales amount**, a **target receipt
-count**, an **order mode**, and a **promo rule** as free text. All are required
+count**, an **order mode**, and a **promo rule** as *rich text*. All are required
 to submit; a draft may be incomplete.
+
+**The promo rule is HTML against a tiny allow-list** *(D52)*: paragraphs, line
+breaks, bold, italic, underline, strikethrough, both list kinds, `h3`/`h4` and
+blockquote — and **no attributes at all**, so no `style`, no `class`, no
+`href`. It is sanitised on the way **in**, so what is stored is already safe
+and every later reader inherits that rather than each having to remember. The
+5,000-character limit is measured on the **text**, not the markup.
 
 **There is no budget or discount-cost field in phase 1, and no budget limit.**
 *(D29)* The consequence is stated plainly so nobody discovers it in a meeting:

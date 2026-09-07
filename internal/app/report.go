@@ -11,6 +11,7 @@ import (
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/target"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/apierror"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/csvexport"
+	"github.com/stevenwilliam/marketing_calendar/internal/platform/sanitize"
 )
 
 // PromoReportRow is BR-7.5: the plan, the actuals attributed by promo_id, the
@@ -230,14 +231,17 @@ func (d *Deps) ExportPlans(ctx context.Context, p Principal, f PlanFilter, w io.
 	c := csvexport.New(w)
 	c.Write([]string{"kode_rencana", "nama_promo", "merek", "kelompok_toko", "status",
 		"mulai", "selesai", "mode_pesanan", "target_penjualan_idr", "target_struk",
-		"versi", "langkah_saat_ini", "dibuat_oleh", "rilis_paksa"})
+		"versi", "langkah_saat_ini", "dibuat_oleh", "rilis_paksa", "aturan_promo"})
 	for _, r := range rows {
 		c.Write([]string{r.PlanCode, r.Version.PromoName, r.CompanyName, r.SiteGroupName,
 			string(r.Status), csvexport.Date(r.Version.StartDate, calendar.Jakarta),
 			csvexport.Date(r.Version.EndDate, calendar.Jakarta), string(r.Version.OrderMode),
 			csvexport.Money(r.Version.TargetSalesIDR), csvexport.Int(r.Version.TargetReceiptCount),
 			csvexport.Int(r.Version.VersionNo), r.CurrentStepName, r.CreatedByName,
-			boolText(r.ForceReleased)})
+			boolText(r.ForceReleased),
+			// Flattened to text: markup in a spreadsheet cell is noise, and
+			// the formula-injection guard still applies to what comes out.
+			sanitize.HTMLToText(r.Version.PromoRule)})
 	}
 	return len(rows), c.Flush()
 }

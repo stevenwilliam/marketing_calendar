@@ -64,7 +64,13 @@ Log in as **`rina.hartono@sfg.local`**.
 | B3 | If a warning appears, read it | Lists the promotions it clashes with, their dates, and **how many shops overlap**. It is a confirmation, not a refusal |
 | B4 | Press **Saya paham, tetap ajukan** | Submits. Status becomes **Menunggu**, at step 1 — Marketing Head |
 | B5 | Pick the group **Maxx Jakarta** and check which shops it covers, then create a second promotion on the single-shop group **Maxx Coffee Plaza Indonesia** for overlapping dates | ⛔ It **still warns** — the two groups are different but share a shop. This is the case that matters |
-| B6 | Try to save a promotion with **Tanggal selesai before Tanggal mulai** | ⛔ Refused, naming the end-date field |
+| B6 | Open **Periode promo** | A two-month calendar. Dates inside the lead time are **struck through and cannot be clicked**; the panel says the earliest date and how many working days. Weekends and holidays are pink |
+| B6a | Try to click a struck-through date | ⛔ Nothing happens. The end date can never be before the start, because the picker will not let you choose one |
+| B6b | Pick a start, then an end | The field reads "16 Sep 2026 – 26 Sep 2026". Days between carry an **underline**, the two ends are **filled** — three states, three different marks |
+| B6c | Use the **keyboard only**: Tab to the period field, Enter, Tab through the days, Enter twice | A range is selected without a mouse |
+| B6d | In **Aturan promo**, type a sentence, select it, press **B**. Add a bullet list | The text goes bold and the list appears. The counter under the box counts **characters of text**, not markup |
+| B6e | Paste something formatted from Word or a web page | It arrives as **plain text**. Formatting the server would strip anyway never appears, so nothing vanishes on submit |
+| B6f | Save, then open the plan | The rule shows with its bold and bullets, exactly as typed |
 | B7 | Type `185.000` into **Target penjualan** | Only the digits are kept and the field shows `185.000` as a formatted number — the value stored is 185000, not 185 |
 | B8 | Save a plan as **Simpan draf** with the promo rule left empty | **Allowed.** A draft may be incomplete |
 | B9 | Now press **Simpan dan ajukan** on that same incomplete draft | ⛔ Refused, naming the missing field. The gate is at submit, not at save |

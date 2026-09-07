@@ -34,7 +34,10 @@ func (in *PromoInput) normalise() (map[string]string, error) {
 	if in.PromoName, err = sanitize.Text(in.PromoName, 200); err != nil {
 		fields["promo_name"] = err.Error()
 	}
-	if in.PromoRule, err = sanitize.Text(in.PromoRule, 5000); err != nil {
+	// Rich text (D52). Sanitised on the way IN, so what is stored is already
+	// safe and every later reader — the detail screen, the CSV, the release
+	// email — inherits that instead of each having to remember.
+	if in.PromoRule, err = sanitize.HTML(in.PromoRule, 5000); err != nil {
 		fields["promo_rule"] = err.Error()
 	}
 	if in.OrderMode, err = sanitize.Enum(in.OrderMode, "dine_in", "take_away"); err != nil {

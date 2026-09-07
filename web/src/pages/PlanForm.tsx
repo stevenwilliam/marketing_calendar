@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, ApiFailure, type Company, type Plan, type SiteGroup, type Overlap } from '../lib/api'
-import { formatDate, todayISO, addDaysISO, rupiah } from '../lib/format'
+import { formatDate, rupiah } from '../lib/format'
 import { ErrorBox, Loading, Modal, Reason } from '../components/ui'
+import { RichText } from '../components/RichText'
+import { DateRangePicker } from '../components/DateRangePicker'
 
 export default function PlanForm() {
   const { id } = useParams()
@@ -20,8 +22,13 @@ export default function PlanForm() {
   const [companyId, setCompanyId] = useState('')
   const [groupId, setGroupId] = useState('')
   const [name, setName] = useState('')
-  const [start, setStart] = useState(addDaysISO(todayISO(), 14))
-  const [end, setEnd] = useState(addDaysISO(todayISO(), 44))
+  // Deliberately empty for a new plan. A pre-filled range would be a date the
+  // user did not choose, and one that could be INSIDE the lead time the moment
+  // somebody raises `promo.lead_time_working_days`. The picker disables the
+  // impossible dates, so letting it be the only way in makes a wrong range
+  // unreachable rather than merely refused later.
+  const [start, setStart] = useState('')
+  const [end, setEnd] = useState('')
   const [sales, setSales] = useState('')
   const [receipts, setReceipts] = useState('')
   const [mode, setMode] = useState<'dine_in' | 'take_away'>('dine_in')
@@ -164,22 +171,18 @@ export default function PlanForm() {
                  value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="start">Tanggal mulai</label>
-            <input id="start" className="input" type="date" required
-                   value={start} onChange={(e) => setStart(e.target.value)} />
-            <Reason>
-              Masa tenggang berlaku saat pengajuan, bukan saat menyimpan draf.
-              Hari libur nasional ikut diperhitungkan.
-            </Reason>
-          </div>
-          <div>
-            <label className="label" htmlFor="end">Tanggal selesai</label>
-            <input id="end" className="input" type="date" required min={start}
-                   value={end} onChange={(e) => setEnd(e.target.value)} />
-            {end < start && <Reason>Tanggal selesai harus sama atau setelah tanggal mulai.</Reason>}
-          </div>
+        <div>
+          <span className="label">Periode promo</span>
+          <DateRangePicker
+            start={start}
+            end={end}
+            onChange={(s, e) => { setStart(s); setEnd(e) }}
+          />
+          <Reason>
+            Masa tenggang dicek saat <b>pengajuan</b>, bukan saat menyimpan draf —
+            draf yang ditinggal semalam tidak diam-diam menjadi tidak sah.
+            Periode boleh melewati batas bulan dan tahun.
+          </Reason>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -216,9 +219,13 @@ export default function PlanForm() {
 
         <div>
           <label className="label" htmlFor="rule">Aturan promo</label>
-          <textarea id="rule" className="input min-h-[120px]" required maxLength={5000}
-                    value={rule} onChange={(e) => setRule(e.target.value)}
-                    placeholder="Contoh: Diskon 20% untuk gelas kedua, setiap hari 15.00–18.00." />
+          <RichText
+            id="rule"
+            value={rule}
+            onChange={setRule}
+            maxTextLength={5000}
+            placeholder="Contoh: Diskon 20% untuk gelas kedua, setiap hari 15.00–18.00."
+          />
         </div>
 
         <div className="flex flex-wrap gap-2 pt-1">

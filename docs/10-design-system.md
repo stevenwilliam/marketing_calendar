@@ -132,9 +132,34 @@ and it is the reason the module exists.
 ### Date range picker
 
 Two-month view, keyboard operable. **Dates inside the lead time are disabled
-and say why** — "Paling cepat 10 Sep 2026 (7 hari kerja)" — rather than being
-silently ungreyed (BR-3.3, and the disabled-states-explain-themselves rule).
-Public holidays are marked.
+and say why** — "Paling cepat 16 Sep 2026 — 7 hari kerja dari hari ini" —
+rather than being silently ungreyed (BR-3.3, and the
+disabled-states-explain-themselves rule). Weekends and public holidays carry
+the same `#fbe4e8` the calendar uses, because they are the same fact.
+
+The earliest date comes from **the server** (`GET /promotions/lead-time`).
+Computing working days in the browser would be a second implementation of
+BR-3.3, and it would be the one without the holiday table.
+
+> **Three states, three different properties — not three tints.** An endpoint
+> is a solid `#ae1800` fill with light text; a day inside the range gets a 2px
+> `#ae1800` underline and no fill; a non-working day keeps the calendar tint.
+> The range was a second pale pink first, and it measured **1.03** against the
+> non-working tint: the same luminance, indistinguishable. Any two pale fills
+> would be. The underline clears 1.4.11 on both grounds it can sit on — 7.17
+> on a plain cell, 5.93 on a tinted one.
+
+### Rich text (the promo rule)
+
+Bold, italic, underline, two list kinds. Written rather than installed: the
+requirement is a few hundred lines against a dependency measured in hundreds of
+kilobytes, on the heaviest page in the product. Paste is forced to plain text,
+because Word pastes markup the server strips anyway and formatting that
+silently disappears on submit is worse than formatting that never appeared.
+
+The editor is **not** the security boundary — the server's allow-list is
+(`12-security.md` §6). The editor and the detail view share one `.prose-rule`
+class, so what is typed is what is shown.
 
 ### Target grid
 

@@ -4,6 +4,7 @@ import { api, ApiFailure, type Plan } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatDate, formatDateTime, rp, count, orderModeLabel } from '../lib/format'
 import { StatusPill, Loading, ErrorBox, Modal, BrandTag, Reason } from '../components/ui'
+import { RichTextView } from '../components/RichText'
 
 const ACTION_LABEL: Record<string, string> = {
   APPROVE: 'Disetujui', REJECT: 'Ditolak', FORCE_RELEASE: 'Dirilis paksa',
@@ -91,7 +92,7 @@ export default function PlanDetail() {
 
       <div className="card-paper">
         <div className="kicker mb-1">Aturan promo</div>
-        <p className="whitespace-pre-wrap text-sm">{v.promo_rule}</p>
+        <RichTextView html={v.promo_rule} />
       </div>
 
       {plan.approval && (

@@ -83,6 +83,7 @@ func NewRouter(d *app.Deps) http.Handler {
 
 	in.GET("/promotions", require("promo.view"), handlePlans(d))
 	in.GET("/promotions/calendar", require("promo.view"), handleCalendar(d))
+	in.GET("/promotions/lead-time", require("promo.view"), handleLeadTime(d))
 	in.POST("/promotions", require("promo.create"), handleCreatePlan(d))
 	in.GET("/promotions/:id", require("promo.view"), handlePlan(d))
 	in.PUT("/promotions/:id", require("promo.view"), handleUpdatePlan(d))
