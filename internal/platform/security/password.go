@@ -96,11 +96,25 @@ func SpendDummyVerify(plain string) {
 	_ = VerifyPassword(plain, dummyHash)
 }
 
+// DefaultPasswordMinLength is the fallback when the parameter is unreadable.
+// It is the floor the product ships with, not a recommendation: every extra
+// character is worth far more than any composition rule.
+const DefaultPasswordMinLength = 8
+
 // CheckPasswordStrength is deliberately about length, not character classes.
 // Composition rules push people to "Password1!" — length is what actually
 // costs an attacker.
-func CheckPasswordStrength(plain string) error {
-	if len([]rune(plain)) < 12 {
+//
+// The minimum is passed in rather than fixed here, because it is a threshold
+// the business changes without a deploy (CLAUDE.md §7) and it now lives in
+// `sys_parameters` as `auth.password_min_length`. A non-positive value falls
+// back to the default rather than disabling the check: a misconfigured
+// parameter must not silently turn a control off.
+func CheckPasswordStrength(plain string, min int) error {
+	if min <= 0 {
+		min = DefaultPasswordMinLength
+	}
+	if len([]rune(plain)) < min {
 		return ErrWeak
 	}
 	return nil

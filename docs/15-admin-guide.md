@@ -28,8 +28,9 @@ untuk membawa seluruh riwayat penjualan keluar darinya.
 
 **Pengguna → Tambah pengguna.**
 
-Isi nama, surel, kata sandi awal (minimal 12 karakter), satu **peran**, dan
-**satu atau lebih perusahaan**.
+Isi nama, surel, kata sandi awal, satu **peran**, dan **satu atau lebih
+perusahaan**. Panjang minimum kata sandi diatur di
+**Pengaturan → `auth.password_min_length`** (bawaan **8**).
 
 > **Tidak ada nilai "semua perusahaan".** Pengguna yang bekerja lintas merek
 > diberi ketiganya secara eksplisit — tiga centang, tiga baris. Ini bukan
@@ -40,6 +41,13 @@ Isi nama, surel, kata sandi awal (minimal 12 karakter), satu **peran**, dan
 
 Kata sandi dinilai dari **panjangnya**, bukan campuran simbol. Aturan komposisi
 mendorong orang ke "Password1!"; panjang yang benar-benar mahal bagi penyerang.
+
+> Bawaannya **8**, diturunkan dari 12 atas permintaan pemilik pada 2026-09-07
+> (D45). Delapan karakter tanpa aturan komposisi tidak tahan terhadap tebakan
+> luring kalau tabel `app_user` pernah bocor — yang menahannya di sini adalah
+> **TOTP wajib**, penguncian akun setelah beberapa kegagalan, dan aplikasi yang
+> tidak menghadap publik. Naikkan kembali lewat parameter, tanpa deploy, kalau
+> salah satu dari ketiganya berubah.
 
 Pengguna mendaftarkan TOTP sendiri saat login pertama. Anda tidak pernah
 melihat kuncinya.

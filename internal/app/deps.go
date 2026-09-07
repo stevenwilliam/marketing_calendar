@@ -53,4 +53,5 @@ const (
 	ParamMaxExportRows     = "report.max_export_rows"
 	ParamLockoutThreshold  = "auth.lockout_threshold"
 	ParamLockoutMinutes    = "auth.lockout_minutes"
+	ParamPasswordMinLen    = "auth.password_min_length"
 )

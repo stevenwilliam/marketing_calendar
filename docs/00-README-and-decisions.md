@@ -1,6 +1,6 @@
 # marketing_calendar — Document Set
 
-**Version:** 0.6 (built, running and reachable; D28–D44 recorded)
+**Version:** 0.7 (built, running and reachable; D28–D45 recorded)
 **Date:** 2 September 2026 (written 1 September 2026)
 **Status:** the brief landed on 2026-09-01 and is stored verbatim at
 `PROMPT.md`. The documents are written, Steven's answers to Q22–Q32 are folded
@@ -106,6 +106,7 @@ in the affected docs the same day.
 | D42 | 2026-09-02 | **The import trailer's TOTAL is enforced only when no row was rejected**; the ROW COUNT is always enforced. A partial file records the shortfall in its message instead of failing. | The trailer exists to catch a truncated upload, and the row count is what catches that. Enforcing the total regardless failed an entire file for one bad line — losing a night of trading to guard against something already guarded. Found by running the nightly job against a real file. | 02 BR-6.4, 06 §3.0, 07 §2.8 |
 | D43 | 2026-09-02 | **The dev server runs on port 8093**, not 8081. | 8081 and 8082 are taken by other projects on `claudedev`, and 8090/8091 by evermore. Recorded so the next person does not rediscover it by getting another project's 404. | 09, 11, 13, deploy/ |
 | D44 | 2026-09-07 | **nginx also listens on `:8094`, LAN-only, so the application is reachable without DNS.** The service still binds `127.0.0.1:8093` and is unreachable except through nginx. The production config drops the 8094 lines. | The application had been running for five days and **could not be opened in a browser**: `ruuma` owns `listen 80 default_server`, so the bare IP served Ruuma Eatery, and `marketing-calendar.sfg.local` is not in DNS. Running is not the same as reachable, and only trying it in a browser showed the difference. A dedicated port is the shape evermore already uses on this box. | 11, 13, deploy/, PROGRESS |
+| D45 | 2026-09-07 | **The password minimum drops from 12 to 8, and becomes `auth.password_min_length` in `sys_parameters`.** A non-positive value falls back to 8 rather than disabling the check. | Steven's decision. It became a parameter rather than a smaller constant because he changed it by hand, which is the definition of a threshold that moves without a deploy (CLAUDE.md §7) — the next change should not need me. **The trade, stated once:** 8 characters with no composition rule does not survive offline guessing if `app_user` ever leaks. What holds it here is mandatory TOTP, account lockout, and no public surface; raise it again if any of those three changes. | 12 §3, 15, 13, `security/password.go` |
 
 ---
 

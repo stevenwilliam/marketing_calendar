@@ -200,8 +200,9 @@ Create the first real account instead:
 /home/dev/projects/marketing_calendar/bin/mc user create
 ```
 
-It asks for surel, nama, kata sandi (minimum 12 characters, not echoed), a role
-code, and **one or more company codes**. There is no "all companies" value:
+It asks for surel, nama, kata sandi (not echoed; the minimum is
+`auth.password_min_length`, **8** by default), a role code, and **one or more
+company codes**. There is no "all companies" value:
 adding a fourth brand later must grant nobody anything until somebody decides.
 
 ---

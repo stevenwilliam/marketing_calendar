@@ -50,11 +50,37 @@ func TestNonArgonHashIsDistinguishedFromAWrongPassword(t *testing.T) {
 }
 
 func TestPasswordStrengthIsLengthNotComposition(t *testing.T) {
-	if err := CheckPasswordStrength("Passw0rd!"); err != ErrWeak {
-		t.Fatal("nine characters must be refused however many symbol classes it has")
+	// Seven characters is refused however many symbol classes it carries.
+	if err := CheckPasswordStrength("Pa$$w0r", DefaultPasswordMinLength); err != ErrWeak {
+		t.Fatal("seven characters must be refused however many symbol classes it has")
 	}
-	if err := CheckPasswordStrength("kucing oranye makan nasi goreng"); err != nil {
+	// The boundary itself is legal. An off-by-one here refuses a password the
+	// policy permits, which is the kind of thing nobody reports as a bug.
+	if err := CheckPasswordStrength("lalalala", DefaultPasswordMinLength); err != nil {
+		t.Fatalf("exactly the minimum must be accepted: %v", err)
+	}
+	if err := CheckPasswordStrength("kucing oranye makan nasi goreng", DefaultPasswordMinLength); err != nil {
 		t.Fatalf("a long passphrase must be accepted: %v", err)
+	}
+}
+
+// The minimum is a sys_parameter, so it moves without a deploy.
+func TestPasswordMinimumIsConfigurable(t *testing.T) {
+	if err := CheckPasswordStrength("lalalala", 16); err != ErrWeak {
+		t.Fatal("raising the minimum must refuse a password that was previously fine")
+	}
+	if err := CheckPasswordStrength("abc", 3); err != nil {
+		t.Fatalf("lowering the minimum must accept a shorter password: %v", err)
+	}
+}
+
+// A misconfigured parameter must not silently turn the control off. Zero or a
+// negative value falls back to the default rather than accepting anything.
+func TestNonPositiveMinimumFallsBackNotOpen(t *testing.T) {
+	for _, min := range []int{0, -1, -100} {
+		if err := CheckPasswordStrength("x", min); err != ErrWeak {
+			t.Fatalf("min=%d accepted a one-character password: the control was disabled by a bad value", min)
+		}
 	}
 }
 

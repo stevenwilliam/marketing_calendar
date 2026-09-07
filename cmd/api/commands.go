@@ -109,14 +109,17 @@ func userCommand(ctx context.Context, gdb *gorm.DB, sub string) error {
 		return err
 	}
 
-	fmt.Print("Kata sandi (minimal 12 karakter, tidak ditampilkan): ")
+	fmt.Printf("Kata sandi (minimal %d karakter, tidak ditampilkan): ",
+		postgres.NewParamRepo(gdb).Int(ctx, app.ParamPasswordMinLen, security.DefaultPasswordMinLength))
 	pw, err := term.ReadPassword(int(syscall.Stdin))
 	fmt.Println()
 	if err != nil {
 		return err
 	}
-	if err := security.CheckPasswordStrength(string(pw)); err != nil {
-		return errors.New("kata sandi minimal 12 karakter")
+	minLen := postgres.NewParamRepo(gdb).Int(ctx, app.ParamPasswordMinLen,
+		security.DefaultPasswordMinLength)
+	if err := security.CheckPasswordStrength(string(pw), minLen); err != nil {
+		return fmt.Errorf("kata sandi minimal %d karakter", minLen)
 	}
 
 	fmt.Println("\nPeran yang tersedia:")

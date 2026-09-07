@@ -6,7 +6,8 @@
 inherited from another project.
 
 **Last updated:** 2026-09-07 — the application is **built, running and
-reachable** at **`http://192.168.88.101:8094/`** from the office LAN.
+reachable** at **`http://192.168.88.101:8094/`** from `192.168.88.0/24` and
+`172.16.0.0/24`. Steven's own superadmin account exists.
 
 ---
 
@@ -118,7 +119,8 @@ Be specific rather than reassuring.
 | 2 | **The nginx allowlist ranges** | `deploy/nginx-…conf` allows `127.0.0.1` and `192.168.88.0/24` only. The VPN range is commented out because nobody has said what it is |
 | 3 | **Ports 8093/8094 acceptable?** | 8093 is the Go service (loopback); 8094 is nginx's LAN door. 8081/8082/8090/8091 are taken by other projects (D43, D44) |
 | 4 | **The real release-recipient list** | Seeded with placeholders `marketing@sfg.local`, `operasional@sfg.local` |
-| 5 | **The demo accounts** | Nine seeded accounts share one password. Delete them before real data |
+| 5 | **The demo accounts** | Nine seeded accounts share one password. Delete them before real data. `steven.william@maxx-coffee.id` is a real account and is **not** one of them |
+| 8 | **`auth.password_min_length` is 8** | Lowered from 12 on request (D45). Eight characters with no composition rule does not survive offline guessing if `app_user` leaks; mandatory TOTP, lockout and no public surface are what hold it. Raise it in **Pengaturan** if any of those change |
 | 6 | R1 — is Business Analyst step 2 (taken) or step 1? | A chain edit either way |
 | 7 | **The design canvas** | `claude.ai/design/p/…` is unreachable from the dev server (403). Built to the artifact `f896dbfe` instead, which was reachable |
 

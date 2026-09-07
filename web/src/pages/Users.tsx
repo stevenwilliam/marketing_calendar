@@ -138,8 +138,9 @@ export default function Users() {
               <input id="u-pass" className="input" type="password" value={form.password}
                      onChange={(e) => setForm({ ...form, password: e.target.value })} />
               <Reason>
-                Minimal 12 karakter. Panjang yang menentukan, bukan campuran
-                simbol. TOTP didaftarkan pengguna sendiri saat login pertama.
+                Panjang minimum diatur di <b>Pengaturan → auth.password_min_length</b>.
+                Panjang yang menentukan, bukan campuran simbol. TOTP didaftarkan
+                pengguna sendiri saat login pertama.
               </Reason>
             </div>
             <div>

@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -546,9 +547,11 @@ func handleCreateUser(d *app.Deps) gin.HandlerFunc {
 				map[string]string{"full_name": err.Error()}))
 			return
 		}
-		if err := security.CheckPasswordStrength(req.Password); err != nil {
-			fail(c, apierror.Validation("kata sandi minimal 12 karakter",
-				map[string]string{"password": "minimal 12 karakter"}))
+		minLen := d.Params.Int(c.Request.Context(), app.ParamPasswordMinLen,
+			security.DefaultPasswordMinLength)
+		if err := security.CheckPasswordStrength(req.Password, minLen); err != nil {
+			msg := fmt.Sprintf("kata sandi minimal %d karakter", minLen)
+			fail(c, apierror.Validation(msg, map[string]string{"password": msg}))
 			return
 		}
 		hash, err := security.HashPassword(req.Password)

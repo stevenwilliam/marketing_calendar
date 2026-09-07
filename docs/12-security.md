@@ -38,6 +38,7 @@ unattended machine. The controls below are weighted accordingly.
 | Control | Detail |
 |---|---|
 | Passwords | argon2id, 64 MiB / t=3 / p=4, PHC-encoded. A `CHECK` constraint refuses anything not starting `$argon2id$`, so a bcrypt or plaintext value cannot be loaded by a fixture |
+| Password length | Minimum is `auth.password_min_length`, **8** by default (D45). Length only — composition rules push people to "Password1!". A non-positive parameter falls back to the default rather than disabling the check, so a misconfiguration cannot silently turn the control off |
 | MFA | **TOTP mandatory for every account** (D18, BR-5.3). Without a confirmed enrolment a user reaches only the enrolment flow |
 | Lockout | after repeated failures, for a bounded window; the correct password is then refused too |
 | Enumeration | login returns an identical response for unknown email and wrong password, and spends the same work — a dummy hash is verified so timing does not leak |
