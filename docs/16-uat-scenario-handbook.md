@@ -71,6 +71,11 @@ Log in as **`rina.hartono@sfg.local`**.
 | B6d | In **Aturan promo**, type a sentence, select it, press **B**. Add a bullet list | The text goes bold and the list appears. The counter under the box counts **characters of text**, not markup |
 | B6e | Paste something formatted from Word or a web page | It arrives as **plain text**. Formatting the server would strip anyway never appears, so nothing vanishes on submit |
 | B6f | Save, then open the plan | The rule shows with its bold and bullets, exactly as typed |
+| B6g | In **Media pemasaran**, press **Tambah media** three times and fill each with a name and a price | The total under the list updates as you type and equals the sum of the rows |
+| B6h | Press **Hapus** on the middle row | The row goes and the total drops by exactly that row's price |
+| B6i | Press **Tambah media** and leave the new row completely empty, then save | ⛔ Not an error. The blank row is **dropped**; the saved plan has only the filled rows |
+| B6j | Put a negative price on a row and save | ⛔ Refused, naming **which line** — e.g. `media.1.price` |
+| B6k | Save with no media at all | **Allowed.** Media is optional; a promotion that buys none is a real promotion |
 | B7 | Type `185.000` into **Target penjualan** | Only the digits are kept and the field shows `185.000` as a formatted number — the value stored is 185000, not 185 |
 | B8 | Save a plan as **Simpan draf** with the promo rule left empty | **Allowed.** A draft may be incomplete |
 | B9 | Now press **Simpan dan ajukan** on that same incomplete draft | ⛔ Refused, naming the missing field. The gate is at submit, not at save |
@@ -114,6 +119,7 @@ Uses the plan from **B4**.
 |---|---|---|
 | D1 | Open the **Dirilis** plan from C8 as `rina.hartono` and press **Buat versi baru** | The form opens with a banner: the plan is locked and saving creates a **new version** |
 | D2 | Change the target and save | A **version 2** appears. Status returns to **Draf** and it must go through all five steps again |
+| D2a | Look at **Media pemasaran** on the new version | The media lines **carried forward**. Changing only the dates must not silently drop what the campaign is buying |
 | D3 | Open **Riwayat versi** | **Version 1 is still there, unchanged**, exactly as it was approved |
 | D4 | Look for a way to undo an approval | ⛔ **There is none.** A mistake is corrected by rejecting while the chain is open, or by a new version |
 

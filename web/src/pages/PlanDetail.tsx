@@ -5,6 +5,7 @@ import { useAuth } from '../lib/auth'
 import { formatDate, formatDateTime, rp, count, orderModeLabel } from '../lib/format'
 import { StatusPill, Loading, ErrorBox, Modal, BrandTag, Reason } from '../components/ui'
 import { RichTextView } from '../components/RichText'
+import { MediaSummary } from '../components/MediaLines'
 
 const ACTION_LABEL: Record<string, string> = {
   APPROVE: 'Disetujui', REJECT: 'Ditolak', FORCE_RELEASE: 'Dirilis paksa',
@@ -88,6 +89,11 @@ export default function PlanDetail() {
         {v.lead_time_overridden && (
           <Fact label="Masa tenggang" value="Dikesampingkan oleh superadmin" />
         )}
+      </div>
+
+      <div className="card-paper">
+        <div className="kicker mb-2">Media pemasaran</div>
+        <MediaSummary lines={v.media ?? []} total={v.media_total_idr ?? 0} />
       </div>
 
       <div className="card-paper">

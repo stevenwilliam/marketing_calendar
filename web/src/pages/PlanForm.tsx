@@ -5,6 +5,7 @@ import { formatDate, rupiah } from '../lib/format'
 import { ErrorBox, Loading, Modal, Reason } from '../components/ui'
 import { RichText } from '../components/RichText'
 import { DateRangePicker } from '../components/DateRangePicker'
+import { MediaLines, type MediaLine } from '../components/MediaLines'
 
 export default function PlanForm() {
   const { id } = useParams()
@@ -33,6 +34,7 @@ export default function PlanForm() {
   const [receipts, setReceipts] = useState('')
   const [mode, setMode] = useState<'dine_in' | 'take_away'>('dine_in')
   const [rule, setRule] = useState('')
+  const [media, setMedia] = useState<MediaLine[]>([])
 
   useEffect(() => {
     (async () => {
@@ -51,6 +53,9 @@ export default function PlanForm() {
         setSales(String(p.version.target_sales_idr))
         setReceipts(String(p.version.target_receipt_count))
         setMode(p.version.order_mode); setRule(p.version.promo_rule)
+        setMedia((p.version.media ?? []).map((m) => ({
+          media_name: m.media_name, price_idr: m.price_idr,
+        })))
       } else if ((c.data ?? []).length === 1) {
         setCompanyId(c.data[0].company_id)
       }
@@ -71,6 +76,7 @@ export default function PlanForm() {
       target_sales_idr: Number(sales.replace(/\D/g, '') || 0),
       target_receipt_count: Number(receipts.replace(/\D/g, '') || 0),
       order_mode: mode, promo_rule: rule,
+      media: media.map((m) => ({ media_name: m.media_name, price_idr: m.price_idr })),
     }
   }
 
@@ -216,6 +222,10 @@ export default function PlanForm() {
           </div>
           <Reason>Satu promo berlaku untuk satu mode. Untuk keduanya, buat dua rencana.</Reason>
         </fieldset>
+
+        <div>
+          <MediaLines value={media} onChange={setMedia} />
+        </div>
 
         <div>
           <label className="label" htmlFor="rule">Aturan promo</label>

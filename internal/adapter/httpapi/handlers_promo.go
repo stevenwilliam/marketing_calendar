@@ -11,6 +11,7 @@ import (
 	"github.com/stevenwilliam/marketing_calendar/internal/app"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/calendar"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/money"
+	"github.com/stevenwilliam/marketing_calendar/internal/domain/promo"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/apierror"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/csvexport"
 )
@@ -59,8 +60,30 @@ func planJSON(r app.PlanRow) gin.H {
 			"order_mode":           r.Version.OrderMode,
 			"promo_rule":           r.Version.PromoRule,
 			"lead_time_overridden": r.Version.LeadTimeOverridden,
+			"media":                mediaJSON(r.Version.Media),
+			"media_total_idr":      mediaTotal(r.Version.Media),
 		},
 	}
+}
+
+func mediaJSON(lines []promo.Media) []gin.H {
+	out := make([]gin.H, 0, len(lines))
+	for _, m := range lines {
+		out = append(out, gin.H{"media_id": m.MediaID, "line_no": m.LineNo,
+			"media_name": m.Name, "price_idr": int64(m.PriceIDR)})
+	}
+	return out
+}
+
+// mediaTotal is computed on read, never stored (D53). An error can only come
+// from overflow, which validation refuses at write time; zero is the honest
+// answer if it somehow arrives.
+func mediaTotal(lines []promo.Media) int64 {
+	total, err := promo.MediaTotal(lines)
+	if err != nil {
+		return 0
+	}
+	return int64(total)
 }
 
 // handleLeadTime tells the date picker where the lead time actually starts.
@@ -198,9 +221,13 @@ type planRequest struct {
 	TargetReceiptCount int       `json:"target_receipt_count"`
 	OrderMode          string    `json:"order_mode"`
 	PromoRule          string    `json:"promo_rule"`
-	AcknowledgeOverlap bool      `json:"acknowledge_overlap"`
-	OverrideLeadTime   bool      `json:"override_lead_time"`
-	OverrideReason     string    `json:"override_reason"`
+	Media              []struct {
+		Name     string `json:"media_name"`
+		PriceIDR int64  `json:"price_idr"`
+	} `json:"media"`
+	AcknowledgeOverlap bool   `json:"acknowledge_overlap"`
+	OverrideLeadTime   bool   `json:"override_lead_time"`
+	OverrideReason     string `json:"override_reason"`
 }
 
 func (r planRequest) toInput() (app.PromoInput, error) {
@@ -214,11 +241,15 @@ func (r planRequest) toInput() (app.PromoInput, error) {
 		return app.PromoInput{}, apierror.Validation("tanggal selesai tidak valid",
 			map[string]string{"end_date": "format harus YYYY-MM-DD"})
 	}
+	media := make([]app.MediaInput, 0, len(r.Media))
+	for _, m := range r.Media {
+		media = append(media, app.MediaInput{Name: m.Name, PriceIDR: money.IDR(m.PriceIDR)})
+	}
 	return app.PromoInput{
 		CompanyID: r.CompanyID, SiteGroupID: r.SiteGroupID, PromoName: r.PromoName,
 		StartDate: start, EndDate: end, TargetSalesIDR: money.IDR(r.TargetSalesIDR),
 		TargetReceiptCount: r.TargetReceiptCount, OrderMode: r.OrderMode,
-		PromoRule: r.PromoRule, AcknowledgeOverlap: r.AcknowledgeOverlap,
+		PromoRule: r.PromoRule, Media: media, AcknowledgeOverlap: r.AcknowledgeOverlap,
 		OverrideLeadTime: r.OverrideLeadTime, OverrideReason: r.OverrideReason,
 	}, nil
 }

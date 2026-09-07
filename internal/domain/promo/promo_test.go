@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/calendar"
+	"github.com/stevenwilliam/marketing_calendar/internal/domain/money"
 )
 
 func date(y int, m time.Month, d int) time.Time {
@@ -246,5 +247,88 @@ func TestRejectedPlanMayResubmit(t *testing.T) {
 	p.Status = StatusReleased
 	if _, err := validVersion().CanSubmit(p, check()); err != ErrNotSubmittable {
 		t.Fatalf("a released plan must not resubmit, got %v", err)
+	}
+}
+
+// --- marketing media (BR-3.8, D53) ---------------------------------------
+
+func TestMediaTotalIsIntegerArithmetic(t *testing.T) {
+	lines := []Media{
+		{LineNo: 1, Name: "Billboard Sudirman", PriceIDR: 45_000_000},
+		{LineNo: 2, Name: "Instagram Ads", PriceIDR: 12_500_000},
+		{LineNo: 3, Name: "Radio Prambors", PriceIDR: 7_250_000},
+	}
+	got, err := MediaTotal(lines)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != 64_750_000 {
+		t.Fatalf("total = %d, want 64750000", got)
+	}
+}
+
+func TestMediaTotalOfNothingIsZeroNotAnError(t *testing.T) {
+	got, err := MediaTotal(nil)
+	if err != nil || got != 0 {
+		t.Fatalf("got %d, %v; a promotion that buys no media is a real promotion", got, err)
+	}
+}
+
+// The overflow guard has to reach this path too, or a pathological set of
+// lines wraps the total into a negative number.
+func TestMediaTotalRefusesOverflow(t *testing.T) {
+	lines := []Media{{PriceIDR: money.MaxIDR}, {PriceIDR: money.MaxIDR}}
+	if _, err := MediaTotal(lines); err == nil {
+		t.Fatal("two enormous lines must not wrap the total")
+	}
+}
+
+// Media is optional; a line that exists must be complete. A blank row carrying
+// a price is a number nobody can account for.
+func TestIncompleteMediaLineIsRefusedAndNamed(t *testing.T) {
+	v := validVersion()
+	v.Media = []Media{
+		{LineNo: 1, Name: "Billboard", PriceIDR: 1_000_000},
+		{LineNo: 2, Name: "   ", PriceIDR: 500_000},
+		{LineNo: 3, Name: "Radio", PriceIDR: -1},
+	}
+	f := v.ValidateForSubmit()
+	if f == nil {
+		t.Fatal("an incomplete media line must be refused")
+	}
+	if _, ok := f["media.2.name"]; !ok {
+		t.Fatalf("the blank name must be named by its line: %v", f)
+	}
+	if _, ok := f["media.3.price"]; !ok {
+		t.Fatalf("the negative price must be named by its line: %v", f)
+	}
+	// And line 1 is fine, so it must NOT be named.
+	if _, ok := f["media.1.name"]; ok {
+		t.Fatalf("a valid line was reported as an error: %v", f)
+	}
+}
+
+func TestNoMediaIsValid(t *testing.T) {
+	v := validVersion()
+	v.Media = nil
+	if f := v.ValidateForSubmit(); f != nil {
+		t.Fatalf("media is optional: %v", f)
+	}
+}
+
+// An edit that changed only the dates must not silently drop what the campaign
+// is buying.
+func TestNewVersionCarriesMediaForward(t *testing.T) {
+	v := validVersion()
+	v.Media = []Media{{LineNo: 1, Name: "Billboard", PriceIDR: 1_000_000}}
+	n := v.NextVersion(date(2026, time.September, 2), uuid.New())
+	if len(n.Media) != 1 || n.Media[0].Name != "Billboard" {
+		t.Fatalf("media was lost: %+v", n.Media)
+	}
+	// And it must be a COPY: mutating the new version must not reach back into
+	// the old one, which is still the approved record.
+	n.Media[0].Name = "diubah"
+	if v.Media[0].Name != "Billboard" {
+		t.Fatal("the previous version was mutated through a shared slice")
 	}
 }

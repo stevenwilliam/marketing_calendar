@@ -98,6 +98,28 @@ sales while destroying margin reads as a success. Adding a nullable
 `budget_idr` later is one migration; the phase-2 promo P&L is the real answer
 (`08-roadmap.md`).
 
+**BR-3.8 Marketing media are optional, versioned, and summed on read.** A plan
+version may carry any number of media lines — what is being bought and what it
+costs. *(D53)*
+
+- A line that **exists** must be complete: a name, and a price that is whole
+  rupiah and not negative. A blank row is **dropped**, not rejected: the form
+  adds an empty line when you press "add", and refusing a form you have not
+  finished filling in is hostile.
+- The **total is computed on read, never stored.** A stored total is a number
+  that can drift from the rows it claims to summarise — the same argument as
+  BR-2.6.
+- Media lines belong to the **VERSION**, so approved spend cannot be edited
+  without the approval moving (BR-4.7). A signature on a plan has to be a
+  signature on its numbers.
+- A new version **carries the media forward**: an edit that changed only the
+  dates must not silently drop what the campaign is buying.
+
+> This partly reverses **D29** ("no budget field in phase 1"). A promotion now
+> records what it costs to run. There is still no discount cost and still no
+> enforced limit, so the promo report shows spend beside revenue but is not yet
+> a P&L — that remains phase 2.
+
 **BR-3.2 The period may span months.** Start and end are picked as a range and
 may cross month and year boundaries. End must be on or after start.
 

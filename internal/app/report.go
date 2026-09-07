@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/calendar"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/money"
+	"github.com/stevenwilliam/marketing_calendar/internal/domain/promo"
 	"github.com/stevenwilliam/marketing_calendar/internal/domain/target"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/apierror"
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/csvexport"
@@ -231,7 +232,8 @@ func (d *Deps) ExportPlans(ctx context.Context, p Principal, f PlanFilter, w io.
 	c := csvexport.New(w)
 	c.Write([]string{"kode_rencana", "nama_promo", "merek", "kelompok_toko", "status",
 		"mulai", "selesai", "mode_pesanan", "target_penjualan_idr", "target_struk",
-		"versi", "langkah_saat_ini", "dibuat_oleh", "rilis_paksa", "aturan_promo"})
+		"versi", "langkah_saat_ini", "dibuat_oleh", "rilis_paksa",
+		"total_biaya_media_idr", "jumlah_media", "aturan_promo"})
 	for _, r := range rows {
 		c.Write([]string{r.PlanCode, r.Version.PromoName, r.CompanyName, r.SiteGroupName,
 			string(r.Status), csvexport.Date(r.Version.StartDate, calendar.Jakarta),
@@ -239,6 +241,8 @@ func (d *Deps) ExportPlans(ctx context.Context, p Principal, f PlanFilter, w io.
 			csvexport.Money(r.Version.TargetSalesIDR), csvexport.Int(r.Version.TargetReceiptCount),
 			csvexport.Int(r.Version.VersionNo), r.CurrentStepName, r.CreatedByName,
 			boolText(r.ForceReleased),
+			csvexport.Money(mediaTotalOrZero(r.Version.Media)),
+			csvexport.Int(len(r.Version.Media)),
 			// Flattened to text: markup in a spreadsheet cell is noise, and
 			// the formula-injection guard still applies to what comes out.
 			sanitize.HTMLToText(r.Version.PromoRule)})
@@ -284,6 +288,17 @@ func (d *Deps) checkExportCap(ctx context.Context, rows int) error {
 			rows, max)
 	}
 	return nil
+}
+
+// mediaTotalOrZero is the export's view of a media total. Overflow is refused
+// at write time, so a failure here cannot come from stored data; zero is the
+// honest answer rather than a panic in the middle of a download.
+func mediaTotalOrZero(lines []promo.Media) money.IDR {
+	total, err := promo.MediaTotal(lines)
+	if err != nil {
+		return 0
+	}
+	return total
 }
 
 // formatBPS renders basis points as a percentage with two decimals, in

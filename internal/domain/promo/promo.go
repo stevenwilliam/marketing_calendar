@@ -9,6 +9,7 @@ package promo
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,7 +35,34 @@ const (
 	TakeAway OrderMode = "take_away"
 )
 
+// Media is one marketing-media line on a plan version: what is being bought
+// and what it costs.
+//
+// It lives on the VERSION, not the plan, so approved spend cannot be edited
+// without the approval moving (BR-4.7). A signature on a plan has to be a
+// signature on its numbers.
+type Media struct {
+	MediaID  uuid.UUID
+	LineNo   int
+	Name     string
+	PriceIDR money.IDR
+}
+
+// MediaTotal sums the lines. Integer arithmetic with an overflow guard, and
+// computed on READ rather than stored — a stored total is a number that can
+// drift from the rows it claims to summarise (the BR-2.6 argument, applied to
+// a different table).
+func MediaTotal(lines []Media) (money.IDR, error) {
+	amounts := make([]money.IDR, len(lines))
+	for i, m := range lines {
+		amounts[i] = m.PriceIDR
+	}
+	return money.Sum(amounts...)
+}
+
 var (
+	ErrMediaName      = errors.New("nama media wajib diisi")
+	ErrMediaPrice     = errors.New("harga media tidak boleh negatif")
 	ErrNameRequired   = errors.New("nama promo wajib diisi")
 	ErrRuleRequired   = errors.New("aturan promo wajib diisi")
 	ErrSiteGroup      = errors.New("kelompok toko wajib dipilih")
@@ -59,6 +87,7 @@ type Version struct {
 	TargetReceiptCount     int
 	OrderMode              OrderMode
 	PromoRule              string
+	Media                  []Media
 	OverlapAcknowledged    bool
 	LeadTimeOverridden     bool
 	LeadTimeOverrideReason string
@@ -104,6 +133,20 @@ func (v Version) ValidateForSubmit() map[string]string {
 	case DineIn, TakeAway:
 	default:
 		f["order_mode"] = ErrOrderMode.Error() // BR-3.4, allow-list
+	}
+	// BR-3.8: media lines are optional — a promotion that buys no media is a
+	// real promotion — but a line that EXISTS must be complete. A blank row
+	// carrying a price is a number nobody can account for.
+	for i, m := range v.Media {
+		if !hasText(m.Name) {
+			f[fmt.Sprintf("media.%d.name", i+1)] = ErrMediaName.Error()
+		}
+		if m.PriceIDR < 0 {
+			f[fmt.Sprintf("media.%d.price", i+1)] = ErrMediaPrice.Error()
+		}
+	}
+	if _, err := MediaTotal(v.Media); err != nil {
+		f["media"] = "total biaya media di luar jangkauan"
 	}
 	if len(f) == 0 {
 		return nil
@@ -203,6 +246,10 @@ func (v Version) NextVersion(now time.Time, by uuid.UUID) Version {
 	n.VersionNo = v.VersionNo + 1
 	n.CreatedBy = by
 	n.CreatedAt = now
+	// Media carries into the new version: an edit that changed the dates should
+	// not silently drop what the campaign is buying. It is COPIED, so mutating
+	// the successor cannot reach back into the version that was approved.
+	n.Media = append([]Media(nil), v.Media...)
 	n.OverlapAcknowledged = false
 	n.LeadTimeOverridden = false
 	n.LeadTimeOverrideReason = ""

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,12 @@ import (
 	"github.com/stevenwilliam/marketing_calendar/internal/platform/sanitize"
 )
 
+// MediaInput is one marketing-media line as it arrives from a client.
+type MediaInput struct {
+	Name     string
+	PriceIDR money.IDR
+}
+
 type PromoInput struct {
 	CompanyID          uuid.UUID
 	SiteGroupID        uuid.UUID
@@ -23,6 +30,7 @@ type PromoInput struct {
 	TargetReceiptCount int
 	OrderMode          string
 	PromoRule          string
+	Media              []MediaInput
 	AcknowledgeOverlap bool
 	OverrideLeadTime   bool
 	OverrideReason     string
@@ -48,10 +56,46 @@ func (in *PromoInput) normalise() (map[string]string, error) {
 			fields["override_reason"] = err.Error()
 		}
 	}
+	// Media names are sanitised here rather than at the boundary, so every
+	// path into a plan gets the same treatment. An empty row is DROPPED rather
+	// than rejected: the form adds a blank line when you press "add", and
+	// refusing a form you have not finished filling in is hostile.
+	kept := in.Media[:0]
+	for i, m := range in.Media {
+		name, nerr := sanitize.Text(m.Name, 200)
+		blank := nerr != nil && m.PriceIDR == 0
+		if blank {
+			continue
+		}
+		if nerr != nil {
+			fields[fmt.Sprintf("media.%d.name", i+1)] = nerr.Error()
+			continue
+		}
+		// A negative price is MALFORMED, not merely incomplete, so it is
+		// refused here rather than at submit. A draft may be unfinished; it may
+		// not be impossible. Without this the row reached the database, the
+		// CHECK constraint refused it correctly, and the client got a 500 with
+		// no idea which field was wrong.
+		if m.PriceIDR < 0 {
+			fields[fmt.Sprintf("media.%d.price", i+1)] = "harga media tidak boleh negatif"
+			continue
+		}
+		kept = append(kept, MediaInput{Name: name, PriceIDR: m.PriceIDR})
+	}
+	in.Media = kept
+
 	if len(fields) > 0 {
 		return fields, apierror.Validation("periksa kembali isian", fields)
 	}
 	return nil, nil
+}
+
+func toMedia(in []MediaInput) []promo.Media {
+	out := make([]promo.Media, len(in))
+	for i, m := range in {
+		out[i] = promo.Media{LineNo: i + 1, Name: m.Name, PriceIDR: m.PriceIDR}
+	}
+	return out
 }
 
 func (d *Deps) toVersion(in PromoInput, by uuid.UUID) promo.Version {
@@ -59,8 +103,9 @@ func (d *Deps) toVersion(in PromoInput, by uuid.UUID) promo.Version {
 		PromoName: in.PromoName, StartDate: calendar.Today(in.StartDate),
 		EndDate: calendar.Today(in.EndDate), TargetSalesIDR: in.TargetSalesIDR,
 		TargetReceiptCount: in.TargetReceiptCount, OrderMode: promo.OrderMode(in.OrderMode),
-		PromoRule: in.PromoRule, OverlapAcknowledged: in.AcknowledgeOverlap,
-		LeadTimeOverridden: in.OverrideLeadTime, LeadTimeOverrideReason: in.OverrideReason,
+		PromoRule: in.PromoRule, Media: toMedia(in.Media),
+		OverlapAcknowledged: in.AcknowledgeOverlap,
+		LeadTimeOverridden:  in.OverrideLeadTime, LeadTimeOverrideReason: in.OverrideReason,
 		CreatedBy: by,
 	}
 }
@@ -126,6 +171,7 @@ func (d *Deps) UpdatePlan(ctx context.Context, p Principal, planID uuid.UUID, in
 		next.PromoName, next.StartDate, next.EndDate = v.PromoName, v.StartDate, v.EndDate
 		next.TargetSalesIDR, next.TargetReceiptCount = v.TargetSalesIDR, v.TargetReceiptCount
 		next.OrderMode, next.PromoRule = v.OrderMode, v.PromoRule
+		next.Media = v.Media
 		if err := d.Promos.NewVersion(ctx, planID, next); err != nil {
 			return err
 		}

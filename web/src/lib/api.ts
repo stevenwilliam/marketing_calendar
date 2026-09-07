@@ -119,6 +119,13 @@ export interface Principal {
   is_superadmin: boolean
 }
 
+export interface MediaLineDTO {
+  media_id?: string
+  line_no?: number
+  media_name: string
+  price_idr: number
+}
+
 export interface PlanVersion {
   version_id: string
   version_no: number
@@ -131,6 +138,8 @@ export interface PlanVersion {
   promo_rule: string
   lead_time_overridden?: boolean
   created_at?: string
+  media?: MediaLineDTO[]
+  media_total_idr?: number
 }
 
 export interface Plan {

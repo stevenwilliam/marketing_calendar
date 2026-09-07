@@ -112,6 +112,11 @@ func (r *PromoRepo) ByID(ctx context.Context, planID uuid.UUID) (*app.PlanRow, e
 	if err != nil {
 		return nil, err
 	}
+	media, err := loadMedia(r.db, ctx, p.Version.VersionID)
+	if err != nil {
+		return nil, err
+	}
+	p.Version.Media = media[p.Version.VersionID]
 	return &p, nil
 }
 
@@ -139,6 +144,17 @@ func (r *PromoRepo) Versions(ctx context.Context, planID uuid.UUID) ([]promo.Ver
 		v.TargetSalesIDR = money.IDR(sales)
 		out = append(out, v)
 	}
+	ids := make([]uuid.UUID, len(out))
+	for i, v := range out {
+		ids[i] = v.VersionID
+	}
+	media, err := loadMedia(r.db, ctx, ids...)
+	if err != nil {
+		return nil, err
+	}
+	for i := range out {
+		out[i].Media = media[out[i].VersionID]
+	}
 	return out, nil
 }
 
@@ -165,12 +181,69 @@ func (r *PromoRepo) Create(ctx context.Context, p promo.Plan, v promo.Version) (
 	return planID, err
 }
 
+// replaceMedia rewrites a version's media lines.
+//
+// Delete-then-insert rather than a diff: the lines are an ordered list the user
+// edits as a whole, and reconciling row identities would be more code for a
+// worse result. It runs inside the caller's transaction, so a version never
+// exists with half its media.
+func replaceMedia(tx *gorm.DB, versionID uuid.UUID, media []promo.Media) error {
+	if err := tx.Exec(`DELETE FROM promotion_media WHERE version_id = ?`, versionID).Error; err != nil {
+		return err
+	}
+	for i, m := range media {
+		err := tx.Exec(`
+			INSERT INTO promotion_media (media_id, version_id, line_no, media_name, price_idr)
+			VALUES (?, ?, ?, ?, ?)`,
+			id.New(), versionID, i+1, m.Name, int64(m.PriceIDR)).Error
+		if err != nil {
+			// The CHECK constraints are the last line, not the first. If one
+			// fires it means validation upstream let something through, and
+			// the client deserves the field name rather than a 500.
+			if isCheckViolation(err) {
+				return apierror.Validation("baris media tidak valid",
+					map[string]string{fmt.Sprintf("media.%d", i+1): "nama wajib diisi dan harga tidak boleh negatif"})
+			}
+			return err
+		}
+	}
+	return nil
+}
+
+// loadMedia reads a version's lines in order.
+func loadMedia(db *gorm.DB, ctx context.Context, versionIDs ...uuid.UUID) (map[uuid.UUID][]promo.Media, error) {
+	out := map[uuid.UUID][]promo.Media{}
+	if len(versionIDs) == 0 {
+		return out, nil
+	}
+	rows, err := db.WithContext(ctx).Raw(`
+		SELECT media_id, version_id, line_no, media_name, price_idr
+		  FROM promotion_media
+		 WHERE version_id = ANY(?::uuid[])
+		 ORDER BY version_id, line_no`, uuidList(versionIDs)).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var m promo.Media
+		var vid uuid.UUID
+		var price int64
+		if err := rows.Scan(&m.MediaID, &vid, &m.LineNo, &m.Name, &price); err != nil {
+			return nil, err
+		}
+		m.PriceIDR = money.IDR(price)
+		out[vid] = append(out[vid], m)
+	}
+	return out, nil
+}
+
 func insertVersion(tx *gorm.DB, versionID, planID uuid.UUID, no int, v promo.Version) error {
 	var reason any
 	if v.LeadTimeOverrideReason != "" {
 		reason = v.LeadTimeOverrideReason
 	}
-	return tx.Exec(`
+	err := tx.Exec(`
 		INSERT INTO promotion_plan_version (version_id, plan_id, version_no, promo_name,
 		    start_date, end_date, target_sales_idr, target_receipt_count, order_mode,
 		    promo_rule, overlap_acknowledged, lead_time_overridden,
@@ -179,6 +252,10 @@ func insertVersion(tx *gorm.DB, versionID, planID uuid.UUID, no int, v promo.Ver
 		versionID, planID, no, v.PromoName, v.StartDate, v.EndDate,
 		int64(v.TargetSalesIDR), v.TargetReceiptCount, v.OrderMode, v.PromoRule,
 		v.OverlapAcknowledged, v.LeadTimeOverridden, reason, v.CreatedBy).Error
+	if err != nil {
+		return err
+	}
+	return replaceMedia(tx, versionID, v.Media)
 }
 
 // SaveDraftVersion updates a version IN PLACE. It is guarded by the plan's
@@ -208,7 +285,9 @@ func (r *PromoRepo) SaveDraftVersion(ctx context.Context, v promo.Version) error
 		return apierror.New(apierror.CodePlanLocked,
 			"rencana yang sudah masuk rantai persetujuan tidak dapat diubah; buat versi baru")
 	}
-	return nil
+	// The media lines belong to the version, so an edit that leaves them
+	// behind would leave a plan whose spend no longer matches its text.
+	return replaceMedia(r.db.WithContext(ctx), v.VersionID, v.Media)
 }
 
 // NewVersion is the BR-4.7 path: an edit after approval creates a successor
