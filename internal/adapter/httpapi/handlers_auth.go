@@ -35,13 +35,27 @@ func handleLogin(d *app.Deps) gin.HandlerFunc {
 			fail(c, apierror.Validation("badan permintaan tidak valid", nil))
 			return
 		}
-		res, err := d.Login(c.Request.Context(), req.Email, req.Password, clientIP(c))
+		res, err := d.Login(c.Request.Context(), req.Email, req.Password,
+			c.GetHeader("User-Agent"), clientIP(c))
 		if err != nil {
 			fail(c, err)
 			return
 		}
-		// A password alone NEVER returns a session (BR-5.3). What comes back
-		// is a challenge and, on first login, the enrolment material.
+
+		// With the second factor off, the password completed the login and the
+		// response is a session — the same shape /auth/totp returns, so the
+		// client has one success path rather than two (D46).
+		if res.Session != nil {
+			setRefreshCookie(c, d, res.Session.RefreshToken)
+			c.JSON(http.StatusOK, gin.H{
+				"access_token": res.Session.AccessToken,
+				"expires_at":   res.Session.ExpiresAt,
+				"user":         principalJSON(*res.Session.Principal)})
+			return
+		}
+
+		// Second factor required: a password alone returns a challenge and,
+		// on first login, the enrolment material.
 		out := gin.H{"code": string(apierror.CodeTOTPRequired), "challenge": res.Challenge,
 			"needs_enrolment": res.NeedsEnrol}
 		if res.NeedsEnrol {

@@ -249,8 +249,27 @@ Every handler declares the permission it requires.
 **BR-5.2 Accounts are created by an administrator.** There is no self-service
 registration; there is no public surface on which to offer one.
 
-**BR-5.3 TOTP is mandatory for every account.** A user without a confirmed TOTP
-enrolment can reach only the enrolment flow. *(D18)* Passwords are argon2id.
+**BR-5.3 The second factor is configurable, and is currently OFF.**
+`auth.totp_required` in `sys_parameters` decides whether login has a second
+step. It is **`false`** *(D46, superseding D18)*: a correct password completes
+the login.
+
+When it is `true`, the original rule applies unchanged — a password alone never
+returns a session, and a user without a confirmed TOTP enrolment can reach only
+the enrolment flow. The engine, the enrolment flow and the verification path
+are all still present, so re-enabling it is a parameter change on the next
+login, not a deployment.
+
+Passwords are argon2id, with a minimum length of `auth.password_min_length`
+*(D45)*.
+
+> **What is protecting the account now.** D45 lowered the password minimum to 8
+> on the strength of three compensating controls: mandatory TOTP, account
+> lockout, and no public surface. This decision removes the first of the three.
+> What remains is lockout after `auth.lockout_threshold` failures, an nginx IP
+> allowlist, and the fact that one login still sees all three brands' sales.
+> That is a smaller argument than it was, and it is written here so nobody has
+> to reconstruct it.
 
 **BR-5.4 A user is assigned one or more companies, explicitly.** Creating a
 user selects the companies that user works in — **one or more, never none, and

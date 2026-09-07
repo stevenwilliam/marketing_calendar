@@ -18,9 +18,22 @@ export default function Login() {
     e.preventDefault()
     setErr(null); setBusy(true)
     try {
-      const res = await api<{ challenge: string; needs_enrolment: boolean; provisioning_uri?: string; secret?: string }>(
-        '/auth/login', { method: 'POST', body: { email, password } })
-      setChallenge(res.challenge)
+      const res = await api<{
+        challenge?: string; needs_enrolment?: boolean
+        provisioning_uri?: string; secret?: string
+        access_token?: string; user?: Principal
+      }>('/auth/login', { method: 'POST', body: { email, password } })
+
+      // With the second factor off the server returns a session here and
+      // there is no step 2. Branching on access_token rather than on a
+      // client-side flag means the SERVER decides how many steps there are —
+      // the UI cannot get out of step with `auth.totp_required`.
+      if (res.access_token && res.user) {
+        signIn(res.user, res.access_token)
+        return
+      }
+
+      setChallenge(res.challenge ?? '')
       if (res.needs_enrolment && res.secret) {
         setEnrol({ uri: res.provisioning_uri ?? '', secret: res.secret })
       }
@@ -65,7 +78,6 @@ export default function Login() {
       <div className="p-8 md:p-14 flex flex-col justify-center max-w-[520px] w-full">
         {step === 'password' ? (
           <form onSubmit={submitPassword} className="flex flex-col gap-3">
-            <div className="kicker">Langkah 1 dari 2</div>
             <h3>Masuk</h3>
             <p className="text-sm text-muted -mt-1">
               Akun dibuat oleh administrator. Tidak ada pendaftaran mandiri.
@@ -82,12 +94,12 @@ export default function Login() {
                      required value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <button type="submit" className="btn btn-primary mt-1 self-start px-5 py-2.5" disabled={busy}>
-              {busy ? 'Memeriksa…' : 'Lanjutkan'}
+              {busy ? 'Memeriksa…' : 'Masuk'}
             </button>
           </form>
         ) : (
           <form onSubmit={submitTOTP} className="flex flex-col gap-3">
-            <div className="kicker">Langkah 2 dari 2</div>
+            <div className="kicker">Langkah kedua</div>
             <h3>Kode autentikasi</h3>
             <p className="text-sm text-muted -mt-1">
               Masukkan enam angka dari aplikasi autentikator Anda.

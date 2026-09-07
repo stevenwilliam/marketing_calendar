@@ -13,12 +13,18 @@ import (
 )
 
 type LoginResult struct {
-	// Challenge is a short-lived token proving the password step passed.
-	// A password alone NEVER returns a session (BR-5.3).
+	// Challenge is a short-lived token proving the password step passed. It is
+	// returned only when the second factor is required.
 	Challenge    string
 	NeedsEnrol   bool
 	ProvisionURI string
 	Secret       string
+
+	// Session is set when `auth.totp_required` is false: the password alone
+	// completes the login and there is no second step. Exactly one of Session
+	// and Challenge is ever non-nil, so a caller cannot mistake a challenge
+	// for a session (D46).
+	Session *Session
 }
 
 type Session struct {
@@ -28,12 +34,16 @@ type Session struct {
 	Principal    *Principal
 }
 
-// Login verifies the password and returns a TOTP challenge — never a session.
+// Login verifies the password.
 //
-// The unknown-email and wrong-password paths are byte-identical in their
-// response and spend the same work, so login timing cannot enumerate staff
-// addresses.
-func (d *Deps) Login(ctx context.Context, email, password, ip string) (*LoginResult, error) {
+// When `auth.totp_required` is true it returns a CHALLENGE and never a session:
+// a password alone must not be enough. When it is false the password completes
+// the login and the session is issued here.
+//
+// Either way the unknown-email and wrong-password paths are byte-identical in
+// their response and spend the same work, so login timing cannot enumerate
+// staff addresses.
+func (d *Deps) Login(ctx context.Context, email, password, ua, ip string) (*LoginResult, error) {
 	if ok, wait := d.LoginLimiter.Allow(ip); !ok {
 		return nil, &apierror.Error{Code: apierror.CodeRateLimited,
 			Message: "terlalu banyak percobaan; coba lagi dalam " + wait.Round(time.Second).String()}
@@ -73,6 +83,21 @@ func (d *Deps) Login(ctx context.Context, email, password, ip string) (*LoginRes
 		return nil, errInvalidCredentials()
 	}
 
+	// The second factor is a parameter (D46). Read once, so a change part way
+	// through a login cannot leave a half-authenticated state.
+	if !d.Params.Bool(ctx, ParamTOTPRequired, false) {
+		d.LoginLimiter.Reset(ip)
+		_ = d.Users.ClearLoginFailures(ctx, u.UserID)
+		_ = d.Audit.Write(ctx, AuditEntry{ActorID: &u.UserID, Action: "auth.login",
+			SubjectType: "app_user", SubjectID: &u.UserID, IP: ip,
+			Reason: "faktor kedua dinonaktifkan (auth.totp_required=false)"})
+		s, err := d.issueSession(ctx, u.UserID, uuid.Nil, ua, ip)
+		if err != nil {
+			return nil, err
+		}
+		return &LoginResult{Session: s}, nil
+	}
+
 	res := &LoginResult{}
 	if !u.TOTPConfirmed {
 		// BR-5.3: without a confirmed enrolment the user reaches only the
@@ -103,6 +128,13 @@ func (d *Deps) VerifyTOTP(ctx context.Context, challenge, code, ua, ip string) (
 	if ok, wait := d.LoginLimiter.Allow("totp:" + ip); !ok {
 		return nil, &apierror.Error{Code: apierror.CodeRateLimited,
 			Message: "terlalu banyak percobaan; coba lagi dalam " + wait.Round(time.Second).String()}
+	}
+	if !d.Params.Bool(ctx, ParamTOTPRequired, false) {
+		// Switched off mid-flight. Refusing is the honest answer: the caller's
+		// challenge is real, but the step it belongs to no longer exists, and
+		// issuing a session here would accept a token minted for another flow.
+		return nil, apierror.New(apierror.CodeConflict,
+			"faktor kedua sedang dinonaktifkan; masuk kembali dengan kata sandi saja")
 	}
 	claims, err := d.Tokens.Parse(challenge)
 	if err != nil {

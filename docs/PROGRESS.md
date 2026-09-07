@@ -39,7 +39,7 @@ yet run.
 | M1 | Environment & config | ✅ | Boots from `/etc/marketing_calendar/…env`; secrets verified masked in the startup line |
 | M2 | Schema | ✅ | 9 migrations on a real PostgreSQL; constraints proven to **refuse** bad writes |
 | M3 | Domain | ✅ | 5 packages, pure, no I/O; every test names its `BR-x.y` |
-| M4 | Identity & RBAC | ✅ | argon2id, mandatory TOTP, rotating refresh; matrix tested in both directions for all 8 roles |
+| M4 | Identity & RBAC | ✅ | argon2id, rotating refresh, TOTP **available but off by default** (D46); matrix tested in both directions for all 8 roles, and login tested with the factor both on and off |
 | M5 | Master data | ✅ | Site creates its system group in one transaction; cross-brand member refused by the database |
 | M6 | Approval engine | ✅ | Generic; concurrency test proves exactly one of two racing approvers wins |
 | M7 | Targets | ✅ | Months-need-not-sum-to-year proven by a test that fails if the validation is added |
@@ -102,6 +102,7 @@ Be specific rather than reassuring.
 |---|---|
 | **TLS in production** | Never run. No production machine exists. `13` §7 covers it |
 | **Dark theme** | Not shipped. Not claimed. Ratios are not measured, so it is not supported |
+| **TOTP** | Built, tested, and **switched off** by parameter. Not removed — the enrolment flow, `user_totp` and verification all remain |
 | **WhatsApp notifications** | The `Sender` port exists with one implementation (SMTP). WAHA is phase 2 |
 | **S3/MinIO** | Config surface exists; no code path uses object storage yet |
 | **Prometheus metrics** | `/metrics` is exposed and localhost-only; no dashboards or alerts |
@@ -120,7 +121,7 @@ Be specific rather than reassuring.
 | 3 | **Ports 8093/8094 acceptable?** | 8093 is the Go service (loopback); 8094 is nginx's LAN door. 8081/8082/8090/8091 are taken by other projects (D43, D44) |
 | 4 | **The real release-recipient list** | Seeded with placeholders `marketing@sfg.local`, `operasional@sfg.local` |
 | 5 | **The demo accounts** | Nine seeded accounts share one password. Delete them before real data. `steven.william@maxx-coffee.id` is a real account and is **not** one of them |
-| 8 | **`auth.password_min_length` is 8** | Lowered from 12 on request (D45). Eight characters with no composition rule does not survive offline guessing if `app_user` leaks; mandatory TOTP, lockout and no public surface are what hold it. Raise it in **Pengaturan** if any of those change |
+| 8 | **`auth.password_min_length` is 8 and `auth.totp_required` is false** | Both on request (D45, D46). D45's argument rested on three controls and D46 removed one of them, so what now protects an account is lockout plus the nginx allowlist. Both are parameters — raise either in **Pengaturan**, no deploy |
 | 6 | R1 — is Business Analyst step 2 (taken) or step 1? | A chain edit either way |
 | 7 | **The design canvas** | `claude.ai/design/p/…` is unreachable from the dev server (403). Built to the artifact `f896dbfe` instead, which was reachable |
 

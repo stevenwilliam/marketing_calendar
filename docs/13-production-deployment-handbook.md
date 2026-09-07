@@ -293,9 +293,11 @@ curl -s -o /dev/null -w '%{http_code}\n' https://marketing-calendar.sfg.co.id/he
 ## 8. First login
 
 1. Open the site from an allowed machine.
-2. Sign in with the account from section 5.
-3. The first login shows a TOTP secret. Scan it, then enter the six digits.
-   **TOTP is mandatory** — there is no way to reach the application without it.
+2. Sign in with the account from section 5 — **email and password only**.
+3. Decide about the second factor. `auth.totp_required` ships **`false`** (D46),
+   so there is no second step. On a production machine holding three brands'
+   sales, consider setting it to `true` in **Pengaturan** before real accounts
+   exist: the code path is intact and it costs one parameter change.
 4. Change `notify.release_recipients` in **Pengaturan** to the real list.
    It is the *only* recipient list for the release email; chain actors are
    not appended.

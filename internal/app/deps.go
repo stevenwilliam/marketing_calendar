@@ -54,4 +54,5 @@ const (
 	ParamLockoutThreshold  = "auth.lockout_threshold"
 	ParamLockoutMinutes    = "auth.lockout_minutes"
 	ParamPasswordMinLen    = "auth.password_min_length"
+	ParamTOTPRequired      = "auth.totp_required"
 )

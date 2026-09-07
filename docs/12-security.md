@@ -28,7 +28,7 @@ unattended machine. The controls below are weighted accordingly.
 | A04 | Insecure design | Approval is a domain state machine with the transition table as a test; approved plans immutable; append-only history | `domain/approval` | `approval_test.go` (BR-4 matrix) |
 | A05 | Security misconfiguration | CSP, HSTS **only over TLS**, `nosniff`, `X-Frame-Options: DENY`, referrer policy; trusted proxies limited to loopback; `/metrics` not exposed | `adapter/http/middleware.go`, `deploy/nginx-*.conf` | `security_headers_test.go`; a header check from **another machine** |
 | A06 | Vulnerable components | Pinned versions, `go list -m -u`, `npm audit` in CI; dependencies earn their place | `go.mod`, CI | CI job |
-| A07 | Identification & auth failures | **Mandatory TOTP**; lockout after repeated failures; rotating refresh with family revocation on reuse; login does not distinguish unknown email from wrong password | `app/auth` | `auth_test.go::TestUnknownEmailAndWrongPasswordAreIdentical`, `TestRefreshReuseRevokesFamily`, `TestLockout` |
+| A07 | Identification & auth failures | TOTP available but **off by default** (D46); lockout after repeated failures; rotating refresh with family revocation on reuse; login does not distinguish unknown email from wrong password | `app/auth` | `auth_test.go::TestUnknownEmailAndWrongPasswordAreIdentical`, `TestRefreshReuseRevokesFamily`, `TestLockout` |
 | A08 | Software & data integrity | Migrations are the source of truth, checksummed, forward-only; import idempotent and recorded | `platform/database`, `app/importer` | `migrate_test.go::TestChecksumDriftRefused`; `importer_test.go::TestReimportIsIdempotent` |
 | A09 | Logging & monitoring failures | Structured logs with a trace id; every approval, override and parameter change audited append-only; log values sanitised against forgery | `platform/logging`, `audit` | `schema_test.go::TestAuditLogAppendOnly`; `sanitize_test.go::TestLogValue` |
 | A10 | SSRF | No user-supplied URL is fetched. The only outbound calls are SMTP and WAHA, both to configured hosts | `adapter/notify` | reviewed; no fetch-by-URL endpoint exists |
@@ -39,7 +39,8 @@ unattended machine. The controls below are weighted accordingly.
 |---|---|
 | Passwords | argon2id, 64 MiB / t=3 / p=4, PHC-encoded. A `CHECK` constraint refuses anything not starting `$argon2id$`, so a bcrypt or plaintext value cannot be loaded by a fixture |
 | Password length | Minimum is `auth.password_min_length`, **8** by default (D45). Length only — composition rules push people to "Password1!". A non-positive parameter falls back to the default rather than disabling the check, so a misconfiguration cannot silently turn the control off |
-| MFA | **TOTP mandatory for every account** (D18, BR-5.3). Without a confirmed enrolment a user reaches only the enrolment flow |
+| MFA | **Configurable, currently OFF** — `auth.totp_required`, default `false` (D46, superseding D18). When `true` the original rule holds: no session from a password alone, and no access without a confirmed enrolment. The code path is intact either way, so it is a toggle rather than a rebuild |
+| Residual risk of MFA being off | An 8-character minimum (D45) with no second factor leaves **lockout and the IP allowlist** as the controls that matter. Stated here rather than left to be inferred |
 | Lockout | after repeated failures, for a bounded window; the correct password is then refused too |
 | Enumeration | login returns an identical response for unknown email and wrong password, and spends the same work — a dummy hash is verified so timing does not leak |
 | Access token | ~15 minutes, HS256 with the algorithm pinned; `alg=none` and algorithm-confusion refused |

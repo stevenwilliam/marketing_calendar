@@ -52,7 +52,27 @@ mendorong orang ke "Password1!"; panjang yang benar-benar mahal bagi penyerang.
 Pengguna mendaftarkan TOTP sendiri saat login pertama. Anda tidak pernah
 melihat kuncinya.
 
+### Faktor kedua (TOTP)
+
+**Sedang dimatikan.** `auth.totp_required` = `false` (D46). Login hanya surel
+dan kata sandi.
+
+Menyalakannya kembali:
+
+**Pengaturan → `auth.totp_required` → `true`.** Berlaku pada login berikutnya.
+Pengguna yang belum pernah mendaftar akan melihat layar pendaftaran dan kunci
+sekali-tampil; yang sudah pernah mendaftar memakai kunci lamanya.
+
+> Perlu diketahui sebelum memutuskan untuk membiarkannya mati: panjang minimum
+> kata sandi diturunkan ke 8 (D45) dengan alasan ada tiga pengaman lain —
+> TOTP wajib, penguncian akun, dan tidak menghadap publik. Mematikan TOTP
+> menghapus satu dari ketiganya. Yang tersisa adalah penguncian setelah
+> beberapa kegagalan dan daftar izin IP di nginx, untuk aplikasi yang satu
+> login-nya melihat penjualan ketiga merek.
+
 ### Mengatur ulang TOTP
+
+Hanya relevan kalau `auth.totp_required` bernilai `true`.
 
 Perangkat autentikator hilang berarti akunnya tidak bisa masuk sama sekali.
 Hapus pendaftarannya lewat basis data, lalu minta pengguna login ulang — layar

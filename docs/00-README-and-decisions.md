@@ -1,6 +1,6 @@
 # marketing_calendar — Document Set
 
-**Version:** 0.7 (built, running and reachable; D28–D45 recorded)
+**Version:** 0.8 (built, running and reachable; D28–D46 recorded)
 **Date:** 2 September 2026 (written 1 September 2026)
 **Status:** the brief landed on 2026-09-01 and is stored verbatim at
 `PROMPT.md`. The documents are written, Steven's answers to Q22–Q32 are folded
@@ -79,7 +79,7 @@ in the affected docs the same day.
 | D15 | 2026-09-01 | *(default)* **Rejection returns the plan to the creator with a mandatory reason**; the plan keeps its full history. | Killing the plan loses the work and the audit trail. | 02 BR-4.5 |
 | D16 | 2026-09-01 | *(default)* **Email notifications in phase 1; WhatsApp behind the same port for later.** | WAHA is the documented provider, per `99` §9. | 05, 06 |
 | D17 | 2026-09-01 | *(default)* **Reached over the internal network with an nginx IP allowlist, TLS on.** | Not public facing. The Go service binds loopback; nginx is the only way in. | 09, 12 |
-| D18 | 2026-09-01 | *(default)* **TOTP is mandatory for every staff account.** | One login sees all three brands' sales. Admin-only MFA would leave the largest blast radius unprotected. | 12, 02 BR-5.3 |
+| D18 | 2026-09-01 | *(default, **superseded by D46** on 2026-09-07)* **TOTP is mandatory for every staff account.** | One login sees all three brands' sales. Admin-only MFA would leave the largest blast radius unprotected. | 12, 02 BR-5.3 |
 | D19 | 2026-09-01 | *(default, **amended by D37** — the multi-company part stands; the group-level wildcard is withdrawn)* **A user may hold roles in more than one company**, and a group-level role sees all three brands. | The finance and director roles are group-level in a three-brand group; forcing one account per brand would guarantee shared logins. | 02 BR-5, 03, 12 |
 | D20 | 2026-09-01 | *(default)* **Indonesian and English, via message catalogues, Indonesian as the default.** | No inline strings, from the first string. | 10, 11 |
 | D21 | 2026-09-01 | *(default)* **`Asia/Jakarta` operating zone, UTC storage.** | Business-day logic converts explicitly. | 02 BR-1.4, 03 |
@@ -107,6 +107,7 @@ in the affected docs the same day.
 | D43 | 2026-09-02 | **The dev server runs on port 8093**, not 8081. | 8081 and 8082 are taken by other projects on `claudedev`, and 8090/8091 by evermore. Recorded so the next person does not rediscover it by getting another project's 404. | 09, 11, 13, deploy/ |
 | D44 | 2026-09-07 | **nginx also listens on `:8094`, LAN-only, so the application is reachable without DNS.** The service still binds `127.0.0.1:8093` and is unreachable except through nginx. The production config drops the 8094 lines. | The application had been running for five days and **could not be opened in a browser**: `ruuma` owns `listen 80 default_server`, so the bare IP served Ruuma Eatery, and `marketing-calendar.sfg.local` is not in DNS. Running is not the same as reachable, and only trying it in a browser showed the difference. A dedicated port is the shape evermore already uses on this box. | 11, 13, deploy/, PROGRESS |
 | D45 | 2026-09-07 | **The password minimum drops from 12 to 8, and becomes `auth.password_min_length` in `sys_parameters`.** A non-positive value falls back to 8 rather than disabling the check. | Steven's decision. It became a parameter rather than a smaller constant because he changed it by hand, which is the definition of a threshold that moves without a deploy (CLAUDE.md §7) — the next change should not need me. **The trade, stated once:** 8 characters with no composition rule does not survive offline guessing if `app_user` ever leaks. What holds it here is mandatory TOTP, account lockout, and no public surface; raise it again if any of those three changes. | 12 §3, 15, 13, `security/password.go` |
+| D46 | 2026-09-07 | **The second factor becomes `auth.totp_required` and defaults to `false`.** Login is username and password only. The TOTP engine, enrolment flow and verification path all remain; a challenge minted while it was on is refused once it is off. **Supersedes D18.** | Steven's decision. Made a parameter rather than deleted so it is a toggle for the next auditor, and because deleting it would have meant deleting the enrolment flow, the secret storage and the `user_totp` table — a day's work to undo a day's work. **The trade, stated once:** D45 lowered the password minimum to 8 on the strength of mandatory TOTP, lockout and no public surface; this removes the first of those three, leaving lockout and the nginx allowlist to carry an application where one login sees all three brands' sales. | 02 BR-5.3, 12 §3, 14, 15, `auth.go`, `Login.tsx` |
 
 ---
 

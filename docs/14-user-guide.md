@@ -11,21 +11,14 @@ dan setiap akun dibuat oleh administrator.
 ## 1. Masuk
 
 1. Buka alamat internal aplikasi dari jaringan kantor atau VPN.
-2. Masukkan surel dan kata sandi, lalu tekan **Lanjutkan**.
-3. Masukkan **enam angka** dari aplikasi autentikator Anda.
+2. Masukkan surel dan kata sandi, lalu tekan **Masuk**.
 
-**Kata sandi saja tidak pernah cukup.** Setiap akun staf wajib memakai TOTP,
-karena satu akun dapat melihat penjualan ketiga merek.
+Itu saja. Tidak ada langkah kedua.
 
-### Login pertama
-
-Layar akan menampilkan sebuah **kunci** sekali saja. Pindai atau salin ke
-aplikasi autentikator (Google Authenticator, Authy, 1Password, apa pun yang
-mendukung TOTP), lalu masukkan enam angkanya. Setelah itu kunci tidak
-ditampilkan lagi.
-
-Kehilangan perangkat autentikator berarti administrator harus mengatur ulang
-pendaftaran TOTP Anda. Itu disengaja.
+> **Untuk administrator.** Faktor kedua (TOTP) masih ada di sistem dan sedang
+> **dimatikan** lewat parameter `auth.totp_required`. Menyalakannya kembali
+> menambahkan langkah kedua pada login berikutnya, tanpa deploy — lihat
+> `15-admin-guide.md`.
 
 ### Kalau gagal masuk
 

@@ -277,6 +277,9 @@ func seedParameters(tx *gorm.DB) (int, error) {
 		{ParamMaxExportRows, "100000", "int", "Batas baris satu ekspor CSV", false},
 		{ParamLockoutThreshold, "5", "int", "Jumlah kegagalan masuk sebelum akun terkunci", false},
 		{ParamLockoutMinutes, "15", "int", "Lama penguncian akun, dalam menit", false},
+		{ParamTOTPRequired, "false", "bool",
+			"Wajibkan kode autentikator (TOTP) saat masuk. Dimatikan atas keputusan pemilik (D46) — " +
+				"menyalakannya kembali berlaku pada login berikutnya, tanpa deploy", false},
 		{ParamPasswordMinLen, "8", "int",
 			"Panjang minimum kata sandi. Panjang yang menentukan, bukan campuran simbol — aturan komposisi mendorong orang ke \"Password1!\"", false},
 	}
